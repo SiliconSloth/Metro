@@ -1,0 +1,26 @@
+#pragma once
+#include "git2.h"
+#include <exception>
+
+void checkError(int test);
+
+struct GitException : public std::exception {
+public:
+	GitException(const git_error *error, int code) : error(error), kode(code) {}
+
+	int code() const throw () {
+		return kode;
+	}
+
+	int klass() const throw () {
+		return error->klass;
+	}
+
+	const char *what() const throw () {
+		return error->message;
+	}
+
+private:
+	const git_error *error;
+	int kode;
+};
