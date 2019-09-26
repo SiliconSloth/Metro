@@ -10,7 +10,26 @@ int main() {
 
 	try {
 		Repository repo = Repository::init("path", false);
-		repo.reset_to_commit();
+		git_signature author;
+		try {
+			author = repo.default_signature();
+		} catch (GitException &e) {
+			// Failed to get default signature - must not be set
+			printf("You don't have a username and email set for commits\n");
+			printf("Please enter what username and email to use:\n");
+			printf("Username: ");
+			std::string username;
+			scanf("%s", &username);
+
+			printf("\nEmail: ");
+			std::string email;
+			scanf("%s", &email);
+			printf("\n");
+
+			//SetCreds(repo, username, email);
+
+			author = repo.default_signature();
+		}
 	} catch (GitException &e) {
 		printf("%s, %d, %d", e.what(), e.klass(), e.code());
 	}

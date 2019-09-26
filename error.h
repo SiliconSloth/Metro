@@ -2,7 +2,7 @@
 #include "git2.h"
 #include <exception>
 
-void checkError(int test);
+void check_error(int test);
 
 struct GitException : public std::exception {
 public:

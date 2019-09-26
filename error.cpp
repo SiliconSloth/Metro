@@ -3,7 +3,7 @@
 #include <exception>
 #include <memory>
 
-void checkError(int test) {
+void check_error(int test) {
 	if (test >= 0) return;
 
 	const git_error *e = git_error_last();
