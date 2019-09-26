@@ -10,6 +10,7 @@ int main() {
 
 	try {
 		Repository repo = Repository::init("path", false);
+		repo.reset_to_commit();
 	} catch (GitException &e) {
 		printf("%s, %d, %d", e.what(), e.klass(), e.code());
 	}
