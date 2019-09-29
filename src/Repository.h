@@ -1,8 +1,4 @@
 #pragma once
-#include <string>
-#include <vector>
-#include "git2.h"
-#include "Index.h"
 
 class Repository {
 private:

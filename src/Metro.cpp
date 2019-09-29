@@ -1,8 +1,4 @@
-#include "pch.h"
-#include <iostream>
-#include "git2.h"
-#include "Repository.h"
-#include "error.h"
+#include "pch.cpp"
 
 int main() {
 	// Required
@@ -19,11 +15,11 @@ int main() {
 			printf("Please enter what username and email to use:\n");
 			printf("Username: ");
 			std::string username;
-			scanf("%s", &username);
+			//scanf("%s", &username);
 
 			printf("\nEmail: ");
 			std::string email;
-			scanf("%s", &email);
+			//scanf("%s", &email);
 			printf("\n");
 
 			//SetCreds(repo, username, email);

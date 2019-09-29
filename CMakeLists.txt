@@ -1,0 +1,6 @@
+cmake_minimum_required (VERSION 2.6)
+project (Metro)
+include_directories("D:\\Programs\\libgit2\\include")
+add_executable(Metro src/Metro.cpp)
+find_library(git2 NAMES git2.dll git2.lib PATHS D:\\Programs\\libgit2\\cmake-build-debug)
+target_link_libraries(Metro ${git2})
