@@ -1,8 +1,7 @@
 #include "pch.h"
+#include "pch.cpp"
 #include <iostream>
 #include "git2.h"
-#include "Repository.h"
-#include "error.h"
 
 int main() {
 	// Required

@@ -1,0 +1,7 @@
+cmake_minimum_required (VERSION 2.6)
+project (Metro)
+include_directories("C:/Users/Michael/Documents/CLionProjects/libgit2-0.28.3/include")
+add_executable(metro Metro.cpp)
+add_library(git2 STATIC IMPORTED)
+set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "C:/Users/Michael/Documents/CLionProjects/libgit2-0.28.3/cmake-build-debug/git2.lib")
+target_link_libraries(metro git2 winhttp Rpcrt4 crypt32)

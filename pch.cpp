@@ -2,4 +2,8 @@
 
 #include "pch.h"
 
+#include "error.cpp"
+#include "Repository.cpp"
+#include "Index.cpp"
+
 // In general, ignore this file, but keep it around if you are using pre-compiled headers.
