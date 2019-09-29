@@ -37,18 +37,20 @@ Index & Repository::index() {
 	return out;
 }
 
-git_tree & Repository::lookup_tree(const git_oid & oid) {
+git_tree * Repository::lookup_tree(const git_oid & oid) {
 	git_tree *tree;
 	int err = git_tree_lookup(&tree, repo, &oid);
 	check_error(err);
-	return *tree;
+	return tree;
 }
-void Repository::create_commit(git_oid & id, std::string update_ref, const git_signature & author, const git_signature & committer, std::string message_encoding, std::string message, const git_tree & tree, std::vector<git_commit*> parents) {
+git_oid Repository::create_commit(std::string update_ref, const git_signature & author, const git_signature & committer, std::string message_encoding, std::string message, const git_tree * tree, std::vector<git_commit*> parents) {
 	git_commit *commit;
 	const git_commit** parents_array = new const git_commit*[parents.size()];
 	std::copy(parents.begin(), parents.end(), parents_array);
-	int err = git_commit_create(&id, repo, update_ref.c_str(), &author, &committer, message_encoding.c_str(), message.c_str(), &tree, 0, parents_array);
+    git_oid id;
+	int err = git_commit_create(&id, repo, update_ref.c_str(), &author, &committer, message_encoding.c_str(), message.c_str(), tree, 0, parents_array);
 	check_error(err);
+	return id;
 }
 
 git_object & Repository::revparse_single(std::string spec) {
