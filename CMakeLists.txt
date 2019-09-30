@@ -8,7 +8,7 @@ ENDIF()
 
 include_directories("${libgitDir}/include")
 include_directories("include")
-add_executable(metro src/metro.cpp)
+add_executable(metro src/main.cpp)
 add_library(git2 STATIC IMPORTED)
 
 IF (WIN32)
