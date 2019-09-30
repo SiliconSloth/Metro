@@ -7,7 +7,8 @@ IF (NOT DEFINED libgitDir)
 ENDIF()
 
 include_directories("${libgitDir}/include")
-add_executable(metro src/Metro.cpp)
+include_directories("include")
+add_executable(metro src/metro.cpp)
 add_library(git2 STATIC IMPORTED)
 
 IF (WIN32)

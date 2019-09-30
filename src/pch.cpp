@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "error.cpp"
+#include "gitwrapper/error.cpp"
 
-#include "Index.cpp"
-#include "Repository.cpp"
+#include "gitwrapper/index.cpp"
+#include "gitwrapper/repository.cpp"
