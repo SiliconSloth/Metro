@@ -1,6 +1,4 @@
 #include "pch.h"
-#include "gitwrapper/repository.h"
-#include "error.h"
 
 Repository::~Repository() {
 	git_repository_free(repo);
