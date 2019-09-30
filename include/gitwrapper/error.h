@@ -1,6 +1,5 @@
 #pragma once
-#include "git2.h"
-#include <exception>
+#include "pch.h"
 
 void check_error(int test);
 

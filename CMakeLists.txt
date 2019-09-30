@@ -10,7 +10,7 @@ include_directories("${libgitDir}/include")
 include_directories("include")
 add_executable(metro src/main.cpp)
 add_executable(test src/test.cpp)
-add_library(git2 STATIC IMPORTED)
+add_library(git2 STATIC IMPORTED include/gitwrapper/types.h src/gitwrapper/conflict_iterator.cpp include/gitwrapper/conflict_iterator.h)
 
 IF (WIN32)
     set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitDir}/cmake-build-debug/git2.lib")

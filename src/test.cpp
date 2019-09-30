@@ -1,5 +1,7 @@
 #include "pch.cpp"
 
+using namespace git;
+
 git_strarray pathSpecs(Repository & repo);
 
 int main() {
