@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "gitwrapper/error.h"
+#include "error.h"
 #include <exception>
 #include <memory>
 

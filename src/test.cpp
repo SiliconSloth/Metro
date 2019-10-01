@@ -1,4 +1,4 @@
-#include "pch.cpp"
+#include "pch.h"
 
 git_strarray pathSpecs(Repository & repo);
 
