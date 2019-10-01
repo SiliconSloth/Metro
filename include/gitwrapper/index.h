@@ -12,6 +12,7 @@ namespace git {
         void add_all(StrArray pathspec, unsigned int flags, MatchedPathCallback callback);
         OID write_tree();
         void write();
+        ConflictIterator conflict_iterator();
 
     private:
         git_index *index;

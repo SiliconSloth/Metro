@@ -20,4 +20,10 @@ namespace git {
         git_index_write(index);
     }
 
+    ConflictIterator Index::conflict_iterator() {
+        git_index_conflict_iterator *it;
+        int err = git_index_conflict_iterator_new(&it, index);
+        return ConflictIterator(it);
+    }
+
 }
