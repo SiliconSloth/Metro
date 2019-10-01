@@ -3,9 +3,8 @@
 # WORK IN PROGRESS
 
 ## Development Setup
-Metro uses Go and requires `git2go` and `libgit2` to be installed.
-git2go must be built and added to the `GOPATH`.
-The project can be built easily using `go build`, but GoLand is recommended.
+Metro is written in C++ and uses CMake. It expects the `LIBGIT_PATH` environment variable to point to
+a libgit2 source root.  Libgit2 should be built beforehand. 
 
 ## Status and Future
 Currently, some basic features are working, but not enough to be able to use in practice.
