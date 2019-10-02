@@ -3,13 +3,12 @@
 namespace git {
     class Repository {
     private:
-        Repository(git_repository *repo) : repo(repo) {}
+        explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
 
-        git_repository *repo;
+        shared_ptr<git_repository> repo;
 
     public:
         Repository() = delete;
-        ~Repository();
 
         Repository operator=(Repository r) = delete;
 
