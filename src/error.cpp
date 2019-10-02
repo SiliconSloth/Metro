@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "error.h"
-#include <exception>
-#include <memory>
 
 void check_error(int test) {
 	if (test >= 0) return;

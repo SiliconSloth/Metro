@@ -17,10 +17,8 @@ using namespace std;
 #include "commands.h"
 #include "helper.h"
 #include "error.h"
+
 #include "gitwrapper/types.h"
-
-#include "gitwrapper/error.h"
-
 #include "gitwrapper/index.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/conflict_iterator.h"
