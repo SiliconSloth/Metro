@@ -7,4 +7,6 @@
 #include "gitwrapper/repository.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
 
+#include "metro/metro.cpp"
+
 #include "commands/create.cpp"

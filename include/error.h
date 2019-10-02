@@ -62,3 +62,15 @@ struct UnexpectedValueException : public CommandArgumentException {
             CommandArgumentException(arg, "Option doesn't take a value: " + arg)
     {}
 };
+
+struct UnexpectedPositionalException : public CommandArgumentException {
+    explicit UnexpectedPositionalException(const string arg):
+            CommandArgumentException(arg, "Unexpected argument: " + arg)
+    {}
+};
+
+struct RepositoryExistsException : public MetroException {
+    explicit RepositoryExistsException():
+        MetroException("There is already a repository in this directory.")
+    {}
+};

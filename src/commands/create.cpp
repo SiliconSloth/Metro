@@ -6,7 +6,16 @@ Command create {
 
         // execute
         [](const Arguments &args) {
-            std::cout << "Let's create " << args.positionals[0] << "\n";
+            string directory = ".";
+            if (!args.positionals.empty()) {
+                directory = args.positionals[0];
+            }
+            if (args.positionals.size() > 1) {
+                throw UnexpectedPositionalException(args.positionals[1]);
+            }
+
+            metro::create(directory);
+            cout << "Created Metro repo.\n";
         },
 
         // printHelp

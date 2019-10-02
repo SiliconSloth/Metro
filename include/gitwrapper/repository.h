@@ -17,15 +17,15 @@ namespace git {
         static Repository open(string path);
         static bool exists(string path);
 
-        Signature &default_signature();
-        Index &index();
-        Tree lookup_tree(const OID &oid);
+        Signature &default_signature() const;
+        Index &index() const;
+        Tree lookup_tree(const OID &oid) const;
         OID create_commit(string update_ref, const Signature &author, const Signature &committer,
                               string message_encoding, string message, const Tree tree,
-                              vector<Commit *> parents);
-        Object &revparse_single(string spec);
-        void reset_to_commit(const Commit &, ResetType, CheckoutOptions);
-        StatusList &status_list_new(StatusOptions);
+                              vector<Commit> parents) const;
+        Object &revparse_single(string spec) const;
+        void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
+        StatusList &status_list_new(StatusOptions) const;
     };
 
 }
