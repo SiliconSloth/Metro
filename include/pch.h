@@ -8,9 +8,11 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <functional>
 
 #include "git2.h"
 
+#include "commands.h"
 #include "helper.h"
 #include "error.h"
 

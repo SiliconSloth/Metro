@@ -13,9 +13,9 @@ struct MetroException : public std::runtime_error {
     {};
 };
 
-struct GitException : public MetroException {
+struct GitException : public std::runtime_error {
 public:
-	GitException(const git_error *error, int code) : error(error), kode(code), MetroException(error->message) {}
+	GitException(const git_error *error, int code) : error(error), kode(code), std::runtime_error(error->message) {}
 
 	int code() const throw () {
 		return kode;

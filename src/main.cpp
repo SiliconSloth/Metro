@@ -3,12 +3,6 @@
 
 using namespace std;
 
-struct Arguments {
-    vector<string> positionals;
-    map<string, string> options;
-    bool hasHelpFlag = false;
-};
-
 // Retrieve the Option corresponding to a flag passed by the user.
 // If the flag starts with "--" the full option name is expected,
 // if it starts with only "-" the contraction is expected.
@@ -117,18 +111,58 @@ Arguments parse_args(int argc, char *argv[]) {
     return args;
 }
 
+// Prints a generic help command with all commands listed
+void printHelp() {
+    cout << "Usage: metro <command> <args> [options]\n";
+    for (const Command *cmd : allCommands) {
+        cout << cmd->name << " - " << cmd->description << "\n";
+    }
+    cout << "Use --help for help.\n";
+}
+
 int main(int argc, char *argv[]) {
     try {
         Arguments args = parse_args(argc, argv);
-        for (const auto & positional : args.positionals) {
-            cout << positional << "\n";
+        // If there is no command specified, just print help and quit.
+        if (args.positionals.empty()) {
+            printHelp();
+            return 0;
         }
-        for( auto const& [key, val] : args.options )
-        {
-            std::cout << key << ':' << val << std::endl;
+
+        string argCmd = args.positionals[0];
+        // Remove the sub-command, so we only have the arguments to the sub-command.
+        args.positionals.erase(args.positionals.begin());
+        for (const Command *cmd : allCommands) {
+            if (cmd->name == argCmd) {
+                if (args.hasHelpFlag) {
+                    cmd->printHelp(args);
+                    return 0;
+                } else {
+                    try {
+                        cmd->execute(args);
+                        return 0;
+                    } catch (MetroException& e) {
+                        cout << e.what() << "\n";
+                        cmd->printHelp(args);
+                        return -1;
+                    } catch (GitException& e) {
+                        cout << "Git Error: " << e.what() << "\n";
+                        cmd->printHelp(args);
+                        return -1;
+                    } catch (exception& e) {
+                        cout << "Internal Error: " << e.what() << "\n";
+                        cmd->printHelp(args);
+                        return -1;
+                    }
+                }
+            }
         }
-        cout << args.hasHelpFlag;
-    } catch (const std::exception& e) {
-        cout << e.what();
+        cout << "Invalid command: " << argCmd << "\n";
+        printHelp();
+        return -1;
+    } catch (const exception& e) {
+        cout << e.what() << "\n";
+        printHelp();
+        return -1;
     }
 }
