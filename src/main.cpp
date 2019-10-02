@@ -121,11 +121,17 @@ void printHelp() {
 }
 
 int main(int argc, char *argv[]) {
+    // Required
+    git_libgit2_init();
+
     try {
         Arguments args = parse_args(argc, argv);
         // If there is no command specified, just print help and quit.
         if (args.positionals.empty()) {
             printHelp();
+
+            // Required
+            git_libgit2_shutdown();
             return 0;
         }
 
@@ -136,22 +142,37 @@ int main(int argc, char *argv[]) {
             if (cmd->name == argCmd) {
                 if (args.hasHelpFlag) {
                     cmd->printHelp(args);
+
+                    // Required
+                    git_libgit2_shutdown();
                     return 0;
                 } else {
                     try {
                         cmd->execute(args);
+
+                        // Required
+                        git_libgit2_shutdown();
                         return 0;
                     } catch (MetroException& e) {
                         cout << e.what() << "\n";
                         cmd->printHelp(args);
+
+                        // Required
+                        git_libgit2_shutdown();
                         return -1;
                     } catch (GitException& e) {
                         cout << "Git Error: " << e.what() << "\n";
                         cmd->printHelp(args);
+
+                        // Required
+                        git_libgit2_shutdown();
                         return -1;
                     } catch (exception& e) {
                         cout << "Internal Error: " << e.what() << "\n";
                         cmd->printHelp(args);
+
+                        // Required
+                        git_libgit2_shutdown();
                         return -1;
                     }
                 }
@@ -159,10 +180,16 @@ int main(int argc, char *argv[]) {
         }
         cout << "Invalid command: " << argCmd << "\n";
         printHelp();
+
+        // Required
+        git_libgit2_shutdown();
         return -1;
     } catch (const exception& e) {
         cout << e.what() << "\n";
         printHelp();
+
+        // Required
+        git_libgit2_shutdown();
         return -1;
     }
 }
