@@ -22,6 +22,13 @@ namespace git {
         return Repository(gitRepo);
     }
 
+    bool Repository::exists(string path) {
+        git_repository *gitRepo = NULL;
+        int err = git_repository_open(&gitRepo, path.c_str());
+
+        return err >= 0;
+    }
+
     Signature &Repository::default_signature() {
         git_signature *sig;
         int err = git_signature_default(&sig, repo);

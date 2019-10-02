@@ -15,6 +15,7 @@ namespace git {
 
         static Repository init(string path, bool isBare);
         static Repository open(string path);
+        static bool exists(string path);
 
         Signature &default_signature();
         Index &index();
