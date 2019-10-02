@@ -1,18 +1,21 @@
 #pragma once
 
-#include "error.h"
-#include "git2.h"
+#include "pch.h"
 
-class Index {
-public:
-	Index(git_index * index) : index(index) {};
-	~Index();
+namespace git {
 
-	void add_all(const git_strarray pathspec, unsigned int flags, git_index_matched_path_cb callback);
-	git_oid write_tree();
-	void write();
+    class Index {
+    public:
+        explicit Index(git_index *index) : index(index) {};
+        ~Index();
 
-private:
-	git_index * index;
-};
+        void add_all(StrArray pathspec, unsigned int flags, MatchedPathCallback callback);
+        OID write_tree();
+        void write();
+        ConflictIterator conflict_iterator();
 
+    private:
+        git_index *index;
+    };
+
+}
