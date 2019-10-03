@@ -2,7 +2,8 @@
 
 Command *allCommands[] = {
         &create,
-        &commit
+        &commit,
+        &patch
 };
 
 const Option ALL_OPTIONS[] = {
