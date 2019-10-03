@@ -53,7 +53,7 @@ namespace metro {
 
     void assertMerging(const Repository& repo) {
         if (mergeOngoing(repo)) {
-
+            throw CurrentlyMergingException();
         }
     }
 }
