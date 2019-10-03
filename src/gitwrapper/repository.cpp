@@ -1,7 +1,7 @@
 #include "pch.h"
 
 namespace git {
-    Repository Repository::init(string path, bool isBare) {
+    Repository Repository::init(const string& path, bool isBare) {
         git_repository *gitRepo = nullptr;
         int err = git_repository_init(&gitRepo, path.c_str(), isBare);
         check_error(err);
@@ -9,7 +9,7 @@ namespace git {
         return Repository(gitRepo);
     }
 
-    Repository Repository::open(string path) {
+    Repository Repository::open(const string& path) {
         git_repository *gitRepo = nullptr;
         int err = git_repository_open(&gitRepo, path.c_str());
         check_error(err);
@@ -17,7 +17,7 @@ namespace git {
         return Repository(gitRepo);
     }
 
-    bool Repository::exists(string path) {
+    bool Repository::exists(const string& path) {
         int err = git_repository_open_ext(nullptr, path.c_str(), GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
         return err >= 0;
     }
@@ -44,20 +44,20 @@ namespace git {
         return tree;
     }
 
-    OID Repository::create_commit(string update_ref, const Signature &author, const Signature &committer,
-                              string message_encoding, string message, const Tree tree,
+    OID Repository::create_commit(const string& update_ref, const Signature &author, const Signature &committer,
+                              const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const {
-        git_commit *commit;
-        const git_commit **parents_array = new const git_commit *[parents.size()];
+        auto parents_array = new const git_commit *[parents.size()];
         copy(parents.begin(), parents.end(), parents_array);
         git_oid id;
         int err = git_commit_create(&id, repo.get(), update_ref.c_str(), &author, &committer, message_encoding.c_str(),
-                                    message.c_str(), tree, 0, parents_array);
+                                    message.c_str(), tree, parents.size(), parents_array);
+        delete[] parents_array;
         check_error(err);
         return id;
     }
 
-    Object &Repository::revparse_single(string spec) const {
+    Object &Repository::revparse_single(const string& spec) const {
         git_object *obj;
         int err = git_revparse_single(&obj, repo.get(), spec.c_str());
         check_error(err);

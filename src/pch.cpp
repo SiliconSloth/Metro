@@ -10,3 +10,4 @@
 #include "metro/metro.cpp"
 
 #include "commands/create.cpp"
+#include "commands/commit.cpp"

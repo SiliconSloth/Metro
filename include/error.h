@@ -45,14 +45,14 @@ struct UnknownOptionException : public CommandArgumentException {
     {}
 };
 
-struct NoValueException : public CommandArgumentException {
-    explicit NoValueException(const string arg):
+struct MissingValueException : public CommandArgumentException {
+    explicit MissingValueException(const string arg):
             CommandArgumentException(arg, "Option needs a value: " + arg)
     {}
 };
 
-struct NoFlagException : public CommandArgumentException {
-    explicit NoFlagException(const string arg):
+struct MissingFlagException : public CommandArgumentException {
+    explicit MissingFlagException(const string arg):
             CommandArgumentException(arg, "Value without flag: " + arg)
     {}
 };
@@ -69,8 +69,20 @@ struct UnexpectedPositionalException : public CommandArgumentException {
     {}
 };
 
+struct MissingPositionalException : public CommandArgumentException {
+    explicit MissingPositionalException(const string arg):
+            CommandArgumentException(arg, "Missing argument: " + arg)
+    {}
+};
+
 struct RepositoryExistsException : public MetroException {
     explicit RepositoryExistsException():
         MetroException("There is already a repository in this directory.")
+    {}
+};
+
+struct CurrentlyMergingException : public MetroException {
+    explicit CurrentlyMergingException():
+            MetroException("Branch has conflicts, please finish resolving them.\nRun metro resolve when you are done.")
     {}
 };
