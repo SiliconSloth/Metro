@@ -17,7 +17,7 @@ Command commit {
             Repository repo = git::Repository::open(".");
             metro::assertMerging(repo);
 
-            metro::commit(repo, message, {"HEAD^{commit}"});
+            metro::commit(repo, message, {"HEAD"});
             cout << "Saved commit to current branch.\n";
         },
 
