@@ -40,4 +40,20 @@ namespace metro {
         commit(repo, "Create repository", {});
         return repo;
     }
+
+    // Returns true if the repo is currently in merging state.
+    bool mergeOngoing(const Repository& repo) {
+        try {
+            repo.revparse_single("MERGE_HEAD");
+        } catch (exception& e) {
+            return false;
+        }
+        return true;
+    }
+
+    void assertMerging(const Repository& repo) {
+        if (mergeOngoing(repo)) {
+
+        }
+    }
 }

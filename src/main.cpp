@@ -61,7 +61,7 @@ Arguments parse_args(int argc, char *argv[]) {
             acceptingPositionals = false;
             // If the last option still needs a value, the argument directly after it can't also be an option name.
             if (optionOpen) {
-                throw NoValueException(string(argv[i-1]));
+                throw MissingValueException(string(argv[i - 1]));
             }
 
             // If this option had a value specified with --key=value, extract it.
@@ -99,14 +99,14 @@ Arguments parse_args(int argc, char *argv[]) {
             } else {
                 // If a positional argument is found after the options have started,
                 // we assume it is a value missing an option key.
-                throw NoFlagException(arg);
+                throw MissingFlagException(arg);
             }
         }
     }
 
     // Make sure the last option had a value.
     if (optionOpen)
-        throw NoValueException(string(argv[argc-1]));
+        throw MissingValueException(string(argv[argc - 1]));
 
     return args;
 }

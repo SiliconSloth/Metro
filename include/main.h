@@ -1,7 +1,8 @@
 #include "pch.h"
 
 Command *allCommands[] = {
-        &create
+        &create,
+        &commit
 };
 
 const Option ALL_OPTIONS[] = {
