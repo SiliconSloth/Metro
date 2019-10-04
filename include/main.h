@@ -3,6 +3,7 @@
 Command *allCommands[] = {
         &create,
         &commit,
+        &patch,
         &branch
 };
 

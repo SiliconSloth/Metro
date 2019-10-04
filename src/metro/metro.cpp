@@ -4,11 +4,27 @@
 using namespace git;
 
 namespace metro {
+    // Returns true if the repo is currently in merging state.
+    bool merge_ongoing(const Repository& repo) {
+        try {
+            repo.revparse_single("MERGE_HEAD");
+        } catch (exception& e) {
+            return false;
+        }
+        return true;
+    }
+
+    void assert_merging(const Repository& repo) {
+        if (merge_ongoing(repo)) {
+            throw CurrentlyMergingException();
+        }
+    }
+
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
-    // parentRevs: The revisions corresponding to the commit's parents
-    void commit(const Repository& repo, const string& message, const initializer_list<string> parentRevs) {
+    // parentCommits: The commit's parents
+    void commit(const Repository& repo, const string& message, const vector<Commit> parentCommits) {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
@@ -20,14 +36,22 @@ namespace metro {
         // If we don't do this removals of every file are left staged.
         index.write();
 
+        // Commit the files to the head of the current branch.
+        repo.create_commit("HEAD", author, author, "UTF-8", message, tree, parentCommits);
+    }
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // repo: The repo
+    // message: The commit message
+    // parentRevs: The revisions corresponding to the commit's parents
+    void commit(const Repository& repo, const string& message, const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
         for (const string& parentRev : parentRevs) {
-            parentCommits.push_back(reinterpret_cast<Commit>(repo.revparse_single(parentRev)));
+            parentCommits.push_back(static_cast<Commit>(repo.revparse_single(parentRev)));
         }
 
-        // Commit the files to the head of the current branch.
-        repo.create_commit("HEAD", author, author, "UTF-8", message, tree, parentCommits);
+        commit(repo, message, parentCommits);
     }
 
     // Initialize an empty git repository in the specified directory,
@@ -42,6 +66,22 @@ namespace metro {
         return repo;
     }
 
+    void delete_last_commit(const Repository& repo, bool reset) {
+        Commit parent = static_cast<Commit>(repo.revparse_single("HEAD")).parent(0);
+
+        git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+        checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+        git_reset_t resetType = reset? GIT_RESET_HARD : GIT_RESET_SOFT;
+
+        repo.reset_to_commit(parent, resetType, checkoutOpts);
+    }
+
+    void patch(const Repository& repo, const string& message) {
+        assert_merging(repo);
+        vector<Commit> parents = static_cast<Commit>(repo.revparse_single("HEAD")).parents();
+        delete_last_commit(repo, false);
+        commit(repo, message, parents);
+      
     // Returns true if the repo is currently in merging state.
     bool merge_ongoing(const Repository& repo) {
         try {

@@ -48,7 +48,10 @@ namespace git {
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
-        copy(parents.begin(), parents.end(), parents_array);
+        for (unsigned int i = 0; i < parents.size(); i++) {
+            parents_array[i] = parents[i].ptr().get();
+        }
+
         git_oid id;
         int err = git_commit_create(&id, repo.get(), update_ref.c_str(), &author, &committer, message_encoding.c_str(),
                                     message.c_str(), tree, parents.size(), parents_array);
@@ -57,15 +60,15 @@ namespace git {
         return id;
     }
 
-    Object &Repository::revparse_single(const string& spec) const {
+    Object Repository::revparse_single(const string& spec) const {
         git_object *obj;
         int err = git_revparse_single(&obj, repo.get(), spec.c_str());
         check_error(err);
-        return obj;
+        return Object(obj);
     }
 
     void Repository::reset_to_commit(const Commit &commit, ResetType type, const CheckoutOptions ops) const {
-        int err = git_reset(repo.get(), (git_object *) &commit, type, &ops);
+        int err = git_reset(repo.get(), (git_object*) commit.ptr().get(), type, &ops);
         check_error(err);
     }
 
