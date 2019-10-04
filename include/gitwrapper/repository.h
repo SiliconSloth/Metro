@@ -25,6 +25,10 @@ namespace git {
         [[nodiscard]] Object &revparse_single(const string& spec) const;
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
         [[nodiscard]]StatusList &status_list_new(StatusOptions) const;
+
+        void create_branch(string branch_name, Commit &target, bool force);
+
+        void branch_lookup(string branch_name, bool isLocal);
     };
 
 }

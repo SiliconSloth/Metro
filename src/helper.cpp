@@ -3,7 +3,19 @@
 using namespace std;
 
 bool has_prefix(string const& str, string const& pre) {
-    return str.compare(0, pre.size(), pre) == 0;
+    if (pre.size() <= str.size()) {
+        return str.compare(0, pre.size(), pre) == 0;
+    } else {
+        return false;
+    }
+}
+
+bool has_suffix(string const& str, string const& suff) {
+    if (suff.size() <= str.size()) {
+        return str.compare(str.size() - suff.size(), suff.size(), suff) == 0;
+    } else {
+        return false;
+    }
 }
 
 // Split the given string around the fist occurrence of the given character.
