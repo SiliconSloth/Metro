@@ -5,6 +5,7 @@
 
 #include "gitwrapper/index.cpp"
 #include "gitwrapper/repository.cpp"
+#include "gitwrapper/commit.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
 
 #include "metro/metro.cpp"

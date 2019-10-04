@@ -7,24 +7,21 @@ Command patch {
         // execute
         [](const Arguments &args) {
             Repository repo = git::Repository::open(".");
+            metro::assert_merging(repo);
 
             // Uses existing message as default
-            Commit commit = reinterpret_cast<Commit>(repo.revparse_single("HEAD"));
-            string message = commit.
+            Commit commit = static_cast<Commit>(repo.revparse_single("HEAD"));
+            string message = commit.message();
 
-            if (args.positionals.empty()) {
-                throw MissingPositionalException("message");
+            if (args.positionals.size() == 1) {
+                message = args.positionals[0];
             }
             if (args.positionals.size() > 1) {
                 throw UnexpectedPositionalException(args.positionals[1]);
             }
-            string message = args.positionals[0];
 
-            Repository repo = git::Repository::open(".");
-            metro::assertMerging(repo);
-
-            metro::commit(repo, message, {"HEAD"});
-            cout << "Saved commit to current branch.\n";
+            metro::patch(repo, message);
+            cout << "Patched commit.\n";
         },
 
         // printHelp
