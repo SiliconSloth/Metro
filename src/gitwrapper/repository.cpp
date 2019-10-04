@@ -79,4 +79,15 @@ namespace git {
         return *status;
     }
 
+    void Repository::create_branch(string branch_name, Commit &target, bool force) {
+        git_reference *ref;
+        int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target, force);
+        check_error(err);
+    }
+
+    void Repository::branch_lookup(string branch_name, bool isLocal) {
+        git_reference *ref;
+        int err = git_branch_lookup(&ref, repo.get(), branch_name.c_str(), GIT_BRANCH_LOCAL);
+        check_error(err);
+    }
 }

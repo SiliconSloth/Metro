@@ -13,4 +13,4 @@
 #include "commands/create.cpp"
 #include "commands/commit.cpp"
 #include "commands/patch.cpp"
-
+#include "commands/branch.cpp"

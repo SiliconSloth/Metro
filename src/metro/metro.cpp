@@ -1,4 +1,5 @@
 #include "pch.h"
+#define WIPString "#WIP"
 
 using namespace git;
 
@@ -80,5 +81,47 @@ namespace metro {
         vector<Commit> parents = static_cast<Commit>(repo.revparse_single("HEAD")).parents();
         delete_last_commit(repo, false);
         commit(repo, message, parents);
+      
+    // Returns true if the repo is currently in merging state.
+    bool merge_ongoing(const Repository& repo) {
+        try {
+            repo.revparse_single("MERGE_HEAD");
+        } catch (exception& e) {
+            return false;
+        }
+        return true;
+    }
+
+    void assert_merging(const Repository& repo) {
+        if (merge_ongoing(repo)) {
+            throw CurrentlyMergingException();
+        }
+    }
+
+    // Gets the commit corresponding to the given revision
+    // revision - Revision of the commit to find
+    // repo - Repo to find the commit in
+    //
+    // Returns the commit
+    Commit get_commit(string revision, Repository repo) {
+        Object object = repo.revparse_single(revision);
+        Commit commit = (Commit) object;
+        return commit;
+    }
+
+    // Create a new branch from the current head with the specified name.
+    // Returns the branch
+    void create_branch(string name, Repository &repo) {
+        Commit commit = get_commit("HEAD", repo);
+        repo.create_branch(name, commit, false);
+    }
+
+    bool branch_exists(Repository &repo, string name) {
+        try {
+            repo.branch_lookup(name, true);
+            return true;
+        } catch (GitException &e) {
+            return false;
+        }
     }
 }
