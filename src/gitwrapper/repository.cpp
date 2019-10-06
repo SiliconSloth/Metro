@@ -81,7 +81,7 @@ namespace git {
 
     void Repository::create_branch(string branch_name, Commit &target, bool force) {
         git_reference *ref;
-        int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target, force);
+        int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
         check_error(err);
     }
 

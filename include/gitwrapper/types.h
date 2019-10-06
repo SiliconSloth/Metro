@@ -10,5 +10,6 @@ namespace git {
     typedef git_status_options StatusOptions;
     typedef git_strarray StrArray;
     typedef git_index_matched_path_cb MatchedPathCallback;
+    typedef git_remote_callbacks Callbacks;
     typedef class ConflictIterator ConflictIterator;
 }

@@ -81,21 +81,6 @@ namespace metro {
         vector<Commit> parents = static_cast<Commit>(repo.revparse_single("HEAD")).parents();
         delete_last_commit(repo, false);
         commit(repo, message, parents);
-      
-    // Returns true if the repo is currently in merging state.
-    bool merge_ongoing(const Repository& repo) {
-        try {
-            repo.revparse_single("MERGE_HEAD");
-        } catch (exception& e) {
-            return false;
-        }
-        return true;
-    }
-
-    void assert_merging(const Repository& repo) {
-        if (merge_ongoing(repo)) {
-            throw CurrentlyMergingException();
-        }
     }
 
     // Gets the commit corresponding to the given revision
@@ -123,5 +108,44 @@ namespace metro {
         } catch (GitException &e) {
             return false;
         }
+    }
+
+    int transfer_progress_callback(const git_transfer_progress *stats, void *) {
+        int progress = 100 * (stats->received_objects + stats->indexed_objects) / (stats->total_objects);
+        printf("\rProgress: %d%%", progress);
+        if (progress == 100) {
+            cout << endl;
+        }
+        return GIT_OK;
+    }
+
+    int credentials_callback(git_cred **out, const char *url, const char *username_from_url, unsigned int allowed_types, void *) {
+        string username;
+        string password;
+        switch (allowed_types) {
+            case GIT_CREDTYPE_DEFAULT:
+                git_cred_default_new(out);
+                break;
+            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
+                cout << "Username: ";
+                cin >> username;
+
+                cout << "Password: ";
+                cin >> password;
+
+                git_cred_userpass_plaintext_new(out, username.c_str(), password.c_str());
+                break;
+            default:
+                cout << "Metro currently doesn't support SSH. Please use HTTPS.";
+                return GIT_ERROR;
+        }
+        return GIT_OK;
+    }
+
+    Callbacks create_callbacks() {
+        Callbacks callbacks;
+        callbacks.transfer_progress = transfer_progress_callback;
+        callbacks.credentials = credentials_callback;
+        return callbacks;
     }
 }
