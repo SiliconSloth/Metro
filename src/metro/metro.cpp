@@ -23,7 +23,7 @@ namespace metro {
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    void commit(const Repository& repo, const string& message, const vector<Commit> parentCommits) {
+    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
@@ -66,7 +66,11 @@ namespace metro {
     }
 
     void delete_last_commit(const Repository& repo, bool reset) {
-        Commit parent = static_cast<Commit>(repo.revparse_single("HEAD")).parent(0);
+        Commit lastCommit = static_cast<Commit>(repo.revparse_single("HEAD"));
+        if (lastCommit.parentcount() == 0) {
+            throw NoParentException();
+        }
+        Commit parent = lastCommit.parent(0);
 
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
@@ -80,5 +84,20 @@ namespace metro {
         vector<Commit> parents = static_cast<Commit>(repo.revparse_single("HEAD")).parents();
         delete_last_commit(repo, false);
         commit(repo, message, parents);
+    }
+
+    string current_branch_name(const Repository& repo) {
+        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+        for (Branch branch; iter.next(&branch);) {
+            if (branch.is_head()) {
+                return branch.name();
+            }
+        }
+        throw BranchNotFoundException();
+    }
+
+    void delete_branch(const Repository& repo, const string& name) {
+        Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
+        branch.delete_branch();
     }
 }

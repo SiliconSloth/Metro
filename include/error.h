@@ -86,3 +86,21 @@ struct CurrentlyMergingException : public MetroException {
             MetroException("Branch has conflicts, please finish resolving them.\nRun metro resolve when you are done.")
     {}
 };
+
+struct BranchNotFoundException : public MetroException {
+    explicit BranchNotFoundException():
+            MetroException("Branch not found")
+    {}
+};
+
+struct CurrentBranchException : public MetroException {
+    explicit CurrentBranchException():
+            MetroException("Can't delete current branch.")
+    {}
+};
+
+struct NoParentException : public MetroException {
+    explicit NoParentException():
+            MetroException("Can't delete initial commit.")
+    {}
+};
