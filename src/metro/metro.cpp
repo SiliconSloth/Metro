@@ -128,4 +128,8 @@ namespace metro {
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
     }
+
+    void save_wip(const Repository& repo) {
+
+    }
 }

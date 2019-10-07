@@ -27,7 +27,6 @@ namespace git {
                               vector<Commit> parents) const;
         Object revparse_single(const string& spec) const;
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
-        [[nodiscard]]StatusList &status_list_new(StatusOptions) const;
 
         void create_branch(const string& branch_name, Commit &target, bool force);
 

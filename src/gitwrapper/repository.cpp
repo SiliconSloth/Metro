@@ -79,13 +79,6 @@ namespace git {
         check_error(err);
     }
 
-    StatusList &Repository::status_list_new(const git_status_options ops) const {
-        git_status_list *status;
-        int err = git_status_list_new(&status, repo.get(), &ops);
-        check_error(err);
-        return *status;
-    }
-
     void Repository::create_branch(const string& branch_name, Commit &target, bool force) {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
