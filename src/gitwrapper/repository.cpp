@@ -44,11 +44,18 @@ namespace git {
         return tree;
     }
 
+    Branch Repository::lookup_branch(const string &name, git_branch_t branchType) const {
+        git_reference *branch;
+        int err = git_branch_lookup(&branch, repo.get(), name.c_str(), branchType);
+        check_error(err);
+        return Branch(branch);
+    }
+
     OID Repository::create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
-        for (unsigned int i = 0; i < parents.size(); i++) {
+        for (unsigned long long i = 0; i < parents.size(); i++) {
             parents_array[i] = parents[i].ptr().get();
         }
 
@@ -89,5 +96,12 @@ namespace git {
         git_reference *ref;
         int err = git_branch_lookup(&ref, repo.get(), branch_name.c_str(), GIT_BRANCH_LOCAL);
         check_error(err);
+    }
+
+    BranchIterator Repository::new_branch_iterator(const git_branch_t& flags) const {
+        git_branch_iterator *iter;
+        int err = git_branch_iterator_new(&iter, repo.get(), flags);
+        check_error(err);
+        return BranchIterator(iter);
     }
 }
