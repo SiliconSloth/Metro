@@ -9,18 +9,21 @@ namespace git {
     };
 
     class ConflictIterator {
-    public:
-        explicit ConflictIterator(git_index_conflict_iterator *iterator) : iterator(iterator) {};
-        ~ConflictIterator();
-
-        bool next(ConflictIndex &out);
-        bool has_next();
-        void for_each(const function <void (ConflictIndex)>& f);
-
     private:
-        git_index_conflict_iterator *iterator;
-        ConflictIndex temp;
+        shared_ptr<git_index_conflict_iterator> iter;
+        Branch lastItem;
         bool cached = false;
+
+    public:
+        explicit ConflictIterator(git_index_conflict_iterator *iter) : iter(iter, git_index_conflict_iterator_free) {}
+
+        ConflictIterator() = delete;
+
+        [[nodiscard]] shared_ptr<git_index_conflict_iterator> ptr() {
+            return iter;
+        }
+
+        bool next(ConflictIndex& out) const;
     };
 
 }
