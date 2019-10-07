@@ -29,9 +29,9 @@ namespace git {
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
         [[nodiscard]]StatusList &status_list_new(StatusOptions) const;
 
-        void create_branch(string branch_name, Commit &target, bool force);
+        void create_branch(const string& branch_name, Commit &target, bool force);
 
-        void branch_lookup(string branch_name, bool isLocal);
+        void branch_lookup(const string& branch_name, bool isLocal);
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
     };
