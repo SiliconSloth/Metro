@@ -106,6 +106,7 @@ namespace git {
     }
 
     void Repository::set_head(const string& name) {
-
+        int err = git_repository_set_head(repo.get(), name.c_str());
+        check_error(err);
     }
 }

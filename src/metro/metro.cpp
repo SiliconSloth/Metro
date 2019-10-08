@@ -148,6 +148,12 @@ namespace metro {
         }
 
         create_branch(repo, name+WIPString);
-        move_head(repo, name+WIPString);
+        repo.set_head(name+WIPString);
+
+        if (merge_ongoing(repo)) {
+
+        } else {
+
+        }
     }
 }

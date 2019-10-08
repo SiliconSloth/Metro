@@ -26,4 +26,8 @@ namespace git {
         return ConflictIterator(it);
     }
 
+    int Index::entrycount() const {
+        return git_index_entrycount(index.get())
+    }
+
 }

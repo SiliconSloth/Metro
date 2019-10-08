@@ -13,6 +13,7 @@ namespace git {
         OID write_tree();
         void write();
         ConflictIterator conflict_iterator();
+        [[nodiscard]] int entrycount() const;
 
     private:
         git_index *index;
