@@ -4,6 +4,8 @@
 #include "error.cpp"
 
 #include "gitwrapper/index.cpp"
+#include "gitwrapper/branch.cpp"
+#include "gitwrapper/branch_iterator.cpp"
 #include "gitwrapper/repository.cpp"
 #include "gitwrapper/commit.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
@@ -14,3 +16,4 @@
 #include "commands/commit.cpp"
 #include "commands/patch.cpp"
 #include "commands/branch.cpp"
+#include "commands/delete.cpp"

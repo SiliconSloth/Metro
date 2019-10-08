@@ -22,6 +22,8 @@ using namespace std;
 #include "gitwrapper/index.h"
 #include "gitwrapper/commit.h"
 #include "gitwrapper/object.h"
+#include "gitwrapper/branch.h"
+#include "gitwrapper/branch_iterator.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/conflict_iterator.h"
 

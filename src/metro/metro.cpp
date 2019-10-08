@@ -24,7 +24,7 @@ namespace metro {
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    void commit(const Repository& repo, const string& message, const vector<Commit> parentCommits) {
+    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
@@ -67,7 +67,11 @@ namespace metro {
     }
 
     void delete_last_commit(const Repository& repo, bool reset) {
-        Commit parent = static_cast<Commit>(repo.revparse_single("HEAD")).parent(0);
+        Commit lastCommit = static_cast<Commit>(repo.revparse_single("HEAD"));
+        if (lastCommit.parentcount() == 0) {
+            throw NoParentException();
+        }
+        Commit parent = lastCommit.parent(0);
 
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
@@ -88,7 +92,7 @@ namespace metro {
     // repo - Repo to find the commit in
     //
     // Returns the commit
-    Commit get_commit(string revision, Repository repo) {
+    Commit get_commit(const string& revision, const Repository& repo) {
         Object object = repo.revparse_single(revision);
         Commit commit = (Commit) object;
         return commit;
@@ -96,12 +100,12 @@ namespace metro {
 
     // Create a new branch from the current head with the specified name.
     // Returns the branch
-    void create_branch(string name, Repository &repo) {
+    void create_branch(const string& name, Repository &repo) {
         Commit commit = get_commit("HEAD", repo);
         repo.create_branch(name, commit, false);
     }
 
-    bool branch_exists(Repository &repo, string name) {
+    bool branch_exists(Repository &repo, const string& name) {
         try {
             repo.branch_lookup(name, true);
             return true;
@@ -147,5 +151,20 @@ namespace metro {
         callbacks.transfer_progress = transfer_progress_callback;
         callbacks.credentials = credentials_callback;
         return callbacks;
+    }
+
+    string current_branch_name(const Repository& repo) {
+        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+        for (Branch branch; iter.next(&branch);) {
+            if (branch.is_head()) {
+                return branch.name();
+            }
+        }
+        throw BranchNotFoundException();
+    }
+
+    void delete_branch(const Repository& repo, const string& name) {
+        Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
+        branch.delete_branch();
     }
 }
