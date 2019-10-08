@@ -167,4 +167,25 @@ namespace metro {
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
     }
+
+    Commit get_last_commit(const Repository &repo) {
+        return get_commit("HEAD", repo);
+    }
+
+    void reset_head(const Repository &repo) {
+        Commit head = get_last_commit(repo);
+        repo.reset_to_commit(head, GIT_RESET_HARD, git_checkout_options{});
+    }
+
+    // Replaces all current work with new branch, resetting the commit
+    // Does NOT check if safe - do that first
+    void FastForward(string name, const Repository &repo) {
+        // Replaces all current work with origin
+        string branch = current_branch_name(repo);
+//        checkout(name, repo);
+        Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
+        Branch refOrigin = repo.lookup_branch("origin/"+branch, GIT_BRANCH_REMOTE);
+//       ref.set_target(refOrigin.target(), "message");
+//       checkout_branch(branch, repo);
+    }
 }
