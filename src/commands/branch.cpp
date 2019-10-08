@@ -23,7 +23,7 @@ Command branch {
                 throw MetroException("Branch " + name + " already exists.");
             }
 
-            metro::create_branch(name, repo);
+            metro::create_branch(repo, name);
             cout << "Created branch " + name + "." << endl;
         },
 

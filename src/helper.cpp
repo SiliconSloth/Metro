@@ -22,7 +22,7 @@ bool has_suffix(string const& str, string const& suff) {
 // If the character is not found, the input string is returned as the first string and "" as the second.
 // The outputs are stored in before and after.
 void split_at_first(string const& str, char const& c, string & before, string & after) {
-    int index = str.find(c);
+    size_t index = str.find(c);
     if (index == -1) {
         before = str;
         after = "";
@@ -30,4 +30,12 @@ void split_at_first(string const& str, char const& c, string & before, string & 
         before = str.substr(0, index);
         after = str.substr(index + 1, string::npos);
     }
+}
+
+string read_all(const string& path) {
+    //TODO: Exception if the file is not found/read fails
+    ifstream file(path);
+    string message((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    file.close();
+    return message;
 }

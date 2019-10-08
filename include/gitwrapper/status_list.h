@@ -16,7 +16,7 @@ namespace git {
             return status;
         }
 
-        [[nodiscard]] int entrycount() const {
+        [[nodiscard]] size_t entrycount() const {
             return git_status_list_entrycount(status.get());
         }
     };

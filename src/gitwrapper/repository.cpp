@@ -29,6 +29,10 @@ namespace git {
         return *sig;
     }
 
+    string Repository::path() const {
+        return string(git_repository_path(repo.get()));
+    }
+
     Index &Repository::index() const {
         git_index *index;
         int err = git_repository_index(&index, repo.get());
@@ -85,12 +89,6 @@ namespace git {
         check_error(err);
     }
 
-    void Repository::lookup_branch(const string& branch_name, bool isLocal) {
-        git_reference *ref;
-        int err = git_branch_lookup(&ref, repo.get(), branch_name.c_str(), GIT_BRANCH_LOCAL);
-        check_error(err);
-    }
-
     BranchIterator Repository::new_branch_iterator(const git_branch_t& flags) const {
         git_branch_iterator *iter;
         int err = git_branch_iterator_new(&iter, repo.get(), flags);
@@ -107,6 +105,11 @@ namespace git {
 
     void Repository::set_head(const string& name) {
         int err = git_repository_set_head(repo.get(), name.c_str());
+        check_error(err);
+    }
+
+    void Repository::cleanup_state() const {
+        int err = git_repository_state_cleanup(repo.get());
         check_error(err);
     }
 }

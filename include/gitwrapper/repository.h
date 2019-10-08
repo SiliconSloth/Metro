@@ -18,25 +18,28 @@ namespace git {
         static Repository open(const string& path);
         static bool exists(const string& path);
 
+        [[nodiscard]] string path() const;
         [[nodiscard]] Signature &default_signature() const;
         [[nodiscard]] Index &index() const;
+
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
-        [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        Branch lookup_branch(const string& name, git_branch_t branchType) const;
         OID create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const;
         Object revparse_single(const string& spec) const;
+
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
 
         void create_branch(const string& branch_name, Commit &target, bool force);
-
-        void lookup_branch(const string& branch_name, bool isLocal);
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
 
         [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
 
         void set_head(const string& name);
+
+        void cleanup_state() const;
     };
 
 }

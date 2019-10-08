@@ -10,6 +10,8 @@ using namespace std;
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <fstream>
+#include <streambuf>
 #include <functional>
 
 #include "git2.h"
@@ -27,5 +29,8 @@ using namespace std;
 #include "gitwrapper/status_list.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/conflict_iterator.h"
+
+#include "metro/metro.h"
+#include "metro/merging.h"
 
 #endif //PCH_H

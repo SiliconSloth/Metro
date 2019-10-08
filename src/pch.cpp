@@ -11,6 +11,7 @@
 #include "gitwrapper/conflict_iterator.cpp"
 
 #include "metro/metro.cpp"
+#include "metro/merging.cpp"
 
 #include "commands/create.cpp"
 #include "commands/commit.cpp"
