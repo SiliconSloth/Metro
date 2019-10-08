@@ -30,9 +30,13 @@ namespace git {
 
         void create_branch(const string& branch_name, Commit &target, bool force);
 
-        void branch_lookup(const string& branch_name, bool isLocal);
+        void lookup_branch(const string& branch_name, bool isLocal);
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
+
+        [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
+
+        void set_head(const string& name);
     };
 
 }

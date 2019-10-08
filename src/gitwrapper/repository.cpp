@@ -85,7 +85,7 @@ namespace git {
         check_error(err);
     }
 
-    void Repository::branch_lookup(const string& branch_name, bool isLocal) {
+    void Repository::lookup_branch(const string& branch_name, bool isLocal) {
         git_reference *ref;
         int err = git_branch_lookup(&ref, repo.get(), branch_name.c_str(), GIT_BRANCH_LOCAL);
         check_error(err);
@@ -96,5 +96,16 @@ namespace git {
         int err = git_branch_iterator_new(&iter, repo.get(), flags);
         check_error(err);
         return BranchIterator(iter);
+    }
+
+    StatusList Repository::new_status_list(const git_status_options &options) const {
+        git_status_list *status;
+        int err = git_status_list_new(&status, repo.get(), &options);
+        check_error(err);
+        return StatusList(status);
+    }
+
+    void Repository::set_head(const string& name) {
+
     }
 }

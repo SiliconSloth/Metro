@@ -100,14 +100,14 @@ namespace metro {
 
     // Create a new branch from the current head with the specified name.
     // Returns the branch
-    void create_branch(const string& name, Repository &repo) {
+    void create_branch(Repository &repo, const string& name) {
         Commit commit = get_commit("HEAD", repo);
         repo.create_branch(name, commit, false);
     }
 
     bool branch_exists(Repository &repo, const string& name) {
         try {
-            repo.branch_lookup(name, true);
+            repo.lookup_branch(name, true);
             return true;
         } catch (GitException &e) {
             return false;
@@ -129,7 +129,25 @@ namespace metro {
         branch.delete_branch();
     }
 
-    void save_wip(const Repository& repo) {
+    void save_wip(Repository& repo) {
+        git_status_options opts = GIT_STATUS_OPTIONS_INIT;
+        opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+        opts.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED;
 
+        StatusList status = repo.new_status_list(opts);
+        // If there are no changes since the last commit, don't bother with a WIP commit.
+        if (status.entrycount() == 0 && !merge_ongoing(repo)) {
+            return;
+        }
+
+        string name = current_branch_name(repo);
+        try {
+            delete_branch(repo, name+WIPString);
+        } catch (GitException& e) {
+            // We don't mind if the delete fails, we tried it just in case.
+        }
+
+        create_branch(repo, name+WIPString);
+        move_head(repo, name+WIPString);
     }
 }
