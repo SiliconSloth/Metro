@@ -43,7 +43,7 @@ namespace git {
         void cleanup_state() const;
 
         [[nodiscard]] git_merge_analysis_t merge_analysis(const vector<AnnotatedCommit>& sources) const;
-        void merge(const git_annotated_commit** sources, const git_merge_options& merge_opts, const git_checkout_options& checkout_opts) const;
+        void merge(const vector<AnnotatedCommit>& sources, const git_merge_options& merge_opts, const git_checkout_options& checkout_opts) const;
     };
 
 }

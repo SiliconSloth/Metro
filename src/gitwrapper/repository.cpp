@@ -134,4 +134,16 @@ namespace git {
         check_error(err);
         return analysis;
     }
+
+    void Repository::merge(const vector<AnnotatedCommit>& sources, const git_merge_options &merge_opts,
+                           const git_checkout_options &checkout_opts) const {
+        auto sources_array = new const git_annotated_commit*[sources.size()];
+        for (size_t i = 0; i < sources.size(); i++) {
+            sources_array[i] = sources[i].ptr().get();
+        }
+
+        int err = git_merge(repo.get(), sources_array, sources.size(), &merge_opts, &checkout_opts);
+        delete[] sources_array;
+        check_error(err);
+    }
 }
