@@ -104,3 +104,15 @@ struct NoParentException : public MetroException {
             MetroException("Can't delete initial commit.")
     {}
 };
+
+struct UnnecessaryMergeException : public MetroException {
+    explicit UnnecessaryMergeException():
+            MetroException("Nothing to absorb.")
+    {}
+};
+
+struct AbnormalMergeException : public MetroException {
+    explicit AbnormalMergeException():
+            MetroException("Non-normal absorb not supported.")
+    {}
+};

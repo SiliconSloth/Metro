@@ -91,7 +91,7 @@ namespace metro {
     // repo - Repo to find the commit in
     //
     // Returns the commit
-    Commit get_commit(const string& revision, const Repository& repo) {
+    Commit get_commit(const Repository& repo, const string& revision) {
         Object object = repo.revparse_single(revision);
         Commit commit = (Commit) object;
         return commit;

@@ -33,7 +33,7 @@ namespace metro {
     // repo - Repo to find the commit in
     //
     // Returns the commit
-    Commit get_commit(const string& revision, const Repository& repo);
+    Commit get_commit(const Repository& repo, const string& revision);
 
     // Create a new branch from the current head with the specified name.
     // Returns the branch

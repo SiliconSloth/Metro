@@ -1,3 +1,8 @@
 namespace metro {
-    string get_merge_message(const Repository &repo);
+    string default_merge_message(const string& mergedName);
+
+    string get_merge_message(const Repository& repo);
+    void set_merge_message(const Repository& repo);
+
+    void start_merge(const Repository& repo, const string& sourceName);
 }

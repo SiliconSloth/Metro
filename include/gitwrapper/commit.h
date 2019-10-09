@@ -20,6 +20,8 @@ namespace git {
 
         [[nodiscard]] string message() const;
 
+        [[nodiscard]] OID id() const;
+
         [[nodiscard]] unsigned int parentcount() const;
 
         [[nodiscard]] Commit parent(unsigned int n) const;

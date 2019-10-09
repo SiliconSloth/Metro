@@ -5,6 +5,10 @@ namespace git {
         return string(git_commit_message(commit.get()));
     }
 
+    OID Commit::id() const {
+        return *git_commit_id(commit.get());
+    }
+
     unsigned int Commit::parentcount() const {
         return git_commit_parentcount(commit.get());
     }

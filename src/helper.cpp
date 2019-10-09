@@ -39,3 +39,10 @@ string read_all(const string& path) {
     file.close();
     return message;
 }
+
+void write_all(const string& text, const string& path) {
+    //TODO: Exception if the file is not found/write fails
+    ofstream file(path);
+    file << text;
+    file.close();
+}
