@@ -24,6 +24,7 @@ namespace git {
 
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
         Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        [[nodiscard]] AnnotatedCommit lookup_annotated_commit(const OID& id) const;
         OID create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const;
@@ -40,6 +41,9 @@ namespace git {
         void set_head(const string& name);
 
         void cleanup_state() const;
+
+        [[nodiscard]] git_merge_analysis_t merge_analysis(const vector<AnnotatedCommit>& sources) const;
+        void merge(const git_annotated_commit** sources, const git_merge_options& merge_opts, const git_checkout_options& checkout_opts) const;
     };
 
 }

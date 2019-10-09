@@ -55,6 +55,13 @@ namespace git {
         return Branch(branch);
     }
 
+    AnnotatedCommit Repository::lookup_annotated_commit(const OID& id) const {
+        git_annotated_commit *commit;
+        int err = git_annotated_commit_lookup(&commit, repo.get(), &id);
+        check_error(err);
+        return AnnotatedCommit(commit);
+    }
+
     OID Repository::create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const {
@@ -111,5 +118,20 @@ namespace git {
     void Repository::cleanup_state() const {
         int err = git_repository_state_cleanup(repo.get());
         check_error(err);
+    }
+
+    git_merge_analysis_t Repository::merge_analysis(const vector<AnnotatedCommit>& sources) const {
+        git_merge_analysis_t analysis;
+        git_merge_preference_t preference;
+
+        auto sources_array = new const git_annotated_commit*[sources.size()];
+        for (size_t i = 0; i < sources.size(); i++) {
+            sources_array[i] = sources[i].ptr().get();
+        }
+
+        int err = git_merge_analysis(&analysis, &preference, repo.get(), sources_array, sources.size());
+        delete[] sources_array;
+        check_error(err);
+        return analysis;
     }
 }

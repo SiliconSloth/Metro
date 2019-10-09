@@ -23,6 +23,7 @@ using namespace std;
 #include "gitwrapper/types.h"
 #include "gitwrapper/index.h"
 #include "gitwrapper/commit.h"
+#include "gitwrapper/annotated_commit.h"
 #include "gitwrapper/object.h"
 #include "gitwrapper/branch.h"
 #include "gitwrapper/branch_iterator.h"
