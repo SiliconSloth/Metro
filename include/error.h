@@ -93,26 +93,14 @@ struct BranchNotFoundException : public MetroException {
     {}
 };
 
-struct CurrentBranchException : public MetroException {
-    explicit CurrentBranchException():
-            MetroException("Can't delete current branch.")
-    {}
-};
-
-struct NoParentException : public MetroException {
-    explicit NoParentException():
-            MetroException("Can't delete initial commit.")
-    {}
-};
-
 struct UnnecessaryMergeException : public MetroException {
     explicit UnnecessaryMergeException():
             MetroException("Nothing to absorb.")
     {}
 };
 
-struct AbnormalMergeException : public MetroException {
-    explicit AbnormalMergeException():
-            MetroException("Non-normal absorb not supported.")
+struct UnsupportedOperationException : public MetroException {
+    explicit UnsupportedOperationException(const char* message):
+        MetroException(message)
     {}
 };

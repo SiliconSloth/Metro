@@ -32,13 +32,13 @@ namespace git {
 
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
 
-        void create_branch(const string& branch_name, Commit &target, bool force);
+        void create_branch(const string& branch_name, Commit &target, bool force) const;
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
 
         [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
 
-        void set_head(const string& name);
+        void set_head(const string& name) const;
 
         void checkout_tree(const Tree& tree, const git_checkout_options& options) const;
 

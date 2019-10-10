@@ -39,7 +39,7 @@ namespace metro {
 
     // Create a new branch from the current head with the specified name.
     // Returns the branch
-    void create_branch(Repository &repo, const string& name);
+    void create_branch(const Repository &repo, const string& name);
 
     bool branch_exists(const Repository &repo, const string& name);
 
@@ -55,9 +55,11 @@ namespace metro {
 
     // If the working directory has changes since the last commit, or a merge has been started,
     // Save these changes in a WIP commit in a new #wip branch.
-    void save_wip(Repository& repo);
+    void save_wip(const Repository& repo);
 
     // Deletes the WIP commit at head if any, restoring the contents to the working directory
     // and resuming a merge if one was ongoing.
     void restore_wip(const Repository& repo);
+
+    void switch_branch(const Repository& repo, const string& name);
 }

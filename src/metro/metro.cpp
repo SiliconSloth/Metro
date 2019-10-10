@@ -68,7 +68,7 @@ namespace metro {
     void delete_last_commit(const Repository& repo, bool reset) {
         Commit lastCommit = get_commit(repo, "HEAD");
         if (lastCommit.parentcount() == 0) {
-            throw NoParentException();
+            throw UnsupportedOperationException("Can't delete initial commit.");
         }
         Commit parent = lastCommit.parent(0);
 
@@ -108,7 +108,7 @@ namespace metro {
 
     // Create a new branch from the current head with the specified name.
     // Returns the branch
-    void create_branch(Repository &repo, const string& name) {
+    void create_branch(const Repository &repo, const string& name) {
         Commit commit = get_commit(repo, "HEAD");
         repo.create_branch(name, commit, false);
     }
@@ -167,7 +167,7 @@ namespace metro {
 
     // If the working directory has changes since the last commit, or a merge has been started,
     // Save these changes in a WIP commit in a new #wip branch.
-    void save_wip(Repository& repo) {
+    void save_wip(const Repository& repo) {
         // If there are no changes since the last commit, don't bother with a WIP commit.
         if (!(has_uncommitted_changes(repo) || merge_ongoing(repo))) {
             return;
@@ -237,5 +237,19 @@ namespace metro {
             index.add_conflict(conflict);
         }
         index.write();
+    }
+
+    void switch_branch(const Repository& repo, const string& name) {
+        if (has_suffix(name, WIPString)) {
+            throw UnsupportedOperationException("Can't switch to WIP branch.");
+        }
+        if (!branch_exists(repo, name)) {
+            throw BranchNotFoundException();
+        }
+
+        save_wip(repo);
+        checkout(repo, name);
+        repo.set_head(name);
+        restore_wip(repo);
     }
 }

@@ -29,7 +29,7 @@ Command deleteCmd {
 
                 string name = args.positionals[1];
                 if (name == metro::current_branch_name(repo)) {
-                    throw CurrentBranchException();
+                    throw UnsupportedOperationException("Can't delete current branch.");
                 }
 
                 metro::delete_branch(repo, name);

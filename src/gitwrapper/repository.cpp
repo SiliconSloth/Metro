@@ -90,7 +90,7 @@ namespace git {
         check_error(err);
     }
 
-    void Repository::create_branch(const string& branch_name, Commit &target, bool force) {
+    void Repository::create_branch(const string& branch_name, Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
         check_error(err);
@@ -110,7 +110,7 @@ namespace git {
         return StatusList(status);
     }
 
-    void Repository::set_head(const string& name) {
+    void Repository::set_head(const string& name) const {
         int err = git_repository_set_head(repo.get(), name.c_str());
         check_error(err);
     }

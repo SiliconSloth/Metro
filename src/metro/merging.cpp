@@ -26,7 +26,7 @@ namespace metro {
             throw UnnecessaryMergeException();
         }
         if ((analysis & GIT_MERGE_ANALYSIS_NORMAL) == 0) {
-            throw AbnormalMergeException();
+            throw UnsupportedOperationException("Non-normal absorb not supported.");
         }
 
         git_merge_options mergeOpts = GIT_MERGE_OPTIONS_INIT;
