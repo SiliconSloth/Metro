@@ -22,8 +22,12 @@ namespace git {
         void add_all(StrArray pathspec, unsigned int flags, MatchedPathCallback callback);
         OID write_tree();
         void write();
-        ConflictIterator conflict_iterator();
+
+        [[nodiscard]] ConflictIterator conflict_iterator() const;
         [[nodiscard]] size_t entrycount() const;
+
+        void add_conflict(const Conflict& conflict) const;
+        void cleanup_conflicts() const;
     };
 
 }

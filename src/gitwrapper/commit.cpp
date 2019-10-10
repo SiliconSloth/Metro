@@ -6,7 +6,14 @@ namespace git {
     }
 
     OID Commit::id() const {
-        return *git_commit_id(commit.get());
+        return OID(*git_commit_id(commit.get()));
+    }
+
+    Tree Commit::tree() const {
+        git_tree *tree;
+        int err = git_commit_tree(&tree, commit.get());
+        check_error(err);
+        return Tree(tree);
     }
 
     unsigned int Commit::parentcount() const {

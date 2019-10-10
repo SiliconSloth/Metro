@@ -9,14 +9,14 @@ namespace git {
         git_oid oid;
         int err = git_index_write_tree(&oid, index.get());
         check_error(err);
-        return oid;
+        return OID(oid);
     }
 
     void Index::write() {
         git_index_write(index.get());
     }
 
-    ConflictIterator Index::conflict_iterator() {
+    ConflictIterator Index::conflict_iterator() const {
         git_index_conflict_iterator *it;
         int err = git_index_conflict_iterator_new(&it, index.get());
         check_error(err);
@@ -27,4 +27,13 @@ namespace git {
         return git_index_entrycount(index.get());
     }
 
+    void Index::add_conflict(const git::Conflict &conflict) const {
+        int err = git_index_conflict_add(index.get(), conflict.ancestor, conflict.ours, conflict.theirs);
+        check_error(err);
+    }
+
+    void Index::cleanup_conflicts() const {
+        int err = git_index_conflict_cleanup(index.get());
+        check_error(err);
+    }
 }

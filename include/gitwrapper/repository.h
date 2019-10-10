@@ -40,6 +40,8 @@ namespace git {
 
         void set_head(const string& name);
 
+        void checkout_tree(const Tree& tree, const git_checkout_options& options) const;
+
         void cleanup_state() const;
 
         [[nodiscard]] git_merge_analysis_t merge_analysis(const vector<AnnotatedCommit>& sources) const;

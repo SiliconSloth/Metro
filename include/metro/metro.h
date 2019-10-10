@@ -35,17 +35,29 @@ namespace metro {
     // Returns the commit
     Commit get_commit(const Repository& repo, const string& revision);
 
+    bool commit_exists(const Repository &repo, const string& name);
+
     // Create a new branch from the current head with the specified name.
     // Returns the branch
     void create_branch(Repository &repo, const string& name);
 
-    bool branch_exists(Repository &repo, const string& name);
+    bool branch_exists(const Repository &repo, const string& name);
 
     string current_branch_name(const Repository& repo);
 
     void delete_branch(const Repository& repo, const string& name);
 
+    void checkout(const Repository& repo, const string& name);
+
     bool has_uncommitted_changes(const Repository& repo);
 
+    [[nodiscard]] vector<Conflict> get_conflicts(const Index& index);
+
+    // If the working directory has changes since the last commit, or a merge has been started,
+    // Save these changes in a WIP commit in a new #wip branch.
     void save_wip(Repository& repo);
+
+    // Deletes the WIP commit at head if any, restoring the contents to the working directory
+    // and resuming a merge if one was ongoing.
+    void restore_wip(const Repository& repo);
 }

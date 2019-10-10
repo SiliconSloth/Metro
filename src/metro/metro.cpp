@@ -66,7 +66,7 @@ namespace metro {
     }
 
     void delete_last_commit(const Repository& repo, bool reset) {
-        Commit lastCommit = static_cast<Commit>(repo.revparse_single("HEAD"));
+        Commit lastCommit = get_commit(repo, "HEAD");
         if (lastCommit.parentcount() == 0) {
             throw NoParentException();
         }
@@ -81,14 +81,14 @@ namespace metro {
 
     void patch(const Repository& repo, const string& message) {
         assert_merging(repo);
-        vector<Commit> parents = static_cast<Commit>(repo.revparse_single("HEAD")).parents();
+        vector<Commit> parents = get_commit(repo, "HEAD").parents();
         delete_last_commit(repo, false);
         commit(repo, message, parents);
     }
 
     // Gets the commit corresponding to the given revision
-    // revision - Revision of the commit to find
     // repo - Repo to find the commit in
+    // revision - Revision of the commit to find
     //
     // Returns the commit
     Commit get_commit(const Repository& repo, const string& revision) {
@@ -97,14 +97,23 @@ namespace metro {
         return commit;
     }
 
+    bool commit_exists(const Repository &repo, const string& name) {
+        try {
+            get_commit(repo, name);
+            return true;
+        } catch (GitException&) {
+            return false;
+        }
+    }
+
     // Create a new branch from the current head with the specified name.
     // Returns the branch
     void create_branch(Repository &repo, const string& name) {
-        Commit commit = get_commit("HEAD", repo);
+        Commit commit = get_commit(repo, "HEAD");
         repo.create_branch(name, commit, false);
     }
 
-    bool branch_exists(Repository &repo, const string& name) {
+    bool branch_exists(const Repository &repo, const string& name) {
         try {
             repo.lookup_branch(name, GIT_BRANCH_LOCAL);
             return true;
@@ -128,6 +137,16 @@ namespace metro {
         branch.delete_branch();
     }
 
+    // Checks out the given commit without moving head,
+    // such that the working directory will match the commit contents.
+    // Doesn't change current branch ref.
+    void checkout(const Repository& repo, const string& name) {
+        Tree tree = get_commit(repo, name).tree();
+        git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+        checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+        repo.checkout_tree(tree, checkoutOpts);
+    }
+
     bool has_uncommitted_changes(const Repository& repo) {
         git_status_options opts = GIT_STATUS_OPTIONS_INIT;
         opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
@@ -137,6 +156,17 @@ namespace metro {
         return status.entrycount() > 0;
     }
 
+    vector<Conflict> get_conflicts(const Index& index) {
+        vector<Conflict> conflicts;
+        ConflictIterator iter = index.conflict_iterator();
+        for (Conflict conflict{}; iter.next(conflict);) {
+            conflicts.push_back(conflict);
+        }
+        return conflicts;
+    }
+
+    // If the working directory has changes since the last commit, or a merge has been started,
+    // Save these changes in a WIP commit in a new #wip branch.
     void save_wip(Repository& repo) {
         // If there are no changes since the last commit, don't bother with a WIP commit.
         if (!(has_uncommitted_changes(repo) || merge_ongoing(repo))) {
@@ -161,5 +191,51 @@ namespace metro {
         } else {
             commit(repo, "WIP", {"HEAD"});
         }
+    }
+
+    // Deletes the WIP commit at head if any, restoring the contents to the working directory
+    // and resuming a merge if one was ongoing.
+    void restore_wip(const Repository& repo) {
+        string name = current_branch_name(repo);
+        if (!branch_exists(repo, name+WIPString)) {
+            return;
+        }
+        Commit wipCommit = get_commit(repo, name+WIPString);
+        Index index = repo.index();
+
+        vector<Conflict> conflicts;
+        // If the WIP commit has two parents a merge was ongoing.
+        if (wipCommit.parentcount() > 1) {
+            string mergeHead = wipCommit.parent(1).id().str();
+            start_merge(repo, mergeHead);
+
+            // Reload the merge message from before, stored in the second line (and beyond)
+            // of the WIP commit message.
+            string commitMessage = wipCommit.message();
+            size_t newlineIndex = commitMessage.find('\n');
+            // If the commit message only has one line (only happens if it has been tampered with)
+            // just leave the message as the default one created when restarting the merge.
+            // Otherwise restore the merge message from the commit message.
+            if (newlineIndex >= 0) {
+                string mergeMessage = commitMessage.substr(newlineIndex+1, string::npos);
+                set_merge_message(repo, mergeMessage);
+            }
+
+            // Remove the conflicts from the index temporarily so we can checkout.
+            // They will be restored after so that the index and working dir
+            // match their state when the WIP commit was created.
+            conflicts = get_conflicts(index);
+            index.cleanup_conflicts();
+        }
+
+        // Restore the contents of the WIP commit to the working directory.
+        checkout(repo, name+WIPString);
+        delete_branch(repo, name+WIPString);
+
+        // If we are mid-merge, restore the conflicts from the merge.
+        for (const Conflict& conflict : conflicts) {
+            index.add_conflict(conflict);
+        }
+        index.write();
     }
 }

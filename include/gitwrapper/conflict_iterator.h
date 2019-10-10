@@ -2,7 +2,7 @@
 
 namespace git {
 
-    struct ConflictIndex {
+    struct Conflict {
         const git_index_entry *ancestor;
         const git_index_entry *ours;
         const git_index_entry *theirs;
@@ -23,7 +23,7 @@ namespace git {
             return iter;
         }
 
-        bool next(ConflictIndex& out) const;
+        bool next(Conflict& out) const;
     };
 
 }

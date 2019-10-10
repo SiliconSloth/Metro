@@ -41,11 +41,11 @@ namespace git {
         return out;
     }
 
-    Tree Repository::lookup_tree(const git_oid &oid) const {
+    Tree Repository::lookup_tree(const OID &oid) const {
         git_tree *tree;
-        int err = git_tree_lookup(&tree, repo.get(), &oid);
+        int err = git_tree_lookup(&tree, repo.get(), &oid.oid);
         check_error(err);
-        return tree;
+        return Tree(tree);
     }
 
     Branch Repository::lookup_branch(const string &name, git_branch_t branchType) const {
@@ -57,7 +57,7 @@ namespace git {
 
     AnnotatedCommit Repository::lookup_annotated_commit(const OID& id) const {
         git_annotated_commit *commit;
-        int err = git_annotated_commit_lookup(&commit, repo.get(), &id);
+        int err = git_annotated_commit_lookup(&commit, repo.get(), &id.oid);
         check_error(err);
         return AnnotatedCommit(commit);
     }
@@ -72,10 +72,10 @@ namespace git {
 
         git_oid id;
         int err = git_commit_create(&id, repo.get(), update_ref.c_str(), &author, &committer, message_encoding.c_str(),
-                                    message.c_str(), tree, parents.size(), parents_array);
+                                    message.c_str(), tree.ptr().get(), parents.size(), parents_array);
         delete[] parents_array;
         check_error(err);
-        return id;
+        return OID(id);
     }
 
     Object Repository::revparse_single(const string& spec) const {
@@ -112,6 +112,11 @@ namespace git {
 
     void Repository::set_head(const string& name) {
         int err = git_repository_set_head(repo.get(), name.c_str());
+        check_error(err);
+    }
+
+    void Repository::checkout_tree(const Tree& tree, const git_checkout_options& options) const {
+        int err = git_checkout_tree(repo.get(), reinterpret_cast<git_object*>(tree.ptr().get()), &options);
         check_error(err);
     }
 
