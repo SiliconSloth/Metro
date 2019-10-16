@@ -11,7 +11,7 @@ include_directories("${libgitDir}/include")
 include_directories("include")
 add_executable(metro src/main.cpp)
 add_executable(test src/test.cpp)
-add_library(git2 STATIC IMPORTED)
+add_library(git2 STATIC IMPORTED src/gitwrapper/reference.cpp)
 
 IF (WIN32)
     set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitDir}/cmake-build-debug/git2.lib")

@@ -251,7 +251,8 @@ namespace metro {
         checkout(repo, name);
 //        cout << repo.lookup_branch(name, GIT_BRANCH_LOCAL).name() << endl;
 //        cout << get_commit(repo, name).id().str() << endl;
-        repo.set_head(repo.lookup_branch(name, GIT_BRANCH_LOCAL).name());
+        string branch_name = repo.lookup_branch(name, GIT_BRANCH_LOCAL).reference_name();
+        repo.set_head(branch_name);
         restore_wip(repo);
     }
 }
