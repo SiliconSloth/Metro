@@ -18,3 +18,4 @@
 #include "commands/patch.cpp"
 #include "commands/branch.cpp"
 #include "commands/delete.cpp"
+#include "commands/switch.cpp"
