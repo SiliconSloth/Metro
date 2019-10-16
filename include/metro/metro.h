@@ -62,4 +62,6 @@ namespace metro {
     void restore_wip(const Repository& repo);
 
     void switch_branch(const Repository& repo, const string& name);
+
+    void move_head(const Repository& repo, const string& name);
 }

@@ -20,7 +20,7 @@ namespace git {
 
         [[nodiscard]] string path() const;
         [[nodiscard]] Signature &default_signature() const;
-        [[nodiscard]] Index &index() const;
+        [[nodiscard]] Index index() const;
 
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
         Branch lookup_branch(const string& name, git_branch_t branchType) const;

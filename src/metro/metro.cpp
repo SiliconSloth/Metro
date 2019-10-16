@@ -181,7 +181,7 @@ namespace metro {
         }
 
         create_branch(repo, name+WIPString);
-        repo.set_head(name+WIPString);
+        move_head(repo, name+WIPString);
 
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
@@ -189,7 +189,9 @@ namespace metro {
             commit(repo, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
             repo.cleanup_state();
         } else {
+            cout << "x" << endl;
             commit(repo, "WIP", {"HEAD"});
+            cout << "y" << endl;
         }
     }
 
@@ -247,12 +249,19 @@ namespace metro {
             throw BranchNotFoundException();
         }
 
+        cout << 1 << endl;
         save_wip(repo);
+        cout << 2 << endl;
         checkout(repo, name);
-//        cout << repo.lookup_branch(name, GIT_BRANCH_LOCAL).name() << endl;
-//        cout << get_commit(repo, name).id().str() << endl;
-        string branch_name = repo.lookup_branch(name, GIT_BRANCH_LOCAL).reference_name();
-        repo.set_head(branch_name);
+        cout << 3 << endl;
+        move_head(repo, name);
+        cout << 4 << endl;
         restore_wip(repo);
+        cout << 5 << endl;
+    }
+
+    void move_head(const Repository& repo, const string& name) {
+        Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
+        repo.set_head(branch.reference_name());
     }
 }

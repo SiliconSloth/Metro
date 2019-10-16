@@ -33,12 +33,11 @@ namespace git {
         return string(git_repository_path(repo.get()));
     }
 
-    Index &Repository::index() const {
+    Index Repository::index() const {
         git_index *index;
         int err = git_repository_index(&index, repo.get());
         check_error(err);
-        Index out(index);
-        return out;
+        return Index(index);
     }
 
     Tree Repository::lookup_tree(const OID &oid) const {
