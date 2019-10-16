@@ -189,9 +189,7 @@ namespace metro {
             commit(repo, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
             repo.cleanup_state();
         } else {
-            cout << "x" << endl;
             commit(repo, "WIP", {"HEAD"});
-            cout << "y" << endl;
         }
     }
 
@@ -249,15 +247,10 @@ namespace metro {
             throw BranchNotFoundException();
         }
 
-        cout << 1 << endl;
         save_wip(repo);
-        cout << 2 << endl;
         checkout(repo, name);
-        cout << 3 << endl;
         move_head(repo, name);
-        cout << 4 << endl;
         restore_wip(repo);
-        cout << 5 << endl;
     }
 
     void move_head(const Repository& repo, const string& name) {
