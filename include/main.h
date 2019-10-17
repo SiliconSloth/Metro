@@ -5,6 +5,7 @@ Command *allCommands[] = {
         &commit,
         &patch,
         &branch,
+        &switchCmd,
         &deleteCmd
 };
 

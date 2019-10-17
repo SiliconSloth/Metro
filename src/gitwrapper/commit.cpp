@@ -5,6 +5,17 @@ namespace git {
         return string(git_commit_message(commit.get()));
     }
 
+    OID Commit::id() const {
+        return OID(*git_commit_id(commit.get()));
+    }
+
+    Tree Commit::tree() const {
+        git_tree *tree;
+        int err = git_commit_tree(&tree, commit.get());
+        check_error(err);
+        return Tree(tree);
+    }
+
     unsigned int Commit::parentcount() const {
         return git_commit_parentcount(commit.get());
     }

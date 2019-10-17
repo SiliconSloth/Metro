@@ -1,5 +1,3 @@
-#include <utility>
-
 #pragma once
 
 namespace git {
@@ -21,6 +19,10 @@ namespace git {
         }
 
         [[nodiscard]] string message() const;
+
+        [[nodiscard]] OID id() const;
+
+        [[nodiscard]] Tree tree() const;
 
         [[nodiscard]] unsigned int parentcount() const;
 
