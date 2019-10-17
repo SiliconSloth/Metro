@@ -18,6 +18,6 @@ namespace git {
         [[nodiscard]] bool is_head() const;
         void delete_branch();
 
-        string reference_name() const;
+        [[nodiscard]] string reference_name() const;
     };
 }
