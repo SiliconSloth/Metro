@@ -7,7 +7,8 @@ Command *allCommands[] = {
         &branch,
         &switchCmd,
         &deleteCmd,
-        &absorbCmd
+        &absorbCmd,
+        &resolve
 };
 
 const Option ALL_OPTIONS[] = {
