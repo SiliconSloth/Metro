@@ -156,11 +156,11 @@ namespace metro {
         return status.entrycount() > 0;
     }
 
-    vector<Conflict> get_conflicts(const Index& index) {
-        vector<Conflict> conflicts;
+    vector<StandaloneConflict> get_conflicts(const Index& index) {
+        vector<StandaloneConflict> conflicts;
         ConflictIterator iter = index.conflict_iterator();
         for (Conflict conflict{}; iter.next(conflict);) {
-            conflicts.push_back(conflict);
+            conflicts.emplace_back(StandaloneConflict(conflict));
         }
         return conflicts;
     }
@@ -203,7 +203,7 @@ namespace metro {
         Commit wipCommit = get_commit(repo, name+WIPString);
         Index index = repo.index();
 
-        vector<Conflict> conflicts;
+        vector<StandaloneConflict> conflicts;
         // If the WIP commit has two parents a merge was ongoing.
         if (wipCommit.parentcount() > 1) {
             string mergeHead = wipCommit.parent(1).id().str();

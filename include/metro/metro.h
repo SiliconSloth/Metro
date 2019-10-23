@@ -18,7 +18,7 @@ namespace metro {
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    void commit(const Repository& repo, const string& message, const initializer_list<string> parentRevs);
+    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs);
 
     // Initialize an empty git repository in the specified directory,
     // with an initial commit.
@@ -51,7 +51,7 @@ namespace metro {
 
     bool has_uncommitted_changes(const Repository& repo);
 
-    [[nodiscard]] vector<Conflict> get_conflicts(const Index& index);
+    [[nodiscard]] vector<StandaloneConflict> get_conflicts(const Index& index);
 
     // If the working directory has changes since the last commit, or a merge has been started,
     // Save these changes in a WIP commit in a new #wip branch.

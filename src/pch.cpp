@@ -19,3 +19,4 @@
 #include "commands/branch.cpp"
 #include "commands/delete.cpp"
 #include "commands/switch.cpp"
+#include "commands/absorb.cpp"

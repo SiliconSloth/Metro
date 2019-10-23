@@ -1,12 +1,16 @@
 namespace git {
     bool ConflictIterator::next(Conflict &out) const {
-        int err = git_index_conflict_next(&out.ancestor, &out.ours, &out.theirs, iter.get());
+        const git_index_entry *ancestor;
+        const git_index_entry *ours;
+        const git_index_entry *theirs;
 
-        if(err != GIT_ITEROVER){
-            check_error(err);
-            return true;
-        } else {
+        int err = git_index_conflict_next(&ancestor, &ours, &theirs, iter.get());
+        if(err == GIT_ITEROVER) {
             return false;
         }
+        check_error(err);
+
+        out = Conflict(ancestor, ours, theirs);
+        return true;
     }
 }
