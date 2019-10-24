@@ -4,9 +4,10 @@ Command *allCommands[] = {
         &create,
         &commit,
         &patch,
+        &deleteCmd,
         &branch,
         &switchCmd,
-        &deleteCmd,
+        &info,
         &absorbCmd,
         &resolve
 };
