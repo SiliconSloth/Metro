@@ -36,4 +36,8 @@ namespace git {
         int err = git_index_conflict_cleanup(index.get());
         check_error(err);
     }
+
+    bool Index::has_conflicts() const {
+        return git_index_has_conflicts(index.get());
+    }
 }

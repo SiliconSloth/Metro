@@ -87,6 +87,12 @@ struct CurrentlyMergingException : public MetroException {
     {}
 };
 
+struct NotMergingException : public MetroException {
+    explicit NotMergingException():
+            MetroException("You can only resolve conflicts while absorbing.")
+    {}
+};
+
 struct BranchNotFoundException : public MetroException {
     explicit BranchNotFoundException():
             MetroException("Branch not found")

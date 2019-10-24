@@ -28,6 +28,7 @@ namespace git {
 
         void add_conflict(const Conflict& conflict) const;
         void cleanup_conflicts() const;
+        [[nodiscard]] bool has_conflicts() const;
     };
 
 }
