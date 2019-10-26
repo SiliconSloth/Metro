@@ -4,7 +4,7 @@
 
 ## Development Setup
 Metro is written in C++ and uses CMake. It expects the `LIBGIT_PATH` environment variable to point to
-a libgit2 source root.  Libgit2 should be built beforehand. 
+a libgit2 source root, containg an `include` directory and either a `build` directory on Linux or `cmake-build-debug` on Windows.  Libgit2 should be built beforehand. 
 
 ## Status and Future
 Currently, some basic features are working, but not enough to be able to use in practice.
