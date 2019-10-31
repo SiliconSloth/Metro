@@ -3,14 +3,15 @@
 # WORK IN PROGRESS
 
 ## Development Setup
-Metro is written in C++ and uses CMake. It expects the `LIBGIT_PATH` environment variable to point to
-a libgit2 source root, containg an `include` directory and either a `build` directory on Linux or `cmake-build-debug` on Windows.  Libgit2 should be built beforehand. 
+Metro is written in C++ and uses CMake. It requires that `libgit2-dev` is installed via your system package manager.
+Alternatively, the `LIBGIT_INCLUDE_DIR` and `LIBGIT_BUILD_DIR` environment variables can be set to the include and build
+directories of your own source build of libgit2. 
 
 ## Status and Future
 Currently, some basic features are working, but not enough to be able to use in practice.
-We're still working on various crucial parts such as syncing and deleting.
+We are still working on various crucial features such as syncing and traversal.
 
-Once it's at a useable state, we plan to put work into an alternative Metro UI that allows easy control over repositories.
+Once it's in a useable state, we plan to put work into a graphical Metro UI that allows easy control over repositories.
 
 ## Information
 See wiki for details and info.
