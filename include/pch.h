@@ -13,8 +13,13 @@ using namespace std;
 #include <fstream>
 #include <streambuf>
 #include <functional>
+#include <memory>
 
 #include "git2.h"
+#if (LIBGIT2_VER_MINOR < 28)
+#define git_error_last giterr_last
+#endif
+
 
 #include "commands.h"
 #include "helper.h"
