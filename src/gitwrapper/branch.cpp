@@ -16,4 +16,10 @@ namespace git {
         int err = git_branch_delete(ref.get());
         check_error(err);
     }
+
+    string Branch::reference_name() const {
+        const char *out;
+        out = git_reference_name(ref.get());
+        return string(out);
+    }
 }

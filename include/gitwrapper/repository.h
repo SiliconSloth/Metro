@@ -18,22 +18,34 @@ namespace git {
         static Repository open(const string& path);
         static bool exists(const string& path);
 
+        [[nodiscard]] string path() const;
         [[nodiscard]] Signature &default_signature() const;
-        [[nodiscard]] Index &index() const;
+        [[nodiscard]] Index index() const;
+
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
-        [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        [[nodiscard]] AnnotatedCommit lookup_annotated_commit(const OID& id) const;
         OID create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,
                               vector<Commit> parents) const;
         Object revparse_single(const string& spec) const;
+
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
-        [[nodiscard]]StatusList &status_list_new(StatusOptions) const;
 
-        void create_branch(const string& branch_name, Commit &target, bool force);
-
-        void branch_lookup(const string& branch_name, bool isLocal);
+        void create_branch(const string& branch_name, Commit &target, bool force) const;
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
+
+        [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
+
+        void set_head(const string& name) const;
+
+        void checkout_tree(const Tree& tree, const git_checkout_options& options) const;
+
+        void cleanup_state() const;
+
+        [[nodiscard]] git_merge_analysis_t merge_analysis(const vector<AnnotatedCommit>& sources) const;
+        void merge(const vector<AnnotatedCommit>& sources, const git_merge_options& merge_opts, const git_checkout_options& checkout_opts) const;
     };
 
 }
