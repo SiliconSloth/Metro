@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Metro vs Git - Metro Documentation</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body class="light">
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="affix"><a href="introduction.html">Introduction</a></li><li><a href="installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li><a href="commands.html"><strong aria-hidden="true">2.</strong> Commands</a></li><li><ol class="section"><li><a href="repository.html"><strong aria-hidden="true">2.1.</strong> Creating a repository</a></li><li><a href="commit.html"><strong aria-hidden="true">2.2.</strong> Making commits</a></li><li><a href="sync.html"><strong aria-hidden="true">2.3.</strong> Syncing with remote</a></li><li><a href="branches.html"><strong aria-hidden="true">2.4.</strong> Handling branches</a></li><li><a href="absorb.html"><strong aria-hidden="true">2.5.</strong> Absorbing code</a></li></ol></li><li><a href="metro-vs-git.html" class="active"><strong aria-hidden="true">3.</strong> Metro vs Git</a></li><li class="affix"><a href="about.html">About</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Metro Documentation</h1>
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#metro-vs-git" id="metro-vs-git">Metro vs Git</a></h1>
+<h2><a class="header" href="#whats-wrong-with-git" id="whats-wrong-with-git">What's wrong with Git?</a></h2>
+<h3><a class="header" href="#gets-used-for-file-syncing-when-it-probably-shouldnt-be" id="gets-used-for-file-syncing-when-it-probably-shouldnt-be">Gets used for file syncing when it probably shouldn't be</a></h3>
+<p>Git repositories are meant to be a place to store finished parts of your code, in a manner that makes it easy for multiple people to work on different features in parallel. While Git is an excellent choice for this purpose, we feel that its approach is outdated and fails to effectively fulfil the needs of the modern programmer.</p>
+<p>Git was designed for the days when programmers would write all their code at one computer, and only commit and push it to the repo once they had finished a feature completely. However, nowadays it is common for people to use many different computers (laptop, work computer, home desktop...) and want to switch machines partway through writing a feature. The correct way to solve this problem is probably to use a separate directory syncing tool to transfer the work-in-progress code, using the Git repo only for completed commits, however in practice most people just end up committing random half-finished changes when they need to leave in a hurry. This can lead to Git repositories filled with lots of poor-quality commits, with actual completed feature commits few and far between.</p>
+<p>In contrast, Metro is <em>made</em> for syncing unfinished code between computers. Rather than having to commit halfway through a semicolon every time you leave the room, Metro syncs the current contents of the working directory into the repo so that you can easily transfer your work to another machine without leaving loads of broken commits in the repo. Metro treats the repo as a living, changing thing that includes the very latest versions of your code, rather than just the finished archived stuff.</p>
+<h3><a class="header" href="#when-it-breaks-it-breaks" id="when-it-breaks-it-breaks">When it breaks, it <strong>BREAKS</strong></a></h3>
+<p>When you know the basics of Git (and remember to add your files before committing, and to push after committing, and to pull before working on the code) it is a simple and easy system to use. Unfortunately, when something goes wrong, it really does go wrong. </p>
+<p>Here is common scene when trying to commit a file:</p>
+<pre><code class="language-bash">&gt; git add -A
+
+&gt; git commit -m &quot;Changed file&quot;
+[master 6c3a3de] Changed file
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push
+To github.com:Black-Photon/Git-Testing.git
+ ! [rejected]        master -&gt; master (fetch first)
+error: failed to push some refs to 'git@github.com:Black-Photon/Git-Testing.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+&gt; git pull
+&lt;Goes to vim to edit commit message&gt;
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+From github.com:Black-Photon/Git-Testing
+   4436cfd..f88f912  master     -&gt; origin/master
+Merge made by the 'recursive' strategy.
+ Readme.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push
+Enumerating objects: 9, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 588 bytes | 588.00 KiB/s, done.
+Total 5 (delta 0), reused 1 (delta 0)
+To github.com:Black-Photon/Git-Testing.git
+   f88f912..4129e5e  master -&gt; master
+</code></pre>
+<p>Having to do so much is difficult to learn and not at all intuitive. Why do you need to add files? What does -m do? In what order do I pull and push? It also takes up time working out all the commands each time. Now what if that was:</p>
+<pre><code class="language-bash">&gt; metro commit &quot;Changed file&quot;
+Committed Successfully
+
+&gt; metro sync
+Conflict Found:
+[0] Absorb local master line into remote master line
+[1] Move local changes to new line master-local
+&gt; 0
+Successfully Absorbed Changes
+</code></pre>
+<h2><a class="header" href="#features" id="features">Features</a></h2>
+<p>We've tried to reduce the number of inconveniences you encounter with git as much as possible while still keeping the functionality you need:</p>
+<ul>
+<li>As a Git wrapper, Metro is fully compatible with all Git tools</li>
+<li>No staging area or adding files - all files are automatically added to commits</li>
+<li>Push and pull combined into one command to sync the current line with the remote</li>
+<li>Simple method to delete or return to past commits</li>
+<li>Patching last commit with current work to fix mistakes or reduce small commits</li>
+<li>Ignores files recently added to .ignore's rather than deleting them from other machines that then sync</li>
+<li>Locking lines to avoid new users committing all their code to the production line</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="absorb.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="about.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="absorb.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="about.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
