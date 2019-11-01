@@ -27,7 +27,7 @@ namespace metro {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
-        index.add_all({}, GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
+        index.add_all(STR_EMPTY, GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
         // Write the files in the index into a tree that can be attached to the commit.
         OID oid = index.write_tree();
         Tree tree = repo.lookup_tree(oid);

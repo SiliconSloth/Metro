@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include "strarray.h"
 
 namespace git {
 

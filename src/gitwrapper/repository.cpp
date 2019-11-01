@@ -1,3 +1,4 @@
+#include <gitwrapper/strarray.h>
 #include "pch.h"
 
 namespace git {
@@ -148,6 +149,12 @@ namespace git {
 
         int err = git_merge(repo.get(), sources_array, sources.size(), &merge_opts, &checkout_opts);
         delete[] sources_array;
+        check_error(err);
+    }
+
+    StrArray Repository::remote_list() {
+        git_strarray array;
+        int err = git_remote_list(&array, repo.get());
         check_error(err);
     }
 }

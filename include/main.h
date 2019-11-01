@@ -9,7 +9,8 @@ Command *allCommands[] = {
         &switchCmd,
         &info,
         &absorbCmd,
-        &resolve
+        &resolve,
+        &syncCmd
 };
 
 const Option ALL_OPTIONS[] = {

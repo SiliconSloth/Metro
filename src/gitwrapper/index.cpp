@@ -1,7 +1,8 @@
 namespace git {
 
     void Index::add_all(const StrArray pathspec, unsigned int flags, MatchedPathCallback callback) {
-        int err = git_index_add_all(index.get(), &pathspec, flags, callback, nullptr);
+        git_strarray ps = pathspec.array;
+        int err = git_index_add_all(index.get(), &ps, flags, callback, nullptr);
         check_error(err);
     }
 

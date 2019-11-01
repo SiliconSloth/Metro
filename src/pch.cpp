@@ -22,3 +22,4 @@
 #include "commands/info.cpp"
 #include "commands/absorb.cpp"
 #include "commands/resolve.cpp"
+#include "commands/sync.cpp"
