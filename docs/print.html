@@ -1,0 +1,450 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Metro Documentation</title>
+        
+        <meta name="robots" content="noindex" />
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body class="light">
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme + ' js';
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="affix"><a href="introduction.html">Introduction</a></li><li><a href="installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li><a href="commands.html"><strong aria-hidden="true">2.</strong> Commands</a></li><li><ol class="section"><li><a href="repository.html"><strong aria-hidden="true">2.1.</strong> Creating a repository</a></li><li><a href="commit.html"><strong aria-hidden="true">2.2.</strong> Making commits</a></li><li><a href="sync.html"><strong aria-hidden="true">2.3.</strong> Syncing with remote</a></li><li><a href="branches.html"><strong aria-hidden="true">2.4.</strong> Handling branches</a></li><li><a href="absorb.html"><strong aria-hidden="true">2.5.</strong> Absorbing code</a></li></ol></li><li><a href="metro-vs-git.html"><strong aria-hidden="true">3.</strong> Metro vs Git</a></li><li class="affix"><a href="about.html">About</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">Metro Documentation</h1>
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <p><img src="https://raw.githubusercontent.com/SiliconSloth/Metro/master/banner.png" alt="Banner" /></p>
+<h2><a class="header" href="#what-is-metro" id="what-is-metro">What is Metro?</a></h2>
+<p>Metro is a simple and flexible version control and file syncing system. Conceptually very similar to Git, it is designed to make it easy for teams of programmers of any size to keep track of how their code has changed over time and collaborate on different parts of the code in parallel. Having learned from Git's shortcomings, Metro has two central design philosophies that differentiate it from Git:</p>
+<ol>
+<li>The repository is a tool to work on and transfer code between computers, not just an archive for finished code:
+Metro stores the very latest version of your code in the repo, allowing you to easily transfer it between machines
+without making a half-finished commit every time you have to leave in a hurry.</li>
+<li>When things conflict, create new branches to resolve the issue rather than showing arcane error messages:
+Git is only meant for archiving finished code, so of course we wouldn't several ugly conflicting branches cluttering up 
+our beautiful archive; instead Git expects the issue to be fixed <em>before</em> changing the repo, which often results in 
+users scouring Stack Overflow to find a complicated solution that involves internal parts of Git they've never heard 
+of. Metro, on the other hand, doesn't have this issue; the repository is a tool for working on the code, so why not fix 
+issues there too? When conflicts occur Metro will offer to make separate branches for each version, making it simple 
+and intuitive to fix the problem yourself. And you always are given the option to resolve quickly by absorbing if you prefer.</li>
+</ol>
+<h2><a class="header" href="#switching-from-git" id="switching-from-git">Switching from Git?</a></h2>
+<p>See <a href="./metro-vs-git.html">this page</a> explaining the differences between Metro and Git in more depth.</p>
+<h1><a class="header" href="#installation" id="installation">Installation</a></h1>
+<p>Currently, Metro can only be installed by building it from source. Luckily, it's not that difficult!</p>
+<h2><a class="header" href="#windows" id="windows">Windows</a></h2>
+<ul>
+<li>Download <code>cmake</code> from <a href="https://cmake.org/download/">cmake.org</a></li>
+<li>Build <code>libgit2</code> from source, following the <a href="https://github.com/libgit2/libgit2#building">libgit2 build instructions</a></li>
+<li>Set the environment variables <code>LIBGIT_INCLUDE_DIR</code> and <code>LIBGIT_BUILD_DIR</code> to point to your <code>libgit2</code> include and build directories</li>
+<li>Build Metro:
+<pre><code>mkdir build &amp;&amp; cd build
+cmake ..
+make metro
+</code></pre>
+</li>
+</ul>
+<h2><a class="header" href="#linux" id="linux">Linux</a></h2>
+<h3><a class="header" href="#ubuntu" id="ubuntu">Ubuntu</a></h3>
+<ul>
+<li>Download <code>cmake</code> and <code>libgit2</code> using the following commands:
+<pre><code>sudo apt-get install cmake
+sudo apt-get install libgit2-dev
+</code></pre>
+</li>
+<li>Clone Metro and build:
+<pre><code>git clone https://github.com/SiliconSloth/Metro.git
+mkdir build &amp;&amp; cd build
+cmake ..
+make metro
+</code></pre>
+</li>
+</ul>
+<h3><a class="header" href="#arch" id="arch">Arch</a></h3>
+<ul>
+<li>Download <code>cmake</code> and <code>libgit2</code> using the following command:
+<pre><code>pacman -S cmake-git libgit2-git
+</code></pre>
+</li>
+<li>Clone Metro and build: 
+<pre><code>git clone https://github.com/SiliconSloth/Metro.git
+mkdir build &amp;&amp; cd build
+cmake ..
+make metro
+</code></pre>
+</li>
+</ul>
+<h3><a class="header" href="#nixos" id="nixos">NixOS</a></h3>
+<ul>
+<li>Clone Metro:
+<pre><code>git clone https://github.com/SiliconSloth/Metro.git
+</code></pre>
+</li>
+<li>Create a <code>shell.nix</code> file with the following:
+<pre><code>with import &lt;nixpkgs&gt; {};
+stdenv.mkDerivation {
+  name = &quot;Metro&quot;;
+  buildInputs = [ cmake libgit2 openssl zlib ];
+  shellHook = &quot;mkdir build; cd build &amp;&amp; cmake ..&quot;;
+} 
+</code></pre>
+</li>
+<li>Build Metro in the <code>nix-shell</code>:
+<pre><code>nix-shell
+make metro
+</code></pre>
+</li>
+</ul>
+<h1><a class="header" href="#commands" id="commands">Commands</a></h1>
+<h2><a class="header" href="#running-metro" id="running-metro">Running Metro</a></h2>
+<p>From the <code>/build</code> directory, Metro can be run using the <code>./metro</code> command. By default, this will output a list of commands:</p>
+<pre><code>$ ./metro 
+Usage: metro &lt;command&gt; &lt;args&gt; [options]
+create - Create a repo
+commit - Make a commit
+patch - Update the last commit with the current work
+delete - Deletes a commit or branch
+branch - Create a new branch
+switch - Switch to a different branch
+info - Show the state of the repo
+absorb - Merge the changes in another branch into this one
+resolve - Commit resolved conflicts after absorb
+Use --help for help.
+</code></pre>
+<h1><a class="header" href="#creating-a-repository" id="creating-a-repository">Creating a repository</a></h1>
+<p>To create a repository with metro, you use the create command:</p>
+<pre><code>metro create
+</code></pre>
+<p>Or alternatively to include origin:</p>
+<pre><code>metro create git@github.com:SiliconSloth/Metro.git
+</code></pre>
+<blockquote>
+<p><strong>Git Equivalent</strong></p>
+<p><code>metro create</code> is similar to <code>git init</code>. In particular, it performs the following git actions:</p>
+<pre><code class="language-bash">git init
+git commit -m &quot;Initial commit&quot;
+git remote add origin git@github.com:SiliconSloth/Metro.git
+</code></pre>
+</blockquote>
+<h1><a class="header" href="#making-commits" id="making-commits">Making commits</a></h1>
+<h2><a class="header" href="#creating-a-commit" id="creating-a-commit">Creating a Commit</a></h2>
+<p>Commits are created using the <code>metro commit</code> command. This creates a new commit for the current working branch which includes the contents of any changed files automatically.</p>
+<pre><code class="language-bash">metro commit &quot;Message&quot;
+</code></pre>
+<blockquote>
+<p><strong>Git Equivalent</strong></p>
+<p><code>metro commit</code> performs a combination of adding files, as well as creating a commit.</p>
+<pre><code>git add -A 
+git commit -m &quot;Message&quot;
+</code></pre>
+</blockquote>
+<h2><a class="header" href="#patching-a-commit" id="patching-a-commit">Patching a Commit</a></h2>
+<p>Commit messages can be patched in order to update the latest commit with local changes before it has been synced. This is performed using the <code>metro patch</code> command. This rewrites the previous commit with the contents of the local branch.</p>
+<pre><code class="language-bash">metro patch
+</code></pre>
+<h2><a class="header" href="#deleting-a-commit" id="deleting-a-commit">Deleting a Commit</a></h2>
+<p>You can also delete a commit by using delete:</p>
+<pre><code class="language-bash">metro delete commit &lt;num&gt;
+</code></pre>
+<p>Using <num> to specify how far back to go (or leave blank for last)</p>
+<p>Which is the alternative to <code>reset</code> in Git:</p>
+<pre><code class="language-bash">git reset --soft HEAD~1
+</code></pre>
+<p>Keep in mind your changes for all those commits will still be stored in the WIP commit.</p>
+<p>However you can delete that too using:</p>
+<pre><code class="language-bash">metro delete commit WIP
+</code></pre>
+<p>This will return the repository to the last commit</p>
+<h1><a class="header" href="#syncing-with-remote" id="syncing-with-remote">Syncing with remote</a></h1>
+<p>Coming soon!</p>
+<h1><a class="header" href="#handling-branches" id="handling-branches">Handling branches</a></h1>
+<p>Branches allow you to (some explanation of branches here...)</p>
+<h2><a class="header" href="#creating-branches" id="creating-branches">Creating branches</a></h2>
+<p>Branches are created using the <code>metro branch</code> command:</p>
+<pre><code class="language-bash">metro branch &quot;feature/documentation&quot;
+</code></pre>
+<h2><a class="header" href="#switching-branches" id="switching-branches">Switching branches</a></h2>
+<p>Branches can be switched to by using the <code>metro switch</code> command. Metro automatically saves the current state of your working branch before switching and automatically restores the saved state when you return to that branch again.</p>
+<pre><code class="language-bash">metro switch &quot;feature/documentation&quot;
+</code></pre>
+<h2><a class="header" href="#deleting-branches" id="deleting-branches">Deleting branches</a></h2>
+<p>Branches can be deleted using the <code>metro delete</code> command:</p>
+<pre><code class="language-bash">metro delete &quot;feature/documentation&quot;
+</code></pre>
+<blockquote>
+<p><strong>Warning:</strong></p>
+<p>Using this command will delete <strong>ALL</strong> data from the provided branch. This cannot be undone.</p>
+</blockquote>
+<h2><a class="header" href="#branch-information" id="branch-information">Branch information</a></h2>
+<p>Information about the current branch can be viewed by using <code>metro info</code></p>
+<h1><a class="header" href="#absorbing-code" id="absorbing-code">Absorbing code</a></h1>
+<p>The contents of a branch can be absorbed into another branch by using the <code>metro absorb</code> command. This combines the contents of a branch into another branch if possible. If a conflict arises, Metro will put the branch into &quot;merged&quot; mode, where it can be resolved using <code>metro resolve</code>.</p>
+<h3><a class="header" href="#example" id="example">Example:</a></h3>
+<p>Say we have a branch <em>feature/documentation</em> which includes some changes about documentation. We want to include the contents of this branch into our <em>master</em> branch. Firstly, we make sure we are in the <em>master</em> branch by using <code>metro switch</code>:</p>
+<pre><code class="language-bash">metro switch &quot;master&quot;
+</code></pre>
+<p>We can then absorb the contents of <em>feature/documentation</em> into the current branch:</p>
+<pre><code class="language-bash">metro absorb &quot;feature/documentation&quot;
+</code></pre>
+<h1><a class="header" href="#metro-vs-git" id="metro-vs-git">Metro vs Git</a></h1>
+<h2><a class="header" href="#whats-wrong-with-git" id="whats-wrong-with-git">What's wrong with Git?</a></h2>
+<h3><a class="header" href="#gets-used-for-file-syncing-when-it-probably-shouldnt-be" id="gets-used-for-file-syncing-when-it-probably-shouldnt-be">Gets used for file syncing when it probably shouldn't be</a></h3>
+<p>Git repositories are meant to be a place to store finished parts of your code, in a manner that makes it easy for multiple people to work on different features in parallel. While Git is an excellent choice for this purpose, we feel that its approach is outdated and fails to effectively fulfil the needs of the modern programmer.</p>
+<p>Git was designed for the days when programmers would write all their code at one computer, and only commit and push it to the repo once they had finished a feature completely. However, nowadays it is common for people to use many different computers (laptop, work computer, home desktop...) and want to switch machines partway through writing a feature. The correct way to solve this problem is probably to use a separate directory syncing tool to transfer the work-in-progress code, using the Git repo only for completed commits, however in practice most people just end up committing random half-finished changes when they need to leave in a hurry. This can lead to Git repositories filled with lots of poor-quality commits, with actual completed feature commits few and far between.</p>
+<p>In contrast, Metro is <em>made</em> for syncing unfinished code between computers. Rather than having to commit halfway through a semicolon every time you leave the room, Metro syncs the current contents of the working directory into the repo so that you can easily transfer your work to another machine without leaving loads of broken commits in the repo. Metro treats the repo as a living, changing thing that includes the very latest versions of your code, rather than just the finished archived stuff.</p>
+<h3><a class="header" href="#when-it-breaks-it-breaks" id="when-it-breaks-it-breaks">When it breaks, it <strong>BREAKS</strong></a></h3>
+<p>When you know the basics of Git (and remember to add your files before committing, and to push after committing, and to pull before working on the code) it is a simple and easy system to use. Unfortunately, when something goes wrong, it really does go wrong. </p>
+<p>Here is common scene when trying to commit a file:</p>
+<pre><code class="language-bash">&gt; git add -A
+
+&gt; git commit -m &quot;Changed file&quot;
+[master 6c3a3de] Changed file
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push
+To github.com:Black-Photon/Git-Testing.git
+ ! [rejected]        master -&gt; master (fetch first)
+error: failed to push some refs to 'git@github.com:Black-Photon/Git-Testing.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+&gt; git pull
+&lt;Goes to vim to edit commit message&gt;
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (3/3), done.
+From github.com:Black-Photon/Git-Testing
+   4436cfd..f88f912  master     -&gt; origin/master
+Merge made by the 'recursive' strategy.
+ Readme.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+&gt; git push
+Enumerating objects: 9, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 588 bytes | 588.00 KiB/s, done.
+Total 5 (delta 0), reused 1 (delta 0)
+To github.com:Black-Photon/Git-Testing.git
+   f88f912..4129e5e  master -&gt; master
+</code></pre>
+<p>Having to do so much is difficult to learn and not at all intuitive. Why do you need to add files? What does -m do? In what order do I pull and push? It also takes up time working out all the commands each time. Now what if that was:</p>
+<pre><code class="language-bash">&gt; metro commit &quot;Changed file&quot;
+Committed Successfully
+
+&gt; metro sync
+Conflict Found:
+[0] Absorb local master line into remote master line
+[1] Move local changes to new line master-local
+&gt; 0
+Successfully Absorbed Changes
+</code></pre>
+<h2><a class="header" href="#features" id="features">Features</a></h2>
+<p>We've tried to reduce the number of inconveniences you encounter with git as much as possible while still keeping the functionality you need:</p>
+<ul>
+<li>As a Git wrapper, Metro is fully compatible with all Git tools</li>
+<li>No staging area or adding files - all files are automatically added to commits</li>
+<li>Push and pull combined into one command to sync the current line with the remote</li>
+<li>Simple method to delete or return to past commits</li>
+<li>Patching last commit with current work to fix mistakes or reduce small commits</li>
+<li>Ignores files recently added to .ignore's rather than deleting them from other machines that then sync</li>
+<li>Locking lines to avoid new users committing all their code to the production line</li>
+</ul>
+<h1><a class="header" href="#about" id="about">About</a></h1>
+<p>Metro was first thought up by [whoever] as a part of [some genius idea]</p>
+<p>Something something something Hackathon?</p>
+<p>Maybe a name etymology might be good</p>
+<p>Maybe something about future plans (GUI?)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+        
+        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+        
+        
+
+    </body>
+</html>
