@@ -1,6 +1,7 @@
 #pragma once
 
 #include <git2/strarray.h>
+#include <memory>
 
 #define STR_EMPTY StrArray()
 
@@ -11,8 +12,8 @@ public:
         array.count = 0;
         array.strings = nullptr;
     }
-    StrArray(git_strarray);
-    ~StrArray();
+    explicit StrArray(git_strarray);
+    void free();
     char **strings();
     size_t count();
 };

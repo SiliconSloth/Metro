@@ -37,6 +37,7 @@ using namespace std;
 #include "gitwrapper/branch_iterator.h"
 #include "gitwrapper/status_list.h"
 #include "gitwrapper/repository.h"
+#include "gitwrapper/strarray.h"
 
 #include "metro/metro.h"
 #include "metro/merging.h"

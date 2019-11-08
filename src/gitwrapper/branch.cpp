@@ -22,4 +22,16 @@ namespace git {
         out = git_reference_name(ref.get());
         return string(out);
     }
+
+    OID Branch::target() {
+        const git_oid *oid = git_reference_target(ref.get());
+        return oid == nullptr ? OID() : OID(*oid);
+    }
+
+    void Branch::set_target(OID oid, const char *log_message) {
+        git_reference *out;
+        git_reference_set_target(&out, ref.get(), &oid.oid, log_message);
+        shared_ptr<git_reference> new_ref(out, git_reference_free);
+        ref = new_ref;
+    }
 }

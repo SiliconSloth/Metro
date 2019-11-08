@@ -127,6 +127,10 @@ namespace metro {
         printf("\rProgress: %d%%", progress);
         if (progress == 100) {
             cout << endl;
+        } else if (progress > 100) {
+            cout << "Progress Tracking Error: Please send debug report to developers" << endl;
+            printf("Recieved Objects: %d, Indexed Objects: %d, Total Objects: %d, Total Progress:%d\n",
+                    stats->received_objects, stats->indexed_objects, stats->total_objects, progress);
         }
         return GIT_OK;
     }
@@ -154,11 +158,9 @@ namespace metro {
         return GIT_OK;
     }
 
-    Callbacks create_callbacks() {
-        Callbacks callbacks;
-        callbacks.transfer_progress = transfer_progress_callback;
-        callbacks.credentials = credentials_callback;
-        return callbacks;
+    Callbacks create_callbacks(Callbacks *callbacks) {
+        callbacks->transfer_progress = transfer_progress_callback;
+        callbacks->credentials = credentials_callback;
     }
 
     string current_branch_name(const Repository& repo) {
@@ -308,13 +310,48 @@ namespace metro {
 
     // Replaces all current work with new branch, resetting the commit
     // Does NOT check if safe - do that first
-    void FastForward(string name, const Repository &repo) {
+    void fast_forward(const Repository &repo, string name) {
         // Replaces all current work with origin
         string branch = current_branch_name(repo);
-//        checkout(name, repo);
+        checkout(repo, name);
         Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
-        Branch refOrigin = repo.lookup_branch("origin/"+branch, GIT_BRANCH_REMOTE);
-//       ref.set_target(refOrigin.target(), "message");
-//       checkout_branch(branch, repo);
+        Branch refOrigin = repo.lookup_branch("origin/" + branch, GIT_BRANCH_REMOTE);
+        ref.set_target(refOrigin.target(), "message");
+        checkout_branch(repo, branch);
+    }
+
+    Remote add_remote(const Repository &repo, string url) {
+        StrArray remotes = repo.remote_list();
+
+        if (remotes.count() < 1) {
+            Remote remote = repo.remote_create("origin", url);
+            return remote;
+        } else {
+            repo.remote_set_url("origin", url);
+            return repo.remote_lookup(remotes.strings()[0]);
+        }
+    }
+
+    // TODO Move to Remote class
+    void remote_fetch(Remote remote, StrArray refspecs, FetchOps opts, string reflog_message) {
+        int err = git_remote_fetch(remote, &refspecs.array, &opts, reflog_message.c_str());
+        check_error(err);
+    }
+
+    MergeAnalysis merge_analysis(const Repository &repo, string name) {
+        Commit otherHead = get_commit(repo, name);
+        AnnotatedCommit annOther = repo.lookup_annotated_commit(otherHead.id());
+        vector<AnnotatedCommit> sources;
+        sources.push_back(annOther);
+
+        return repo.merge_analysis(sources);
+    }
+
+    // Checks out the given branch by name
+    // name - Plain Text branch name (e.g. 'master')
+    // repo - Repo to Checkout from
+    void checkout_branch(Repository repo, string name) {
+        checkout(repo, name);
+        move_head(repo, name);
     }
 }

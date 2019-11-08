@@ -152,9 +152,31 @@ namespace git {
         check_error(err);
     }
 
-    StrArray Repository::remote_list() {
+    StrArray Repository::remote_list() const {
         git_strarray array;
         int err = git_remote_list(&array, repo.get());
         check_error(err);
+
+        return StrArray(array);
+    }
+
+    Remote Repository::remote_create(string name, string url) const {
+        Remote remote;
+        int err = git_remote_create(&remote, repo.get(), name.c_str(), url.c_str());
+        check_error(err);
+
+        return remote;
+    }
+
+    void Repository::remote_set_url(string remote, string url) const {
+        int err = git_remote_set_url(repo.get(), remote.c_str(), url.c_str());
+        check_error(err);
+    }
+
+    Remote Repository::remote_lookup(string name) const {
+        Remote remote;
+        int err = git_remote_lookup(&remote, repo.get(), name.c_str());
+        check_error(err);
+        return remote;
     }
 }

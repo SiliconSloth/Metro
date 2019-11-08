@@ -4,7 +4,7 @@ StrArray::StrArray(git_strarray array) {
     this->array = array;
 }
 
-StrArray::~StrArray() {
+void StrArray::free() {
     git_strarray_free(&array);
 }
 

@@ -53,6 +53,8 @@ namespace metro {
 
     [[nodiscard]] vector<StandaloneConflict> get_conflicts(const Index& index);
 
+    void fast_forward(const Repository &repo, string name);
+
     // If the working directory has changes since the last commit, or a merge has been started,
     // Save these changes in a WIP commit in a new #wip branch.
     void save_wip(const Repository& repo);
@@ -64,4 +66,6 @@ namespace metro {
     void switch_branch(const Repository& repo, const string& name);
 
     void move_head(const Repository& repo, const string& name);
+
+    void checkout_branch(Repository repo, string name);
 }

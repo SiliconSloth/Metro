@@ -47,7 +47,13 @@ namespace git {
         [[nodiscard]] git_merge_analysis_t merge_analysis(const vector<AnnotatedCommit>& sources) const;
         void merge(const vector<AnnotatedCommit>& sources, const git_merge_options& merge_opts, const git_checkout_options& checkout_opts) const;
 
-        StrArray remote_list();
+        StrArray remote_list() const;
+
+        Remote remote_create(string name, string url) const;
+
+        void remote_set_url(string remote, string url) const;
+
+        Remote remote_lookup(string name) const;
     };
 
 }
