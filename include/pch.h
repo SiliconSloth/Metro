@@ -38,8 +38,10 @@ using namespace std;
 #include "gitwrapper/status_list.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/strarray.h"
+#include "gitwrapper/remote.h"
 
 #include "metro/metro.h"
 #include "metro/merging.h"
+#include "metro/syncing.h"
 
 #endif //PCH_H

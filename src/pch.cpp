@@ -12,6 +12,7 @@
 
 #include "metro/metro.cpp"
 #include "metro/merging.cpp"
+#include "metro/syncing.cpp"
 
 #include "commands/create.cpp"
 #include "commands/commit.cpp"

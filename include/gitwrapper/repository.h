@@ -1,7 +1,7 @@
 #pragma once
 
 namespace git {
-    class Repository {
+    class __declspec(dllexport) Repository {
     private:
         explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
 
@@ -16,6 +16,7 @@ namespace git {
 
         static Repository init(const string& path, bool isBare);
         static Repository open(const string& path);
+        static Repository clone(const string& url, const string& path);
         static bool exists(const string& path);
 
         [[nodiscard]] string path() const;
@@ -53,7 +54,7 @@ namespace git {
 
         void remote_set_url(string remote, string url) const;
 
-        Remote remote_lookup(string name) const;
+        Remote lookup_remote(string name) const;
     };
 
 }

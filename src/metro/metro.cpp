@@ -27,7 +27,7 @@ namespace metro {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
-        index.add_all(STR_EMPTY, GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
+        index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
         // Write the files in the index into a tree that can be attached to the commit.
         OID oid = index.write_tree();
         Tree tree = repo.lookup_tree(oid);
@@ -161,6 +161,7 @@ namespace metro {
     Callbacks create_callbacks(Callbacks *callbacks) {
         callbacks->transfer_progress = transfer_progress_callback;
         callbacks->credentials = credentials_callback;
+        return *callbacks;
     }
 
     string current_branch_name(const Repository& repo) {
@@ -328,7 +329,7 @@ namespace metro {
             return remote;
         } else {
             repo.remote_set_url("origin", url);
-            return repo.remote_lookup(remotes.strings()[0]);
+            return repo.lookup_remote(remotes.strings()[0]);
         }
     }
 

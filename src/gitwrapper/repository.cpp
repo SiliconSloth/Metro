@@ -18,6 +18,14 @@ namespace git {
         return Repository(gitRepo);
     }
 
+    Repository Repository::clone(const string& url, const string& path) {
+        git_repository *gitRepo = nullptr;
+        int err = git_clone(&gitRepo, url.c_str(), path.c_str(), nullptr);
+        check_error(err);
+
+        return Repository(gitRepo);
+    }
+
     bool Repository::exists(const string& path) {
         int err = git_repository_open_ext(nullptr, path.c_str(), GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
         return err >= 0;
@@ -157,15 +165,15 @@ namespace git {
         int err = git_remote_list(&array, repo.get());
         check_error(err);
 
-        return StrArray(array);
+        return StrArray(&array);
     }
 
     Remote Repository::remote_create(string name, string url) const {
-        Remote remote;
+        git_remote *remote;
         int err = git_remote_create(&remote, repo.get(), name.c_str(), url.c_str());
         check_error(err);
 
-        return remote;
+        return Remote(remote);
     }
 
     void Repository::remote_set_url(string remote, string url) const {
@@ -173,10 +181,10 @@ namespace git {
         check_error(err);
     }
 
-    Remote Repository::remote_lookup(string name) const {
-        Remote remote;
+    Remote Repository::lookup_remote(string name) const {
+        git_remote *remote;
         int err = git_remote_lookup(&remote, repo.get(), name.c_str());
         check_error(err);
-        return remote;
+        return Remote(remote);
     }
 }

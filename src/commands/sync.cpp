@@ -1,11 +1,11 @@
 #include "pch.h"
 
 void downsync(const Repository &repo, Remote remote, bool force) {
-    string check = "curl -Is " + string(git_remote_url(remote)) + " > /dev/null";
-    if (system(check.c_str())) {
-        cout << "Could not connect to " << git_remote_url(remote) << endl;
-        return;
-    }
+//    string check = "curl -Is " + string(git_remote_url(remote)) + " > /dev/null";
+//    if (system(check.c_str())) {
+//        cout << "Could not connect to " << git_remote_url(remote) << endl;
+//        return;
+//    }
 
     string branch = metro::current_branch_name(repo);
 
@@ -77,31 +77,24 @@ Command syncCmd {
 
         // execute
         [](const Arguments &args) {
-            if (!args.positionals.empty()) {
-                throw UnexpectedPositionalException(args.positionals[0]);
+            if (args.positionals.size() > 1) {
+                throw UnexpectedPositionalException(args.positionals[1]);
             }
-
             Repository repo = git::Repository::open(".");
-            StrArray remotes = repo.remote_list();
 
-            Remote remote;
-            if (remotes.count() < 1) {
-                cout << "What url should be fetched from?" << endl;
-                string url;
-                cin >> url;
-
-                remote = metro::add_remote(repo, url);
+            if (args.positionals.empty()) {
+                throw UnsupportedOperationException("We don't support bidirectional syncing yet!");
+            } else if (args.positionals[0] == "up") {
+                throw UnsupportedOperationException("We don't support syncing up yet!");
+            } else if (args.positionals[0] == "down") {
+                metro::sync_down(repo);
             } else {
-                remote = repo.remote_lookup(remotes.strings()[0]);
+                throw UnknownOptionException(args.positionals[0]);
             }
-
-            downsync(repo, remote, false);
-
-            remotes.free();
         },
 
         // printHelp
         [](const Arguments &args) {
-            std::cout << "Usage: metro sync <up/down/url>\n";
+            cout << "Usage: metro sync [up/down]\n";
         }
 };
