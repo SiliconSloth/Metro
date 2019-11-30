@@ -18,6 +18,13 @@ bool has_suffix(string const& str, string const& suff) {
     }
 }
 
+// True if the string contains no non-whitespace characters.
+bool whitespace_only(const string& s) {
+    return s.empty() || all_of(s.begin(), s.end(), [](char c){
+        return isspace(static_cast<unsigned char>(c));
+    });
+}
+
 // Split the given string around the fist occurrence of the given character.
 // If the character is not found, the input string is returned as the first string and "" as the second.
 // The outputs are stored in before and after.

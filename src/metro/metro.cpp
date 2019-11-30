@@ -334,8 +334,8 @@ namespace metro {
     }
 
     // TODO Move to Remote class
-    void remote_fetch(Remote remote, StrArray refspecs, FetchOps opts, string reflog_message) {
-        int err = git_remote_fetch(remote, &refspecs.array, &opts, reflog_message.c_str());
+    void remote_fetch(const Remote &remote, const StrArray &refspecs, FetchOps opts, string reflog_message) {
+        int err = git_remote_fetch(remote.ptr().get(), refspecs.ptr().get(), &opts, reflog_message.c_str());
         check_error(err);
     }
 

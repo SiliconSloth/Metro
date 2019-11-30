@@ -20,8 +20,12 @@ namespace git {
 
         StrArray operator=(StrArray c) = delete;
 
+        [[nodiscard]] shared_ptr<git_strarray> ptr() const {
+            return array;
+        }
+
         [[nodiscard]] char** strings() const {
-            return array.get()->strings;
+            return array->strings;
         }
 
         [[nodiscard]] size_t count() const {

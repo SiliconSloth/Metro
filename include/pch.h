@@ -14,6 +14,9 @@ using namespace std;
 #include <streambuf>
 #include <functional>
 #include <memory>
+#include <algorithm>
+#include <regex>
+#include <cctype>
 
 #include "git2.h"
 #if (LIBGIT2_VER_MINOR < 28)
@@ -36,9 +39,9 @@ using namespace std;
 #include "gitwrapper/object.h"
 #include "gitwrapper/branch_iterator.h"
 #include "gitwrapper/status_list.h"
+#include "gitwrapper/remote.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/strarray.h"
-#include "gitwrapper/remote.h"
 
 #include "metro/metro.h"
 #include "metro/merging.h"
