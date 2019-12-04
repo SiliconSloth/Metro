@@ -15,5 +15,7 @@ namespace git {
         [[nodiscard]] shared_ptr<git_remote> ptr() const {
             return remote;
         }
+
+        void fetch(const StrArray& refspecs, FetchOps opts);
     };
 }

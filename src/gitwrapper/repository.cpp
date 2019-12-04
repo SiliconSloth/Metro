@@ -111,6 +111,15 @@ namespace git {
         return BranchIterator(iter);
     }
 
+    void Repository::foreach_reference(const foreach_reference_cb& callback, const void *payload) const {
+        foreach_reference_cb_payload cbp{callback, payload};
+        int err = git_reference_foreach(repo.get(), [](git_reference *reference, void *payload) {
+            auto *cb_payload = (foreach_reference_cb_payload*) payload;
+            return cb_payload->callback(Branch(reference), cb_payload->payload);
+        }, &cbp);
+        check_error(err);
+    }
+
     StatusList Repository::new_status_list(const git_status_options &options) const {
         git_status_list *status;
         int err = git_status_list_new(&status, repo.get(), &options);

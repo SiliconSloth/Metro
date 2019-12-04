@@ -1,6 +1,13 @@
 #pragma once
 
 namespace git {
+    typedef int (*foreach_reference_cb)(const Branch& reference, const void *payload);
+
+    struct foreach_reference_cb_payload {
+        const foreach_reference_cb callback;
+        const void *payload;
+    };
+
     class __declspec(dllexport) Repository {
     private:
         explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
@@ -36,6 +43,8 @@ namespace git {
         void create_branch(const string& branch_name, Commit &target, bool force) const;
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
+
+        void foreach_reference(const foreach_reference_cb& callback, const void *payload) const;
 
         [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
 

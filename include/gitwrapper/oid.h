@@ -11,11 +11,9 @@ namespace git {
         explicit OID(git_oid oid) : oid(oid) {}
         explicit OID() : isNull(true) {}
 
-        [[nodiscard]] string str() const {
-            if (isNull) return "";
-            char out[OID_LENGTH];
-            git_oid_tostr(out, OID_LENGTH, &oid);
-            return string(out);
-        }
+        bool operator==(const OID& other) const;
+        bool operator!=(const OID& other) const;
+
+        [[nodiscard]] string str() const;
     };
 }

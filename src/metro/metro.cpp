@@ -158,12 +158,6 @@ namespace metro {
         return GIT_OK;
     }
 
-    Callbacks create_callbacks(Callbacks *callbacks) {
-        callbacks->transfer_progress = transfer_progress_callback;
-        callbacks->credentials = credentials_callback;
-        return *callbacks;
-    }
-
     string current_branch_name(const Repository& repo) {
         BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
         for (Branch branch; iter.next(&branch);) {
@@ -331,12 +325,6 @@ namespace metro {
             repo.remote_set_url("origin", url);
             return repo.lookup_remote(remotes.strings()[0]);
         }
-    }
-
-    // TODO Move to Remote class
-    void remote_fetch(const Remote &remote, const StrArray &refspecs, FetchOps opts, string reflog_message) {
-        int err = git_remote_fetch(remote.ptr().get(), refspecs.ptr().get(), &opts, reflog_message.c_str());
-        check_error(err);
     }
 
     MergeAnalysis merge_analysis(const Repository &repo, string name) {

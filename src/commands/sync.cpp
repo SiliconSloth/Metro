@@ -11,7 +11,7 @@ Command syncCmd {
             }
 
             Repository repo = git::Repository::open(".");
-            throw UnsupportedOperationException("Sync is not implemented yet.");
+            metro::sync(repo);
         },
 
         // printHelp

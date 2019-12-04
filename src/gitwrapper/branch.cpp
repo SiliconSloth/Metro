@@ -23,7 +23,7 @@ namespace git {
         return string(out);
     }
 
-    OID Branch::target() {
+    OID Branch::target() const {
         const git_oid *oid = git_reference_target(ref.get());
         return oid == nullptr ? OID() : OID(*oid);
     }

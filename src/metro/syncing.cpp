@@ -1,6 +1,11 @@
 #include "pch.h"
 
 namespace metro {
+    struct RefTargets {
+        OID local;
+        OID remote;
+    };
+
     // Extract the name of a remote repo from its URL.
     // Roughly speaking this is the last component of the path,
     // excluding any final .git component or .git or .bundle file extension.
@@ -79,15 +84,48 @@ namespace metro {
         return repo;
     }
 
+    void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
+        repo.foreach_reference([](const Branch& ref, const void *payload) {
+            string name = ref.name();
+            auto branchTargets = (map<string, RefTargets>*) payload;
+
+            if (has_prefix(ref.reference_name(), "refs/heads/")) {
+                if (branchTargets->find(name) != branchTargets->end()) {
+                    (*branchTargets)[name].local = ref.target();
+                } else {
+                    (*branchTargets)[name] = {ref.target(), OID()};
+                }
+
+            } else if (has_prefix(ref.reference_name(), "refs/remotes/origin/")) {
+                name = name.substr(7, name.size() - 7);
+                if (branchTargets->find(name) != branchTargets->end()) {
+                    (*branchTargets)[name].remote = ref.target();
+                } else {
+                    (*branchTargets)[name] = {OID(), ref.target()};
+                }
+            }
+            return 0;
+        }, out);
+    }
+
+    void sync(const Repository& repo) {
+        repo.lookup_remote("origin").fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
+
+        map<string, RefTargets> branchTargets;
+        get_branch_targets(repo, &branchTargets);
+
+        for(const auto& entry : branchTargets) {
+            const RefTargets targets = entry.second;
+            if (targets.local != targets.remote) {
+                cout << entry.first << ": " << targets.local.str() << ", " << targets.remote.str() << endl;
+            }
+        }
+    }
+
     void sync_down(const Repository& repo, bool force) {
-        Remote remote = repo.lookup_remote("origin");
-        string branch = metro::current_branch_name(repo);
+        repo.lookup_remote("origin").fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
 
-        FetchOps fetchOps = GIT_FETCH_OPTIONS_INIT;
-        metro::create_callbacks(&fetchOps.callbacks);
-
-        metro::remote_fetch(remote, StrArray(), fetchOps, "pull");
-
+        const string branch = metro::current_branch_name(repo);
         MergeAnalysis analysis = metro::merge_analysis(repo, "origin/" + branch);
 
         if (force && (analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) == 0) {

@@ -3,10 +3,12 @@
 #include "helper.cpp"
 #include "error.cpp"
 
+#include "gitwrapper/oid.cpp"
 #include "gitwrapper/index.cpp"
 #include "gitwrapper/branch.cpp"
 #include "gitwrapper/branch_iterator.cpp"
 #include "gitwrapper/repository.cpp"
+#include "gitwrapper/remote.cpp"
 #include "gitwrapper/commit.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
 
