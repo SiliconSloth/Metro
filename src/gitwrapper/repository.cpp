@@ -98,9 +98,21 @@ namespace git {
         check_error(err);
     }
 
+    Branch Repository::create_reference(const string& name, const OID& oid, const bool force) const {
+        git_reference *ref;
+        int err = git_reference_create(&ref, repo.get(), name.c_str(), &oid.oid, force, nullptr);
+        check_error(err);
+        return Branch(ref);
+    }
+
     void Repository::create_branch(const string& branch_name, Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
+        check_error(err);
+    }
+
+    void Repository::remove_reference(const string& name) const {
+        int err = git_reference_remove(repo.get(), name.c_str());
         check_error(err);
     }
 
@@ -116,6 +128,15 @@ namespace git {
         int err = git_reference_foreach(repo.get(), [](git_reference *reference, void *payload) {
             auto *cb_payload = (foreach_reference_cb_payload*) payload;
             return cb_payload->callback(Branch(reference), cb_payload->payload);
+        }, &cbp);
+        check_error(err);
+    }
+
+    void Repository::foreach_reference_glob(const string& glob, const foreach_reference_glob_cb& callback, const void *payload) const {
+        foreach_reference_glob_cb_payload cbp{callback, payload};
+        int err = git_reference_foreach_glob(repo.get(), glob.c_str(), [](const char *name, void *payload) {
+            auto *cb_payload = (foreach_reference_glob_cb_payload*) payload;
+            return cb_payload->callback(string(name), cb_payload->payload);
         }, &cbp);
         check_error(err);
     }
@@ -195,5 +216,12 @@ namespace git {
         int err = git_remote_lookup(&remote, repo.get(), name.c_str());
         check_error(err);
         return Remote(remote);
+    }
+
+    OID Repository::merge_base(OID one, OID two) const {
+        git_oid out;
+        int err = git_merge_base(&out, repo.get(), &one.oid, &two.oid);
+        check_error(err);
+        return OID(out);
     }
 }

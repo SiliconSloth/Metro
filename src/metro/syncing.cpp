@@ -4,6 +4,7 @@ namespace metro {
     struct RefTargets {
         OID local;
         OID remote;
+        OID synced;
     };
 
     // Extract the name of a remote repo from its URL.
@@ -74,6 +75,60 @@ namespace metro {
         return name;
     }
 
+    int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
+        cout << "Username for " << url << ": ";
+        string username;
+        getline(cin, username);
+        cout << "Password for " << username << ": ";
+
+        return GIT_PASSTHROUGH;
+    }
+
+    void clear_sync_cache(const Repository& repo) {
+        repo.foreach_reference([](const Branch& ref, const void *payload) {
+            if (has_prefix(ref.reference_name(), "refs/synced/")) {
+                ref.delete_reference();
+            }
+            return 0;
+        }, nullptr);
+    }
+
+    void update_sync_cache(const Repository& repo) {
+        clear_sync_cache(repo);
+
+        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+        for (Branch branch; iter.next(&branch);) {
+            repo.create_reference("refs/synced/" + branch.name(), branch.target(), false);
+        }
+    }
+
+    bool prepare_branch_targets(map<string, RefTargets>& branchTargets, string& name, const string& prefix) {
+        if (has_prefix(name, prefix)) {
+            name = name.substr(prefix.size(), name.size() - prefix.size());
+            if (branchTargets.find(name) == branchTargets.end()) {
+                branchTargets[name] = {OID(), OID(), OID()};
+            }
+            return true;
+        }
+        return false;
+    }
+
+    void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
+        repo.foreach_reference([](const Branch& ref, const void *payload) {
+            string name = ref.reference_name();
+            auto branchTargets = (map<string, RefTargets>*) payload;
+
+            if (prepare_branch_targets(*branchTargets, name, "refs/heads/")) {
+                (*branchTargets)[name].local = ref.target();
+            } else if (prepare_branch_targets(*branchTargets, name, "refs/remotes/origin/")) {
+                (*branchTargets)[name].remote = ref.target();
+            } else if (prepare_branch_targets(*branchTargets, name, "refs/synced/")) {
+                (*branchTargets)[name].synced = ref.target();
+            }
+            return 0;
+        }, out);
+    }
+
     Repository clone(const string& url, const string& path) {
         const string repoPath = path + "/.git";
         if (Repository::exists(repoPath)) {
@@ -81,45 +136,55 @@ namespace metro {
         }
 
         Repository repo = git::Repository::clone(url, repoPath);
+        sync(repo);
         return repo;
     }
 
-    void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
-        repo.foreach_reference([](const Branch& ref, const void *payload) {
-            string name = ref.name();
-            auto branchTargets = (map<string, RefTargets>*) payload;
-
-            if (has_prefix(ref.reference_name(), "refs/heads/")) {
-                if (branchTargets->find(name) != branchTargets->end()) {
-                    (*branchTargets)[name].local = ref.target();
-                } else {
-                    (*branchTargets)[name] = {ref.target(), OID()};
-                }
-
-            } else if (has_prefix(ref.reference_name(), "refs/remotes/origin/")) {
-                name = name.substr(7, name.size() - 7);
-                if (branchTargets->find(name) != branchTargets->end()) {
-                    (*branchTargets)[name].remote = ref.target();
-                } else {
-                    (*branchTargets)[name] = {OID(), ref.target()};
-                }
-            }
-            return 0;
-        }, out);
-    }
-
     void sync(const Repository& repo) {
-        repo.lookup_remote("origin").fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
+        Remote origin = repo.lookup_remote("origin");
+        origin.fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
 
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
 
         for(const auto& entry : branchTargets) {
+            const string branchName = entry.first;
             const RefTargets targets = entry.second;
+
             if (targets.local != targets.remote) {
-                cout << entry.first << ": " << targets.local.str() << ", " << targets.remote.str() << endl;
+                OID base;
+                if (!targets.local.isNull && !targets.remote.isNull) {
+                    base = repo.merge_base(targets.local, targets.remote);
+                }
+
+                cout << branchName << ": " << targets.local.str() << ", " << targets.remote.str() << ", " << targets.synced.str() << endl;
+                if (targets.local == targets.synced) {
+                    if (targets.local == base) {
+                        repo.create_reference("refs/heads/" + branchName, targets.remote, true);
+                    } else if (targets.remote == base) {
+                        cout << "Need to delete from local " << entry.first << ".\n";
+                    } else {
+                        cout << "Need to rebase local " << entry.first << ".\n";
+                    }
+                } else if (targets.remote == targets.synced) {
+                    if (targets.local == base) {
+                        cout << "Need to delete from remote " << entry.first << "." << endl;
+                    } else if (targets.remote == base) {
+                        PushOptions opts = GIT_PUSH_OPTIONS_INIT;
+                        opts.callbacks.credentials = acquire_credentials;
+                        StrArray refspecs({"+refs/heads/" + branchName + ":refs/remotes/origin/" + branchName});
+                        origin.push(refspecs, opts);
+                        cout << "Pushed to remote " << entry.first << "." << endl;
+                    } else {
+                        cout << "Need to rebase remote " << entry.first << ".\n";
+                    }
+                } else {
+                    cout << "Need to resolve conflict on " << entry.first << "." << endl;
+                }
             }
         }
+
+        update_sync_cache(repo);
     }
 
     void sync_down(const Repository& repo, bool force) {

@@ -8,6 +8,13 @@ namespace git {
         const void *payload;
     };
 
+    typedef int (*foreach_reference_glob_cb)(const string& name, const void *payload);
+
+    struct foreach_reference_glob_cb_payload {
+        const foreach_reference_glob_cb callback;
+        const void *payload;
+    };
+
     class __declspec(dllexport) Repository {
     private:
         explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
@@ -40,11 +47,16 @@ namespace git {
 
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;
 
+        Branch create_reference(const string& name, const OID& oid, const bool force) const;
+
         void create_branch(const string& branch_name, Commit &target, bool force) const;
+
+        void remove_reference(const string& name) const;
 
         [[nodiscard]] BranchIterator new_branch_iterator(const git_branch_t& flags) const;
 
         void foreach_reference(const foreach_reference_cb& callback, const void *payload) const;
+        void foreach_reference_glob(const string& glob, const foreach_reference_glob_cb& callback, const void *payload) const;
 
         [[nodiscard]] StatusList new_status_list(const git_status_options& options) const;
 
@@ -64,6 +76,8 @@ namespace git {
         void remote_set_url(string remote, string url) const;
 
         Remote lookup_remote(string name) const;
+
+        OID merge_base(OID one, OID two) const;
     };
 
 }

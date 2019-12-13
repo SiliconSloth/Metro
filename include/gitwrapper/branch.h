@@ -15,11 +15,12 @@ namespace git {
         }
 
         [[nodiscard]] string name() const;
-        [[nodiscard]] bool is_head() const;
-        void delete_branch();
-        OID target() const;
-        void set_target(OID, const char *);
-
         [[nodiscard]] string reference_name() const;
+        [[nodiscard]] bool is_head() const;
+        OID target() const;
+
+        void set_target(OID, const char *);
+        void delete_reference() const;
+        void delete_branch() const;
     };
 }

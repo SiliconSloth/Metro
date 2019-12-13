@@ -17,5 +17,6 @@ namespace git {
         }
 
         void fetch(const StrArray& refspecs, FetchOps opts);
+        void push(StrArray refspecs, PushOptions opts);
     };
 }

@@ -53,3 +53,7 @@ void write_all(const string& text, const string& path) {
     file << text;
     file.close();
 }
+
+string read_password() {
+
+}
