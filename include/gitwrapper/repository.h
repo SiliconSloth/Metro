@@ -38,7 +38,8 @@ namespace git {
         [[nodiscard]] Index index() const;
 
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
-        Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
+        [[nodiscard]] Commit Repository::lookup_commit(const OID& oid) const;
         [[nodiscard]] AnnotatedCommit lookup_annotated_commit(const OID& id) const;
         OID create_commit(const string& update_ref, const Signature &author, const Signature &committer,
                               const string& message_encoding, const string& message, const Tree& tree,

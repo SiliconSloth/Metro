@@ -63,6 +63,13 @@ namespace git {
         return Branch(branch);
     }
 
+    Commit Repository::lookup_commit(const OID& oid) const {
+        git_commit *commit;
+        int err = git_commit_lookup(&commit, repo.get(), &oid.oid);
+        check_error(err);
+        return Commit(commit);
+    }
+
     AnnotatedCommit Repository::lookup_annotated_commit(const OID& id) const {
         git_annotated_commit *commit;
         int err = git_annotated_commit_lookup(&commit, repo.get(), &id.oid);

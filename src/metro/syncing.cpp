@@ -76,12 +76,22 @@ namespace metro {
     }
 
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
-        cout << "Username for " << url << ": ";
         string username;
-        getline(cin, username);
-        cout << "Password for " << username << ": ";
+        string password;
+        switch (allowed_types) {
+            case GIT_CREDTYPE_DEFAULT:
+                return git_cred_default_new(cred);
+            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
+                cout << "Username for " << url << ": ";
+                getline(cin, username);
+                cout << "Password for " << username << ": ";
+                password = read_password();
 
-        return GIT_PASSTHROUGH;
+                return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
+            default:
+                cout << "Metro currently doesn't support SSH. Please use HTTPS.";
+                return GIT_ERROR;
+        }
     }
 
     void clear_sync_cache(const Repository& repo) {
@@ -142,7 +152,9 @@ namespace metro {
 
     void sync(const Repository& repo) {
         Remote origin = repo.lookup_remote("origin");
-        origin.fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
+        git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
+        fetchOpts.prune = GIT_FETCH_PRUNE;
+        origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
@@ -157,27 +169,28 @@ namespace metro {
                     base = repo.merge_base(targets.local, targets.remote);
                 }
 
-                cout << branchName << ": " << targets.local.str() << ", " << targets.remote.str() << ", " << targets.synced.str() << endl;
                 if (targets.local == targets.synced) {
-                    if (targets.local == base) {
+                    if (targets.local != base) {
+                        if (base.isNull) {
+                            delete_branch(repo, branchName);
+                        } else {
+                            git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+                            checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+                            repo.reset_to_commit(repo.lookup_commit(base), GIT_RESET_HARD, checkoutOpts);
+                        }
+                    }
+
+                    if (targets.remote != base) {
                         repo.create_reference("refs/heads/" + branchName, targets.remote, true);
-                    } else if (targets.remote == base) {
-                        cout << "Need to delete from local " << entry.first << ".\n";
-                    } else {
-                        cout << "Need to rebase local " << entry.first << ".\n";
+                        checkout(repo, branchName);
                     }
                 } else if (targets.remote == targets.synced) {
-                    if (targets.local == base) {
-                        cout << "Need to delete from remote " << entry.first << "." << endl;
-                    } else if (targets.remote == base) {
-                        PushOptions opts = GIT_PUSH_OPTIONS_INIT;
-                        opts.callbacks.credentials = acquire_credentials;
-                        StrArray refspecs({"+refs/heads/" + branchName + ":refs/remotes/origin/" + branchName});
-                        origin.push(refspecs, opts);
-                        cout << "Pushed to remote " << entry.first << "." << endl;
-                    } else {
-                        cout << "Need to rebase remote " << entry.first << ".\n";
-                    }
+                    PushOptions opts = GIT_PUSH_OPTIONS_INIT;
+                    opts.callbacks.credentials = acquire_credentials;
+                    string refspec = targets.local.isNull? ":refs/heads/" + branchName : "+refs/heads/" + branchName + ":refs/heads/" + branchName;
+                    StrArray refspecs({refspec});
+                    origin.push(refspecs, opts);
+                    cout << "Pushed to remote " << entry.first << "." << endl;
                 } else {
                     cout << "Need to resolve conflict on " << entry.first << "." << endl;
                 }

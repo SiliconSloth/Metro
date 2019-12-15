@@ -55,5 +55,28 @@ void write_all(const string& text, const string& path) {
 }
 
 string read_password() {
+#ifdef _WIN32
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(hStdin, &mode);
+    SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
+#else
+    termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    termios newt = oldt;
+    newt.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+#endif //_WIN32
 
+    string input;
+    getline(cin, input);
+    cout << endl;
+
+#ifdef _WIN32
+    SetConsoleMode(hStdin, mode);
+#else
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+#endif //_WIN32
+
+    return input;
 }

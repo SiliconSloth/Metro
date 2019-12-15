@@ -28,10 +28,6 @@ Command deleteCmd {
                 }
 
                 string name = args.positionals[1];
-                if (name == metro::current_branch_name(repo)) {
-                    throw UnsupportedOperationException("Can't delete current branch.");
-                }
-
                 metro::delete_branch(repo, name);
                 cout << "Deleted branch " << name << ".\n";
             } else {

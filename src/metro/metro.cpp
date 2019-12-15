@@ -135,29 +135,6 @@ namespace metro {
         return GIT_OK;
     }
 
-    int credentials_callback(git_cred **out, const char *url, const char *username_from_url, unsigned int allowed_types, void *) {
-        string username;
-        string password;
-        switch (allowed_types) {
-            case GIT_CREDTYPE_DEFAULT:
-                git_cred_default_new(out);
-                break;
-            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
-                cout << "Username: ";
-                cin >> username;
-
-                cout << "Password: ";
-                cin >> password;
-
-                git_cred_userpass_plaintext_new(out, username.c_str(), password.c_str());
-                break;
-            default:
-                cout << "Metro currently doesn't support SSH. Please use HTTPS.";
-                return GIT_ERROR;
-        }
-        return GIT_OK;
-    }
-
     string current_branch_name(const Repository& repo) {
         BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
         for (Branch branch; iter.next(&branch);) {
@@ -168,7 +145,28 @@ namespace metro {
         throw BranchNotFoundException();
     }
 
+    //TODO: Should probably delete corresponding WIP branch too.
     void delete_branch(const Repository& repo, const string& name) {
+        // If the user tries to delete the current branch,
+        // we must switch out of it first.
+        // Preferably switch into the master branch,
+        // but if that does not exist just pick an arbitrary branch.
+        if (name == current_branch_name(repo)) {
+            if (branch_exists(repo, "master")) {
+                switch_branch(repo, "master");
+            } else {
+                BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                for (Branch branch; iter.next(&branch);) {
+                    // Pick any branch that isn't the one being deleted and isn't a WIP branch.
+                    //TODO: Needs support for other special branch types later. Also what if this is the last non-WIP branch?
+                    if (branch.name() != name &&! has_suffix(branch.name(), WIPString)) {
+                        switch_branch(repo, branch.name());
+                        break;
+                    }
+                }
+            }
+        }
+
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
     }

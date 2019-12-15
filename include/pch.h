@@ -1,8 +1,6 @@
 #ifndef PCH_H
 #define PCH_H
 
-using namespace std;
-
 #include <string>
 #include <vector>
 #include <map>
@@ -17,6 +15,13 @@ using namespace std;
 #include <algorithm>
 #include <regex>
 #include <cctype>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif //_WIN32
 
 #include "git2.h"
 #if (LIBGIT2_VER_MINOR < 28)
