@@ -158,8 +158,8 @@ namespace metro {
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 for (Branch branch; iter.next(&branch);) {
                     // Pick any branch that isn't the one being deleted and isn't a WIP branch.
-                    //TODO: Needs support for other special branch types later. Also what if this is the last non-WIP branch?
-                    if (branch.name() != name &&! has_suffix(branch.name(), WIPString)) {
+                    //TODO: What if this is the last non-WIP branch?
+                    if (branch.name() != name &&! is_wip(branch.name())) {
                         switch_branch(repo, branch.name());
                         break;
                     }
@@ -208,14 +208,16 @@ namespace metro {
         }
 
         string name = current_branch_name(repo);
+        string wipName = to_wip(name);
+
         try {
-            delete_branch(repo, name+WIPString);
+            delete_branch(repo, wipName);
         } catch (GitException&) {
             // We don't mind if the delete fails, we tried it just in case.
         }
 
-        create_branch(repo, name+WIPString);
-        move_head(repo, name+WIPString);
+        create_branch(repo, wipName);
+        move_head(repo, wipName);
 
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
@@ -231,10 +233,12 @@ namespace metro {
     // and resuming a merge if one was ongoing.
     void restore_wip(const Repository& repo) {
         string name = current_branch_name(repo);
-        if (!branch_exists(repo, name+WIPString)) {
+        string wipName = to_wip(name);
+
+        if (!branch_exists(repo, wipName)) {
             return;
         }
-        Commit wipCommit = get_commit(repo, name+WIPString);
+        Commit wipCommit = get_commit(repo, wipName);
         Index index = repo.index();
 
         vector<StandaloneConflict> conflicts;
@@ -263,8 +267,8 @@ namespace metro {
         }
 
         // Restore the contents of the WIP commit to the working directory.
-        checkout(repo, name+WIPString);
-        delete_branch(repo, name+WIPString);
+        checkout(repo, wipName);
+        delete_branch(repo, wipName);
 
         // If we are mid-merge, restore the conflicts from the merge.
         for (const Conflict& conflict : conflicts) {
@@ -274,7 +278,7 @@ namespace metro {
     }
 
     void switch_branch(const Repository& repo, const string& name) {
-        if (has_suffix(name, WIPString)) {
+        if (is_wip(name)) {
             throw UnsupportedOperationException("Can't switch to WIP branch.");
         }
         if (!branch_exists(repo, name)) {

@@ -112,7 +112,7 @@ namespace git {
         return Branch(ref);
     }
 
-    void Repository::create_branch(const string& branch_name, Commit &target, bool force) const {
+    void Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
         check_error(err);

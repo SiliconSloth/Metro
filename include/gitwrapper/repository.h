@@ -50,7 +50,7 @@ namespace git {
 
         Branch create_reference(const string& name, const OID& oid, const bool force) const;
 
-        void create_branch(const string& branch_name, Commit &target, bool force) const;
+        void create_branch(const string& branch_name, const Commit &target, bool force) const;
 
         void remove_reference(const string& name) const;
 

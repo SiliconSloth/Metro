@@ -1,5 +1,3 @@
-#define WIPString "#WIP"
-
 using namespace git;
 
 namespace metro {

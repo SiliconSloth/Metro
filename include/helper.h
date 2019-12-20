@@ -1,5 +1,7 @@
 using namespace std;
 
+int parse_pos_int(const string& str);
+
 bool has_prefix(string const& str, string const& pre);
 
 bool has_suffix(string const& str, string const& suff);

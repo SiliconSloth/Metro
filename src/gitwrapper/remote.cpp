@@ -6,7 +6,7 @@ namespace git {
         check_error(err);
     }
 
-    void Remote::push(StrArray refspecs, PushOptions opts) {
+    void Remote::push(StrArray refspecs, PushOptions opts) const {
         int err = git_remote_push(remote.get(), refspecs.ptr().get(), &opts);
         check_error(err);
     }

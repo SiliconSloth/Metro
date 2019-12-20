@@ -7,6 +7,8 @@ namespace metro {
         OID synced;
     };
 
+    enum SyncType {PUSH, PULL, CONFLICT};
+
     // Extract the name of a remote repo from its URL.
     // Roughly speaking this is the last component of the path,
     // excluding any final .git component or .git or .bundle file extension.
@@ -75,6 +77,22 @@ namespace metro {
         return name;
     }
 
+    // Increment the version number of a branch name to the next unused one for that branch.
+    string next_conflict_branch_name(const Repository& repo, const string& name) {
+        BranchDescriptor nextDesc(name);
+        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+        // Find the current greatest version number in use with this base name.
+        for (Branch branch; iter.next(&branch);) {
+            BranchDescriptor d(branch.name());
+            if (d.baseName == nextDesc.baseName) {
+                nextDesc.version = max(nextDesc.version, d.version);
+            }
+        }
+        // Increment to the next unused number.
+        nextDesc.version++;
+        return nextDesc.full_name();
+    }
+
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
         string username;
         string password;
@@ -112,9 +130,12 @@ namespace metro {
         }
     }
 
+    // Check if the given reference name starts with the specified prefix, and if so remove the prefix from the name
+    // and ensure that there is an entry for that name in branchTargets by creating a blank one if needed.
     bool prepare_branch_targets(map<string, RefTargets>& branchTargets, string& name, const string& prefix) {
         if (has_prefix(name, prefix)) {
             name = name.substr(prefix.size(), name.size() - prefix.size());
+            // Create a blank entry if none is present.
             if (branchTargets.find(name) == branchTargets.end()) {
                 branchTargets[name] = {OID(), OID(), OID()};
             }
@@ -123,6 +144,7 @@ namespace metro {
         return false;
     }
 
+    // Find the local, remote and sync-cached target OIDs of each local, remote and cached branch.
     void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
         repo.foreach_reference([](const Branch& ref, const void *payload) {
             string name = ref.reference_name();
@@ -139,6 +161,48 @@ namespace metro {
         }, out);
     }
 
+    // Force push the specified branch to the remote, deleting the remote branch if requested.
+    void push(const Remote& remote, const string& branchName, bool deleting) {
+        PushOptions opts = GIT_PUSH_OPTIONS_INIT;
+        opts.callbacks.credentials = acquire_credentials;
+        string refspec = deleting? ":refs/heads/" + branchName : "+refs/heads/" + branchName + ":refs/heads/" + branchName;
+        remote.push(StrArray({refspec}), opts);
+        cout << "Pushed to remote " << branchName << "." << endl;
+    }
+
+    // Move the specified branch to a new target.
+    // Effectively performs a force pull if the new target is a commit fetched from a remote.
+    // Can create and delete branches as needed.
+    void change_branch_target(const Repository& repo, const string& branchName, const OID& newTarget) {
+        if (newTarget.isNull) {
+            delete_branch(repo, branchName);
+        } else {
+            repo.create_reference("refs/heads/" + branchName, newTarget, true);
+            // Update the working dir if this is the current branch.
+            if (branchName == current_branch_name(repo)) {
+                checkout(repo, branchName);
+            }
+        }
+    }
+
+    // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
+    // The new branch with the local changes is pushed to remote.
+    void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name, const OID& localTarget, const OID& remoteTarget) {
+        const string newName = next_conflict_branch_name(repo, name);
+        repo.create_reference("refs/heads/" + newName, localTarget, false);
+        // If this is the current branch, move the head to the new branch
+        // so the user stays on their version of the branch.
+        // We don't need to checkout as the contents will not have changed.
+        if (name == current_branch_name(repo)) {
+            move_head(repo, newName);
+        }
+
+        // Point the old branch to the fetched remote commits.
+        repo.create_reference("refs/heads/" + name, remoteTarget, true);
+        push(remote, newName, false);
+        cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
+    }
+
     Repository clone(const string& url, const string& path) {
         const string repoPath = path + "/.git";
         if (Repository::exists(repoPath)) {
@@ -146,6 +210,7 @@ namespace metro {
         }
 
         Repository repo = git::Repository::clone(url, repoPath);
+        // Pull all the other branches (which were fetched anyway).
         sync(repo);
         return repo;
     }
@@ -169,30 +234,35 @@ namespace metro {
                     base = repo.merge_base(targets.local, targets.remote);
                 }
 
+                SyncType syncType;
                 if (targets.local == targets.synced) {
-                    if (targets.local != base) {
-                        if (base.isNull) {
-                            delete_branch(repo, branchName);
-                        } else {
-                            git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
-                            checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
-                            repo.reset_to_commit(repo.lookup_commit(base), GIT_RESET_HARD, checkoutOpts);
-                        }
-                    }
-
-                    if (targets.remote != base) {
-                        repo.create_reference("refs/heads/" + branchName, targets.remote, true);
-                        checkout(repo, branchName);
-                    }
+                    syncType = PULL;
                 } else if (targets.remote == targets.synced) {
-                    PushOptions opts = GIT_PUSH_OPTIONS_INIT;
-                    opts.callbacks.credentials = acquire_credentials;
-                    string refspec = targets.local.isNull? ":refs/heads/" + branchName : "+refs/heads/" + branchName + ":refs/heads/" + branchName;
-                    StrArray refspecs({refspec});
-                    origin.push(refspecs, opts);
-                    cout << "Pushed to remote " << entry.first << "." << endl;
+                    syncType = PUSH;
                 } else {
-                    cout << "Need to resolve conflict on " << entry.first << "." << endl;
+                    if (targets.local == base) {
+                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
+                             << "but in different ways. All remote commits will be retained locally." << endl;
+                        syncType = PULL;
+                    } else if (targets.remote == base) {
+                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
+                             << "but in different ways. All local commits will be retained remotely." << endl;
+                        syncType = PUSH;
+                    } else {
+                        syncType = CONFLICT;
+                    }
+                }
+
+                switch (syncType) {
+                    case PUSH:
+                        push(origin, branchName, targets.local.isNull);
+                        break;
+                    case PULL:
+                        change_branch_target(repo, branchName, targets.remote);
+                        break;
+                    case CONFLICT:
+                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote);
+                        break;
                 }
             }
         }
