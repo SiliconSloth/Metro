@@ -2,7 +2,7 @@
 
 Command *allCommands[] = {
         &create,
-        &clone,
+        &clone_repo,
         &commit,
         &patch,
         &deleteCmd,
