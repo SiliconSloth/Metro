@@ -18,9 +18,13 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#else
+#elif __unix__
 #include <termios.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <iostream>
+#include <fstream>
 #endif //_WIN32
 
 #include "git2.h"

@@ -1,6 +1,6 @@
 #include "pch.h"
 
-Command clone {
+Command clone_repo {
         "clone",
         "Clone a remote repo",
 

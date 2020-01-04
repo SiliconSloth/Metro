@@ -15,7 +15,7 @@ namespace git {
         const void *payload;
     };
 
-    class __declspec(dllexport) Repository {
+    class Repository {
     private:
         explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
 
@@ -39,7 +39,7 @@ namespace git {
 
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
         [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
-        [[nodiscard]] Commit Repository::lookup_commit(const OID& oid) const;
+        [[nodiscard]] Commit lookup_commit(const OID& oid) const;
         [[nodiscard]] AnnotatedCommit lookup_annotated_commit(const OID& id) const;
         OID create_commit(const string& updateRef, const Signature &author, const Signature &committer,
                           const string& messageEncoding, const string& message, const Tree& tree,

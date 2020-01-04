@@ -107,6 +107,42 @@ namespace metro {
         return diff.num_deltas() == 0;
     }
 
+    void get_keys(string *pub, string *pri) {
+#ifdef _WIN32
+        cout << "Metro currently doesn't support SSH on Windows. Please use HTTPS." << endl;
+        return;
+#elif __unix__
+        const char* home;
+        home = getenv("HOME");
+
+        if (home == NULL) {
+            home = getpwuid(getuid())->pw_dir;
+        }
+
+        ifstream keyfile;
+        keyfile.open(string(home) + "/.ssh/id_rsa.pub");
+        if (keyfile.is_open()) {
+            string line;
+            while (getline(keyfile, line)) {
+                pub->append(line);
+            }
+            keyfile.close();
+        } else {
+            cout << "Public Key not found at " + string(home) + "/.ssh/id_rsa.pub" << endl;
+        }
+        keyfile.open(string(home) + "/.ssh/id_rsa");
+        if (keyfile.is_open()) {
+            string line;
+            while (getline(keyfile, line)) {
+                pri->append(line);
+            }
+            keyfile.close();
+        } else {
+            cout << "Public Key not found at " + string(home) + "/.ssh/id_rsa" << endl;
+        }
+#endif //_WIN32
+    }
+
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
         string username;
         string password;
@@ -121,8 +157,17 @@ namespace metro {
 
                 return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
             default:
-                cout << "Metro currently doesn't support SSH. Please use HTTPS.";
-                return GIT_ERROR;
+                cout << "Username for " << url << ": ";
+                getline(cin, username);
+                cout << "SSH Keystore Password: ";
+                password = read_password();
+
+                string pub, pri;
+                get_keys(&pub, &pri);
+//                cout << "Metro currently doesn't support SSH. Please use HTTPS." << endl;
+                cout << "Public key is:\n" << pub << endl;
+                cout << "Private key is:\n" << pri << endl;
+                return git_cred_ssh_key_new(cred, username.c_str(), pub.c_str(), pri.c_str(), password.c_str());
         }
     }
 
@@ -251,6 +296,7 @@ namespace metro {
         Remote origin = repo.lookup_remote("origin");
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
         fetchOpts.prune = GIT_FETCH_PRUNE;
+        fetchOpts.callbacks.credentials = acquire_credentials;
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;

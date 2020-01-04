@@ -2,6 +2,9 @@
 
 #include <git2/strarray.h>
 #include <memory>
+#ifdef __unix__
+#define strcpy_s(dest, size, src) strcpy(dest, src)
+#endif //__unix__
 
 namespace git {
     class StrArray {

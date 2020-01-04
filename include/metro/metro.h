@@ -55,7 +55,7 @@ namespace metro {
 
     bool branch_exists(const Repository &repo, const string& name);
 
-    string __declspec(dllexport) current_branch_name(const Repository& repo);
+    string current_branch_name(const Repository& repo);
 
     void delete_branch(const Repository& repo, const string& name);
 
