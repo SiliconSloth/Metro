@@ -77,16 +77,16 @@ namespace git {
         return AnnotatedCommit(commit);
     }
 
-    OID Repository::create_commit(const string& update_ref, const Signature &author, const Signature &committer,
-                              const string& message_encoding, const string& message, const Tree& tree,
-                              vector<Commit> parents) const {
+    OID Repository::create_commit(const string& updateRef, const Signature &author, const Signature &committer,
+                                  const string& messageEncoding, const string& message, const Tree& tree,
+                                  vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
         for (unsigned long long i = 0; i < parents.size(); i++) {
             parents_array[i] = parents[i].ptr().get();
         }
 
         git_oid id;
-        int err = git_commit_create(&id, repo.get(), update_ref.c_str(), &author, &committer, message_encoding.c_str(),
+        int err = git_commit_create(&id, repo.get(), updateRef.c_str(), &author, &committer, messageEncoding.c_str(),
                                     message.c_str(), tree.ptr().get(), parents.size(), parents_array);
         delete[] parents_array;
         check_error(err);

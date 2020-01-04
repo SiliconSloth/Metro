@@ -11,6 +11,7 @@
 #include "gitwrapper/remote.cpp"
 #include "gitwrapper/commit.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
+#include "gitwrapper/diff.cpp"
 
 #include "metro/metro.cpp"
 #include "metro/merging.cpp"

@@ -41,9 +41,9 @@ namespace git {
         [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
         [[nodiscard]] Commit Repository::lookup_commit(const OID& oid) const;
         [[nodiscard]] AnnotatedCommit lookup_annotated_commit(const OID& id) const;
-        OID create_commit(const string& update_ref, const Signature &author, const Signature &committer,
-                              const string& message_encoding, const string& message, const Tree& tree,
-                              vector<Commit> parents) const;
+        OID create_commit(const string& updateRef, const Signature &author, const Signature &committer,
+                          const string& messageEncoding, const string& message, const Tree& tree,
+                          vector<Commit> parents) const;
         Object revparse_single(const string& spec) const;
 
         void reset_to_commit(const Commit &, ResetType, CheckoutOptions) const;

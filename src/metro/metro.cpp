@@ -19,11 +19,12 @@ namespace metro {
         }
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+    void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
         Index index = repo.index();
@@ -36,21 +37,38 @@ namespace metro {
         index.write();
 
         // Commit the files to the head of the current branch.
-        repo.create_commit("HEAD", author, author, "UTF-8", message, tree, parentCommits);
+        repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    void commit(const Repository& repo, const string& message, const initializer_list<string> parentRevs) {
+    void commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
         for (const string& parentRev : parentRevs) {
             parentCommits.push_back(static_cast<Commit>(repo.revparse_single(parentRev)));
         }
 
-        commit(repo, message, parentCommits);
+        commit(repo, updateRef, message, parentCommits);
+    }
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // repo: The repo
+    // message: The commit message
+    // parentCommits: The commit's parents
+    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+        commit(repo, "HEAD", message, parentCommits);
+    }
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // repo: The repo
+    // message: The commit message
+    // parentRevs: The revisions corresponding to the commit's parents
+    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
+        commit(repo, "HEAD", message, parentRevs);
     }
 
     // Initialize an empty git repository in the specified directory,
@@ -215,17 +233,15 @@ namespace metro {
         } catch (GitException&) {
             // We don't mind if the delete fails, we tried it just in case.
         }
-
         create_branch(repo, wipName);
-        move_head(repo, wipName);
 
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
             string message = get_merge_message(repo);
-            commit(repo, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
+            commit(repo, "refs/heads/"+wipName, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
             repo.cleanup_state();
         } else {
-            commit(repo, "WIP", {"HEAD"});
+            commit(repo, "refs/heads/"+wipName, "WIP", {"HEAD"});
         }
     }
 

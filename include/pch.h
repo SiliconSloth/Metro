@@ -47,6 +47,7 @@
 #include "gitwrapper/remote.h"
 #include "gitwrapper/repository.h"
 #include "gitwrapper/strarray.h"
+#include "gitwrapper/diff.h"
 
 #include "metro/metro.h"
 #include "metro/merging.h"

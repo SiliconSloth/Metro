@@ -78,12 +78,11 @@ namespace metro {
     }
 
     // Increment the version number of a branch name to the next unused one for that branch.
-    string next_conflict_branch_name(const Repository& repo, const string& name) {
+    string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
         BranchDescriptor nextDesc(name);
-        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
         // Find the current greatest version number in use with this base name.
-        for (Branch branch; iter.next(&branch);) {
-            BranchDescriptor d(branch.name());
+        for(const auto& entry : branchTargets) {
+            BranchDescriptor d(entry.first);
             if (d.baseName == nextDesc.baseName) {
                 nextDesc.version = max(nextDesc.version, d.version);
             }
@@ -91,6 +90,21 @@ namespace metro {
         // Increment to the next unused number.
         nextDesc.version++;
         return nextDesc.full_name();
+    }
+
+    // Returns true if both OIDs are non-null and point to commits with identical trees.
+    // The message and other metadata may be different.
+    bool commit_contents_identical(const Repository& repo, const OID& oid1, const OID& oid2) {
+        if (oid1.isNull || oid2.isNull) {
+            return false;
+        }
+
+        Commit commit1 = repo.lookup_commit(oid1);
+        Commit commit2 = repo.lookup_commit(oid2);
+
+        Diff diff = Diff::tree_to_tree(repo, commit1.tree(), commit2.tree(), nullptr);
+        // No differences.
+        return diff.num_deltas() == 0;
     }
 
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
@@ -187,8 +201,24 @@ namespace metro {
 
     // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
     // The new branch with the local changes is pushed to remote.
-    void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name, const OID& localTarget, const OID& remoteTarget) {
-        const string newName = next_conflict_branch_name(repo, name);
+    void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
+            const OID& localTarget, const OID& remoteTarget, const map<string, RefTargets>& branchTargets,
+            map<string, string>& conflictBranchNames) {
+
+        // If a new name has already been generated for this branch (or the base branch if this is a WIP branch),
+        // use the existing new name. Otherwise generate a new one.
+        const string nameUnwipped = un_wip(name);
+        string newName;
+        if (conflictBranchNames.find(nameUnwipped) != conflictBranchNames.end()) {
+            newName = conflictBranchNames[nameUnwipped];
+            if (is_wip(name)) {
+                newName = to_wip(newName);
+            }
+        } else {
+            newName = next_conflict_branch_name(name, branchTargets);
+            conflictBranchNames[nameUnwipped] = un_wip(newName);
+        }
+
         repo.create_reference("refs/heads/" + newName, localTarget, false);
         // If this is the current branch, move the head to the new branch
         // so the user stays on their version of the branch.
@@ -216,6 +246,8 @@ namespace metro {
     }
 
     void sync(const Repository& repo) {
+        save_wip(repo);
+
         Remote origin = repo.lookup_remote("origin");
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
         fetchOpts.prune = GIT_FETCH_PRUNE;
@@ -224,22 +256,28 @@ namespace metro {
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
 
+        map<string, string> conflictBranchNames;
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
 
             if (targets.local != targets.remote) {
-                OID base;
-                if (!targets.local.isNull && !targets.remote.isNull) {
-                    base = repo.merge_base(targets.local, targets.remote);
-                }
-
                 SyncType syncType;
-                if (targets.local == targets.synced) {
+
+                // If WIP commits have identical contents (but possibly different metadata)
+                // just keep the remote one.
+                if (is_wip(branchName) && commit_contents_identical(repo, targets.local, targets.remote)) {
+                    syncType = PULL;
+                } else if (targets.local == targets.synced) {
                     syncType = PULL;
                 } else if (targets.remote == targets.synced) {
                     syncType = PUSH;
                 } else {
+                    OID base;
+                    if (!targets.local.isNull && !targets.remote.isNull) {
+                        base = repo.merge_base(targets.local, targets.remote);
+                    }
+
                     if (targets.local == base) {
                         cout << "Branch " << branchName << " has been modified both locally and remotely, "
                              << "but in different ways. All remote commits will be retained locally." << endl;
@@ -261,13 +299,26 @@ namespace metro {
                         change_branch_target(repo, branchName, targets.remote);
                         break;
                     case CONFLICT:
-                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote);
+                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote, branchTargets, conflictBranchNames);
                         break;
                 }
             }
         }
 
+        // Make sure that if a new WIP branch was created, the corresponding base branch is also created.
+        for(const auto& entry : conflictBranchNames) {
+            const string oldName = entry.first;
+            const string newName = entry.second;
+
+            if (branch_exists(repo, oldName) &&! branch_exists(repo, newName)) {
+                OID target = repo.lookup_branch(oldName, GIT_BRANCH_LOCAL).target();
+                // Create branch pointing to same commit as old branch.
+                create_conflict_branches(repo, origin, oldName, target, target, branchTargets, conflictBranchNames);
+            }
+        }
+
         update_sync_cache(repo);
+        restore_wip(repo);
     }
 
     void sync_down(const Repository& repo, bool force) {

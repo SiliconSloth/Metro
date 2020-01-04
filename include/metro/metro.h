@@ -6,6 +6,20 @@ namespace metro {
 
     void assert_merging(const Repository& repo);
 
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit
+    // repo: The repo
+    // message: The commit message
+    // parentCommits: The commit's parents
+    void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits);
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit
+    // repo: The repo
+    // message: The commit message
+    // parentRevs: The revisions corresponding to the commit's parents
+    void commit(const Repository& repo, const string& updateRef, const string& message, initializer_list<string> parentRevs);
+
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
