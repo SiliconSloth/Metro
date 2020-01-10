@@ -27,7 +27,7 @@ namespace git {
 
     public:
         explicit StrArray(git_strarray *array) : array(new git_strarray{array->strings, array->count}, free_strarray) {}
-        StrArray(const initializer_list<string> elements) : array(list_to_strarray(elements), free_strarray) {}
+        explicit StrArray(const vector<string>& elements) : array(list_to_strarray(elements), free_strarray) {}
 
         StrArray() : array(new git_strarray{nullptr, 0}) {}
 
@@ -42,7 +42,7 @@ namespace git {
         }
 
         [[nodiscard]] size_t count() const {
-            return array.get()->count;
+            return array->count;
         }
     };
 }

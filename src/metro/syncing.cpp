@@ -220,13 +220,13 @@ namespace metro {
         }, out);
     }
 
-    // Force push the specified branch to the remote, deleting the remote branch if requested.
-    void push(const Remote& remote, const string& branchName, bool deleting) {
-        PushOptions opts = GIT_PUSH_OPTIONS_INIT;
-        opts.callbacks.credentials = acquire_credentials;
-        string refspec = deleting? ":refs/heads/" + branchName : "+refs/heads/" + branchName + ":refs/heads/" + branchName;
-        remote.push(StrArray({refspec}), opts);
-        cout << "Pushed to remote " << branchName << "." << endl;
+    // Refspec to push the specified branch, deleting the remote branch if requested.
+    string make_push_refspec(const string& branchName, bool deleting) {
+        if (deleting) {
+            return ":refs/heads/" + branchName;
+        } else {
+            return "+refs/heads/" + branchName + ":refs/heads/" + branchName;
+        }
     }
 
     // Move the specified branch to a new target.
@@ -245,10 +245,10 @@ namespace metro {
     }
 
     // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
-    // The new branch with the local changes is pushed to remote.
+    // The new branch with the local changes is scheduled to be pushed to remote.
     void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
             const OID& localTarget, const OID& remoteTarget, const map<string, RefTargets>& branchTargets,
-            map<string, string>& conflictBranchNames) {
+            map<string, string>& conflictBranchNames, vector<string>& pushRefspecs) {
 
         // If a new name has already been generated for this branch (or the base branch if this is a WIP branch),
         // use the existing new name. Otherwise generate a new one.
@@ -274,7 +274,7 @@ namespace metro {
 
         // Point the old branch to the fetched remote commits.
         repo.create_reference("refs/heads/" + name, remoteTarget, true);
-        push(remote, newName, false);
+        pushRefspecs.push_back(make_push_refspec(newName, false));
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
@@ -305,6 +305,7 @@ namespace metro {
         get_branch_targets(repo, &branchTargets);
 
         map<string, string> conflictBranchNames;
+        vector<string> pushRefspecs;
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
@@ -341,13 +342,14 @@ namespace metro {
 
                 switch (syncType) {
                     case PUSH:
-                        push(origin, branchName, targets.local.isNull);
+                        pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
                         break;
                     case PULL:
                         change_branch_target(repo, branchName, targets.remote);
                         break;
                     case CONFLICT:
-                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote, branchTargets, conflictBranchNames);
+                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
+                                branchTargets, conflictBranchNames, pushRefspecs);
                         break;
                 }
             }
@@ -361,8 +363,15 @@ namespace metro {
             if (branch_exists(repo, oldName) &&! branch_exists(repo, newName)) {
                 OID target = repo.lookup_branch(oldName, GIT_BRANCH_LOCAL).target();
                 // Create branch pointing to same commit as old branch.
-                create_conflict_branches(repo, origin, oldName, target, target, branchTargets, conflictBranchNames);
+                create_conflict_branches(repo, origin, oldName, target, target,
+                        branchTargets, conflictBranchNames, pushRefspecs);
             }
+        }
+
+        if (!pushRefspecs.empty()) {
+            PushOptions options = GIT_PUSH_OPTIONS_INIT;
+            options.callbacks.credentials = acquire_credentials;
+            origin.push(StrArray(pushRefspecs), options);
         }
 
         update_sync_cache(repo);
