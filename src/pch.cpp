@@ -17,6 +17,7 @@
 #include "metro/merging.cpp"
 #include "metro/syncing.cpp"
 #include "metro/branch_descriptor.cpp"
+#include "metro/credentials.cpp"
 
 #include "commands/create.cpp"
 #include "commands/clone.cpp"

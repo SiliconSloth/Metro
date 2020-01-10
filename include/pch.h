@@ -57,5 +57,6 @@
 #include "metro/merging.h"
 #include "metro/syncing.h"
 #include "metro/branch_descriptor.h"
+#include "metro/credentials.h"
 
 #endif //PCH_H
