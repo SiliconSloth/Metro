@@ -18,9 +18,9 @@ namespace git {
         return Repository(gitRepo);
     }
 
-    Repository Repository::clone(const string& url, const string& path) {
+    Repository Repository::clone(const string& url, const string& path, git_clone_options *options) {
         git_repository *gitRepo = nullptr;
-        int err = git_clone(&gitRepo, url.c_str(), path.c_str(), nullptr);
+        int err = git_clone(&gitRepo, url.c_str(), path.c_str(), options);
         check_error(err);
 
         return Repository(gitRepo);

@@ -30,7 +30,7 @@ namespace git {
 
         static Repository init(const string& path, bool isBare);
         static Repository open(const string& path);
-        static Repository clone(const string& url, const string& path);
+        static Repository clone(const string& url, const string& path, git_clone_options *options);
         static bool exists(const string& path);
 
         [[nodiscard]] string path() const;

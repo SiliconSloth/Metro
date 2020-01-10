@@ -284,7 +284,9 @@ namespace metro {
             throw RepositoryExistsException();
         }
 
-        Repository repo = git::Repository::clone(url, repoPath);
+        git_clone_options options = GIT_CLONE_OPTIONS_INIT;
+        options.fetch_opts.callbacks.credentials = acquire_credentials;
+        Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         sync(repo);
         return repo;
