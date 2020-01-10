@@ -144,31 +144,42 @@ namespace metro {
     }
 
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
-        string username;
-        string password;
-        switch (allowed_types) {
-            case GIT_CREDTYPE_DEFAULT:
-                return git_cred_default_new(cred);
-            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
-                cout << "Username for " << url << ": ";
-                getline(cin, username);
-                cout << "Password for " << username << ": ";
-                password = read_password();
+        int err = GIT_OK;
+        auto credentials = static_cast<git_cred**>(payload);
 
-                return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
-            default:
-                cout << "Username for " << url << ": ";
-                getline(cin, username);
-                cout << "SSH Keystore Password: ";
-                password = read_password();
+        if (*credentials == nullptr) {
+            string username;
+            string password;
+            switch (allowed_types) {
+                case GIT_CREDTYPE_DEFAULT:
+                    err = git_cred_default_new(credentials);
+                    break;
+                case GIT_CREDTYPE_USERPASS_PLAINTEXT:
+                    cout << "Username for " << url << ": ";
+                    getline(cin, username);
+                    cout << "Password for " << username << ": ";
+                    password = read_password();
 
-                string pub, pri;
-                get_keys(&pub, &pri);
+                    err = git_cred_userpass_plaintext_new(credentials, username.c_str(), password.c_str());
+                    break;
+                default:
+                    cout << "Username for " << url << ": ";
+                    getline(cin, username);
+                    cout << "SSH Keystore Password: ";
+                    password = read_password();
+
+                    string pub, pri;
+                    get_keys(&pub, &pri);
 //                cout << "Metro currently doesn't support SSH. Please use HTTPS." << endl;
-                cout << "Public key is:\n" << pub << endl;
-                cout << "Private key is:\n" << pri << endl;
-                return git_cred_ssh_key_new(cred, username.c_str(), pub.c_str(), pri.c_str(), password.c_str());
+                    cout << "Public key is:\n" << pub << endl;
+                    cout << "Private key is:\n" << pri << endl;
+                    err = git_cred_ssh_key_new(credentials, username.c_str(), pub.c_str(), pri.c_str(), password.c_str());
+                    break;
+            }
         }
+
+        *cred = *credentials;
+        return err;
     }
 
     void clear_sync_cache(const Repository& repo) {
@@ -278,7 +289,17 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
+
     Repository clone(const string& url, const string& path) {
+        git_cred *credentials = nullptr;
+        Repository repo = clone(url, path, &credentials);
+        if (credentials != nullptr) {
+            git_cred_free(credentials);
+        }
+        return repo;
+    }
+
+    Repository clone(const string& url, const string& path, git_cred** credentials) {
         const string repoPath = path + "/.git";
         if (Repository::exists(repoPath)) {
             throw RepositoryExistsException();
@@ -286,19 +307,29 @@ namespace metro {
 
         git_clone_options options = GIT_CLONE_OPTIONS_INIT;
         options.fetch_opts.callbacks.credentials = acquire_credentials;
+        options.fetch_opts.callbacks.payload = credentials;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
-        sync(repo);
+        sync(repo, credentials);
         return repo;
     }
 
     void sync(const Repository& repo) {
+        git_cred *credentials = nullptr;
+        sync(repo, &credentials);
+        if (credentials != nullptr) {
+            git_cred_free(credentials);
+        }
+    }
+
+    void sync(const Repository& repo, git_cred** credentials) {
         save_wip(repo);
 
         Remote origin = repo.lookup_remote("origin");
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
         fetchOpts.prune = GIT_FETCH_PRUNE;
         fetchOpts.callbacks.credentials = acquire_credentials;
+        fetchOpts.callbacks.payload = credentials;
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
@@ -371,71 +402,11 @@ namespace metro {
         if (!pushRefspecs.empty()) {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
+            options.callbacks.payload = credentials;
             origin.push(StrArray(pushRefspecs), options);
         }
 
         update_sync_cache(repo);
         restore_wip(repo);
-    }
-
-    void sync_down(const Repository& repo, bool force) {
-        repo.lookup_remote("origin").fetch(StrArray(), GIT_FETCH_OPTIONS_INIT);
-
-        const string branch = metro::current_branch_name(repo);
-        MergeAnalysis analysis = metro::merge_analysis(repo, "origin/" + branch);
-
-        if (force && (analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) == 0) {
-            metro::reset_head(repo);
-        } else if ((analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) == 0) {
-            bool areChanged = metro::has_uncommitted_changes(repo);
-
-            if (areChanged) {
-                cout << "Cannot Sync Down with unsaved changes." << endl;
-                return;
-            }
-        }
-        if ((analysis & GIT_MERGE_ANALYSIS_FASTFORWARD) != 0) cout << "FF" << endl;
-        if ((analysis & GIT_MERGE_ANALYSIS_NONE) != 0) cout << "None?" << endl;
-        if ((analysis & GIT_MERGE_ANALYSIS_NORMAL) != 0) cout << "NORMAL" << endl;
-        if ((analysis & GIT_MERGE_ANALYSIS_UNBORN) != 0) cout << "Unborn" << endl;
-        if ((analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) != 0) cout << "Uptodate" << endl;
-
-        if ((analysis & GIT_MERGE_ANALYSIS_FASTFORWARD) != 0) {
-            metro::fast_forward(repo, "origin/" + branch);
-            cout << "Fast-Forwarded Repo" << endl;
-        } else if ((analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE) == 0) {
-            metro::create_branch(repo, branch + "-local");
-            metro::fast_forward(repo, "origin/" + branch);
-
-            string in;
-            cout << "Conflict Found:" << endl;
-            printf("[0] Absorb local %s branch into remote %s branch\n", branch.c_str(), branch.c_str());
-            printf("[1] Move local changes to new branch %s-local\n", branch.c_str());
-            cin >> in;
-            if (in == "0" || in == "1") {
-                printf("Successfully moved local changes into %s-local\n", branch.c_str());
-            } else {
-                printf("Invalid choice: Moved local changes into %s-local\n", branch.c_str());
-            }
-
-            try {
-                metro::start_merge(repo, branch + "-local");
-            } catch (UnnecessaryMergeException &e) {
-                cout << "You're already in Sync." << endl;
-                return;
-            }
-
-            metro::delete_branch(repo, branch + "-local");
-
-            if (!repo.index().has_conflicts()) {
-                metro::commit(repo, "Completed Absorb.", {"HEAD"});
-                cout << "Successfully absorbed changes" << endl;
-            } else {
-                cout << "Conflicts Found: Fix, Commit and Sync again." << endl;
-            }
-
-        } else {
-            cout << "You are up to date!" << endl;
-        }
     }
 }
