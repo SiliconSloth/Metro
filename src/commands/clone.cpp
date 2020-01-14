@@ -18,7 +18,7 @@ Command clone_repo {
             replace(url.begin(), url.end(), '\\', '/');
             string name = metro::name_from_url(url);
 
-            cout << "Cloning " << url << " into ./" << name << endl;
+            cout << "Cloning " << url << " into " << name << endl;
             metro::clone(url, name);
             cout << "Cloning complete." << endl;
         },
