@@ -17,12 +17,17 @@ Command commit {
             Repository repo = git::Repository::open(".");
             metro::assert_merging(repo);
 
-            metro::commit(repo, message, {"HEAD"});
-            cout << "Saved commit to current branch.\n";
+            try {
+                metro::commit(repo, message, { "HEAD" });
+                string branch = metro::current_branch_name(repo);
+                cout << "Saved commit to branch " << branch << "." << endl;
+            } catch (UnsupportedOperationException &e) {
+                cout << e.what() << endl;
+            }
         },
 
         // printHelp
         [](const Arguments &args) {
-            std::cout << "Usage: metro commit <message>\n";
+            cout << "Usage: metro commit <message>" << endl;
         }
 };

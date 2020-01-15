@@ -27,6 +27,25 @@ namespace metro {
     void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
+        Tree current = get_commit(repo, "HEAD").tree();
+        DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
+        Diff diff = Diff::tree_to_workdir(repo, current, &opts);
+
+        if (diff.num_deltas() == 0) {
+            throw UnsupportedOperationException("No files to commit");
+        }
+
+        int added = diff.num_deltas_of_type(GIT_DELTA_ADDED);
+        int deleted = diff.num_deltas_of_type(GIT_DELTA_DELETED);
+        int modified = diff.num_deltas_of_type(GIT_DELTA_MODIFIED);
+        int renamed = diff.num_deltas_of_type(GIT_DELTA_RENAMED);
+        int copied = diff.num_deltas_of_type(GIT_DELTA_COPIED);
+        if (added != 0) cout << added << " file" << (added > 1 ? "s" : "") << " added" << endl;
+        if (deleted != 0) cout << deleted << " file" << (deleted > 1 ? "s" : "") << " deleted" << endl;
+        if (modified != 0) cout << modified << " file" << (modified > 1 ? "s" : "") << " modified" << endl;
+        if (renamed != 0) cout << renamed << " file" << (renamed > 1 ? "s" : "") << " renamed" << endl;
+        if (copied != 0) cout << copied << " file" << (copied > 1 ? "s" : "") << " copied" << endl;
+
         Index index = repo.index();
         index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
         // Write the files in the index into a tree that can be attached to the commit.
