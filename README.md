@@ -11,7 +11,7 @@ mkdir build && cd build
 cmake ..
 make metro
 ```
-For more detailed installation instructions, see the [wiki](https://github.com/SiliconSloth/Metro/wiki/Install).
+For more detailed installation instructions, see the [wiki](https://siliconsloth.github.io/Metro/installation.html).
 
 ## Status and Future
 Currently, some basic features are working, but not enough to be able to use in practice.
