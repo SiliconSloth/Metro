@@ -20,7 +20,7 @@ We are still working on various crucial features such as syncing and traversal.
 Once it's in a useable state, we plan to put work into a graphical Metro UI that allows easy control over repositories.
 
 ## Information
-See wiki for details and info.
+See [wiki](https://siliconsloth.github.io/Metro/) for details and info.
 
 ## Download
 Not yet released.
