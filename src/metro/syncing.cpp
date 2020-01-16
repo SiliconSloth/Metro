@@ -214,6 +214,20 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
+    int transfer_progress(const git_indexer_progress* stats, void* payload) {
+        int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
+        string bar;
+        int i;
+        for (i = 0; i < progress; i++) {
+            bar.append("=");
+        }
+        for (; i < 100; i++) {
+            bar.append("-");
+        }
+        printf("\rProgress: [%s] %d%%", bar.c_str(), progress);
+        return GIT_OK;
+    }
+
 
     Repository clone(const string& url, const string& path) {
         git_cred *credentials = nullptr;
@@ -233,6 +247,7 @@ namespace metro {
         git_clone_options options = GIT_CLONE_OPTIONS_INIT;
         options.fetch_opts.callbacks.credentials = acquire_credentials;
         options.fetch_opts.callbacks.payload = credentials;
+        options.fetch_opts.callbacks.transfer_progress = transfer_progress;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         sync(repo, credentials);
