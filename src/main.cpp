@@ -1,47 +1,57 @@
+/*
+ * The start of the program and files relating to parsing the input and allocating tasks to the individual commands.
+ */
+
 #include "pch.cpp"
 #include "main.h"
 
 using namespace std;
 
-// Retrieve the Option corresponding to a flag passed by the user.
-// If the flag starts with "--" the full option name is expected,
-// if it starts with only "-" the contraction is expected.
-// Raises an exception if no matching Option is found.
+/*
+ * Retrieve the Option corresponding to a flag passed by the user.
+ * flag: Flag passed to metro via commandline
+ * return: Option corresponding with flag passed
+ *
+ * If the flag starts with "--" the full option name is expected,
+ * if it starts with only "-" the contraction is expected.
+ * Raises an exception if no matching Option is found.
+ */
 Option lookup_option(string const& flag) {
     bool usedContraction = !has_prefix(flag, "--");
     // Remove -- or -
-    string name = flag.substr(usedContraction? 1:2, string::npos);
-    if (usedContraction) {
-        for (unsigned long long i = 0; i < sizeof(ALL_OPTIONS); i++)
-            if (ALL_OPTIONS[i].contraction == name)
-                return ALL_OPTIONS[i];
-    } else {
-        for (unsigned long long i = 0; i < sizeof(ALL_OPTIONS); i++)
-            if (ALL_OPTIONS[i].name == name)
-                return ALL_OPTIONS[i];
+    string name = flag.substr(usedContraction ? 1:2, string::npos);
+    for (unsigned long i = 0; i < sizeof(ALL_OPTIONS); i++) {
+        if (ALL_OPTIONS[i].contraction == name && usedContraction) {
+            return ALL_OPTIONS[i];
+        } else if (ALL_OPTIONS[i].name == name && !usedContraction) {
+            return ALL_OPTIONS[i];
+        }
     }
     throw UnknownOptionException(flag);
 }
 
-// Parse the arguments given to Metro on the command line.
-// argc: Number of arguments.
-// argv: The arguments to parse.
-//
-// All positional arguments must come before all Option arguments.
-// Options may have a value associated with them, in the form "--key=value" or "--key value".
-// Each option has a long version, prefixed with --, and a short version, prefixed with -.
-// Using the wrong prefix will result in the Option not being recognised.
-// The --help and -h flags are excluded from the options; instead hashHelpFlag is set.
-// The mame of the executable is excluded from the returned arguments.
-//
-// The returned option map maps the long name of each option to its value,
-// even if a contraction is used. Prefix -'s are excluded.
-//
-// Will throw an exception if:
-// - An unknown option is given
-// - An option that requires a value isn't given one
-// - An option that doesn't require a value is given one
-// - A positional argument is found after an option (interpreted as a value with no corresponding option flag)
+/*
+ * Parse the arguments given to Metro on the command line.
+ * argc: Number of arguments.
+ * argv: The arguments to parse.
+ * return: Formal arguments format
+ *
+ * All positional arguments must come before all Option arguments.
+ * Options may have a value associated with them, in the form "--key=value" or "--key value".
+ * Each option has a long version, prefixed with --, and a short version, prefixed with -.
+ * Using the wrong prefix will result in the Option not being recognised.
+ * The --help and -h flags are excluded from the options; instead hashHelpFlag is set.
+ * The mame of the executable is excluded from the returned arguments.
+ *
+ * The returned option map maps the long name of each option to its value,
+ * even if a contraction is used. Prefix -'s are excluded.
+ *
+ * Will throw an exception if:
+ * - An unknown option is given
+ * - An option that requires a value isn't given one
+ * - An option that doesn't require a value is given one
+ * - A positional argument is found after an option (interpreted as a value with no corresponding option flag)
+ */
 Arguments parse_args(int argc, char *argv[]) {
     Arguments args {};
 
@@ -120,6 +130,9 @@ void printHelp() {
     cout << "Use --help for help.\n";
 }
 
+/*
+ * Entry point of the program, passing off parsing to above functions
+ */
 int main(int argc, char *argv[]) {
     git_libgit2_init();
 
@@ -140,6 +153,7 @@ int main(int argc, char *argv[]) {
                     cmd->printHelp(args);
                     return 0;
                 } else {
+                    // Handle exceptions that may come up with labels
                     try {
                         cmd->execute(args);
                         return 0;
@@ -149,16 +163,15 @@ int main(int argc, char *argv[]) {
                         return -1;
                     } catch (GitException& e) {
                         cout << "Git Error: " << e.what() << "\n";
-                        cmd->printHelp(args);
                         return -1;
                     } catch (exception& e) {
                         cout << "Internal Error: " << e.what() << "\n";
-                        cmd->printHelp(args);
                         return -1;
                     }
                 }
             }
         }
+        // Command not found
         cout << "Invalid command: " << argCmd << "\n";
         printHelp();
         return -1;
