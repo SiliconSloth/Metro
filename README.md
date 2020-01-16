@@ -14,10 +14,8 @@ make metro
 For more detailed installation instructions, see the [wiki](https://siliconsloth.github.io/Metro/installation.html).
 
 ## Status and Future
-Currently, some basic features are working, but not enough to be able to use in practice.
-We are still working on various crucial features such as syncing and traversal.
-
-Once it's in a useable state, we plan to put work into a graphical Metro UI that allows easy control over repositories.
+The basic functionality of Metro, including syncing, has been implemented, however it is not yet stable or user-friendly.
+We are currently working on fixing bugs and generally improving the user experience.
 
 ## Information
 See [wiki](https://siliconsloth.github.io/Metro/) for details and info.
