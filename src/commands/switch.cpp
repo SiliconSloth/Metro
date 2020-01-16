@@ -15,8 +15,25 @@ Command switchCmd {
             string name = args.positionals[0];
 
             Repository repo = git::Repository::open(".");
+
+            string wip = metro::to_wip(name);
+            bool exists = metro::branch_exists(repo, wip);
+
+            // Finds differences between head and working dir
+            Tree current = metro::get_commit(repo, "HEAD").tree();
+            DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
+            Diff diff = Diff::tree_to_workdir(repo, current, &opts);
+
+            if (diff.num_deltas() > 0) {
+                cout << "Saved changes to WIP" << endl;
+            }
+
             metro::switch_branch(repo, name);
             cout << "Switched to branch " << name << ".\n";
+
+            if (exists) {
+                cout << "Loaded changes from WIP" << endl;
+            }
         },
 
         // printHelp
