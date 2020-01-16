@@ -17,7 +17,7 @@ Command deleteCmd {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
-                metro::delete_last_commit(repo, false);
+                metro::delete_last_commit(repo, true);
                 cout << "Deleted last commit.\n";
             } else if (args.positionals[0] == "branch") {
                 if (args.positionals.size() < 2) {
@@ -28,10 +28,6 @@ Command deleteCmd {
                 }
 
                 string name = args.positionals[1];
-                if (name == metro::current_branch_name(repo)) {
-                    throw UnsupportedOperationException("Can't delete current branch.");
-                }
-
                 metro::delete_branch(repo, name);
                 cout << "Deleted branch " << name << ".\n";
             } else {

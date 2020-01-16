@@ -19,15 +19,26 @@ namespace metro {
         }
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+    Diff commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
+        // Finds differences between head and working dir
+        Tree current = get_commit(repo, "HEAD").tree();
+        DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
+        Diff diff = Diff::tree_to_workdir(repo, current, &opts);
+
+        // If no changes, exit
+        if (diff.num_deltas() == 0) {
+            throw UnsupportedOperationException("No files to commit");
+        }
+
         Index index = repo.index();
-        index.add_all({}, GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
+        index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
         // Write the files in the index into a tree that can be attached to the commit.
         OID oid = index.write_tree();
         Tree tree = repo.lookup_tree(oid);
@@ -36,21 +47,40 @@ namespace metro {
         index.write();
 
         // Commit the files to the head of the current branch.
-        repo.create_commit("HEAD", author, author, "UTF-8", message, tree, parentCommits);
+        repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
+
+        return diff;
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    void commit(const Repository& repo, const string& message, const initializer_list<string> parentRevs) {
+    Diff commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
         for (const string& parentRev : parentRevs) {
             parentCommits.push_back(static_cast<Commit>(repo.revparse_single(parentRev)));
         }
 
-        commit(repo, message, parentCommits);
+        return commit(repo, updateRef, message, parentCommits);
+    }
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // repo: The repo
+    // message: The commit message
+    // parentCommits: The commit's parents
+    Diff commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+        return commit(repo, "HEAD", message, parentCommits);
+    }
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
+    // repo: The repo
+    // message: The commit message
+    // parentRevs: The revisions corresponding to the commit's parents
+    Diff commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
+        return commit(repo, "HEAD", message, parentRevs);
     }
 
     // Initialize an empty git repository in the specified directory,
@@ -122,6 +152,19 @@ namespace metro {
         }
     }
 
+    int transfer_progress_callback(const git_transfer_progress *stats, void *) {
+        int progress = 100 * (stats->received_objects + stats->indexed_objects) / (stats->total_objects);
+        printf("\rProgress: %d%%", progress);
+        if (progress == 100) {
+            cout << endl;
+        } else if (progress > 100) {
+            cout << "Progress Tracking Error: Please send debug report to developers" << endl;
+            printf("Recieved Objects: %d, Indexed Objects: %d, Total Objects: %d, Total Progress:%d\n",
+                    stats->received_objects, stats->indexed_objects, stats->total_objects, progress);
+        }
+        return GIT_OK;
+    }
+
     string current_branch_name(const Repository& repo) {
         BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
         for (Branch branch; iter.next(&branch);) {
@@ -132,7 +175,28 @@ namespace metro {
         throw BranchNotFoundException();
     }
 
+    //TODO: Should probably delete corresponding WIP branch too.
     void delete_branch(const Repository& repo, const string& name) {
+        // If the user tries to delete the current branch,
+        // we must switch out of it first.
+        // Preferably switch into the master branch,
+        // but if that does not exist just pick an arbitrary branch.
+        if (name == current_branch_name(repo)) {
+            if (branch_exists(repo, "master")) {
+                switch_branch(repo, "master");
+            } else {
+                BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                for (Branch branch; iter.next(&branch);) {
+                    // Pick any branch that isn't the one being deleted and isn't a WIP branch.
+                    //TODO: What if this is the last non-WIP branch?
+                    if (branch.name() != name &&! is_wip(branch.name())) {
+                        switch_branch(repo, branch.name());
+                        break;
+                    }
+                }
+            }
+        }
+
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
     }
@@ -174,22 +238,22 @@ namespace metro {
         }
 
         string name = current_branch_name(repo);
+        string wipName = to_wip(name);
+
         try {
-            delete_branch(repo, name+WIPString);
+            delete_branch(repo, wipName);
         } catch (GitException&) {
             // We don't mind if the delete fails, we tried it just in case.
         }
-
-        create_branch(repo, name+WIPString);
-        move_head(repo, name+WIPString);
+        create_branch(repo, wipName);
 
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
             string message = get_merge_message(repo);
-            commit(repo, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
+            commit(repo, "refs/heads/"+wipName, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
             repo.cleanup_state();
         } else {
-            commit(repo, "WIP", {"HEAD"});
+            commit(repo, "refs/heads/"+wipName, "WIP", {"HEAD"});
         }
     }
 
@@ -197,10 +261,12 @@ namespace metro {
     // and resuming a merge if one was ongoing.
     void restore_wip(const Repository& repo) {
         string name = current_branch_name(repo);
-        if (!branch_exists(repo, name+WIPString)) {
+        string wipName = to_wip(name);
+
+        if (!branch_exists(repo, wipName)) {
             return;
         }
-        Commit wipCommit = get_commit(repo, name+WIPString);
+        Commit wipCommit = get_commit(repo, wipName);
         Index index = repo.index();
 
         vector<StandaloneConflict> conflicts;
@@ -229,8 +295,8 @@ namespace metro {
         }
 
         // Restore the contents of the WIP commit to the working directory.
-        checkout(repo, name+WIPString);
-        delete_branch(repo, name+WIPString);
+        checkout(repo, wipName);
+        delete_branch(repo, wipName);
 
         // If we are mid-merge, restore the conflicts from the merge.
         for (const Conflict& conflict : conflicts) {
@@ -240,7 +306,7 @@ namespace metro {
     }
 
     void switch_branch(const Repository& repo, const string& name) {
-        if (has_suffix(name, WIPString)) {
+        if (is_wip(name)) {
             throw UnsupportedOperationException("Can't switch to WIP branch.");
         }
         if (!branch_exists(repo, name)) {
@@ -256,5 +322,55 @@ namespace metro {
     void move_head(const Repository& repo, const string& name) {
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         repo.set_head(branch.reference_name());
+    }
+
+    Commit get_last_commit(const Repository &repo) {
+        return get_commit(repo, "HEAD");
+    }
+
+    void reset_head(const Repository &repo) {
+        Commit head = get_last_commit(repo);
+        repo.reset_to_commit(head, GIT_RESET_HARD, git_checkout_options{});
+    }
+
+    // Replaces all current work with new branch, resetting the commit
+    // Does NOT check if safe - do that first
+    void fast_forward(const Repository &repo, string name) {
+        // Replaces all current work with origin
+        string branch = current_branch_name(repo);
+        checkout(repo, name);
+        Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
+        Branch refOrigin = repo.lookup_branch("origin/" + branch, GIT_BRANCH_REMOTE);
+        ref.set_target(refOrigin.target(), "message");
+        checkout_branch(repo, branch);
+    }
+
+    Remote add_remote(const Repository &repo, string url) {
+        StrArray remotes = repo.remote_list();
+
+        if (remotes.count() < 1) {
+            Remote remote = repo.remote_create("origin", url);
+            return remote;
+        } else {
+            repo.remote_set_url("origin", url);
+            return repo.lookup_remote(remotes.strings()[0]);
+        }
+    }
+
+    MergeAnalysis merge_analysis(const Repository &repo, string name) {
+        Commit otherHead = get_commit(repo, name);
+        AnnotatedCommit annOther = repo.lookup_annotated_commit(otherHead.id());
+        vector<AnnotatedCommit> sources;
+        sources.push_back(annOther);
+
+        return repo.merge_analysis(sources);
+    }
+
+    // Checks out the given branch by name
+    // name - Plain Text branch name (e.g. 'master')
+    // repo - Repo to Checkout from
+    void checkout_branch(Repository repo, string name) {
+        checkout(repo, name);
+        move_head(repo, name);
     }
 }

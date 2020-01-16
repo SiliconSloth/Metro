@@ -1,6 +1,12 @@
 using namespace std;
 
+int parse_pos_int(const string& str);
+
 bool has_prefix(string const& str, string const& pre);
+
+bool has_suffix(string const& str, string const& suff);
+
+bool whitespace_only(const string& s);
 
 void split_at_first(string const& str, char const& c, string & before, string & after);
 

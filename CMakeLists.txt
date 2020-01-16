@@ -11,10 +11,10 @@ set(libgitBuild $ENV{LIBGIT_BUILD_DIR})
 
 include_directories("include")
 add_executable(metro src/main.cpp)
-add_executable(test src/test.cpp)
 
 IF (WIN32)
     IF (DEFINED libgitBuild)
+        add_library(git2 STATIC IMPORTED)
         set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitBuild}/git2.lib")
     ENDIF()
     target_link_libraries(metro git2 winhttp Rpcrt4 crypt32)

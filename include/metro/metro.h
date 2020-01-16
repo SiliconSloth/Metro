@@ -1,5 +1,3 @@
-#define WIPString "#WIP"
-
 using namespace git;
 
 namespace metro {
@@ -8,17 +6,31 @@ namespace metro {
 
     void assert_merging(const Repository& repo);
 
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit
+    // repo: The repo
+    // message: The commit message
+    // parentCommits: The commit's parents
+    Diff commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits);
+
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // updateRef: The reference to update to point to the new commit
+    // repo: The repo
+    // message: The commit message
+    // parentRevs: The revisions corresponding to the commit's parents
+    Diff commit(const Repository& repo, const string& updateRef, const string& message, initializer_list<string> parentRevs);
+
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits);
+    Diff commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits);
 
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs);
+    Diff commit(const Repository& repo, const string& message, initializer_list<string> parentRevs);
 
     // Initialize an empty git repository in the specified directory,
     // with an initial commit.
@@ -53,6 +65,8 @@ namespace metro {
 
     [[nodiscard]] vector<StandaloneConflict> get_conflicts(const Index& index);
 
+    void fast_forward(const Repository &repo, string name);
+
     // If the working directory has changes since the last commit, or a merge has been started,
     // Save these changes in a WIP commit in a new #wip branch.
     void save_wip(const Repository& repo);
@@ -64,4 +78,6 @@ namespace metro {
     void switch_branch(const Repository& repo, const string& name);
 
     void move_head(const Repository& repo, const string& name);
+
+    void checkout_branch(Repository repo, string name);
 }

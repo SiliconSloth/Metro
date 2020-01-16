@@ -2,6 +2,16 @@
 
 using namespace std;
 
+// Convert a string to a non-negative integer, returning -1 on failure.
+int parse_pos_int(const string& str) {
+    try {
+        int val = stoi(str);
+        return val >= 0? val : -1;
+    } catch (exception&) {
+    }
+    return -1;
+}
+
 bool has_prefix(string const& str, string const& pre) {
     if (pre.size() <= str.size()) {
         return str.compare(0, pre.size(), pre) == 0;
@@ -16,6 +26,13 @@ bool has_suffix(string const& str, string const& suff) {
     } else {
         return false;
     }
+}
+
+// True if the string contains no non-whitespace characters.
+bool whitespace_only(const string& s) {
+    return s.empty() || all_of(s.begin(), s.end(), [](char c){
+        return isspace(static_cast<unsigned char>(c));
+    });
 }
 
 // Split the given string around the fist occurrence of the given character.

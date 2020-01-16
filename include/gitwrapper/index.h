@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include "strarray.h"
 
 namespace git {
 
@@ -19,7 +20,7 @@ namespace git {
             return index;
         }
 
-        void add_all(StrArray pathspec, unsigned int flags, MatchedPathCallback callback);
+        void add_all(const StrArray& pathspec, unsigned int flags, MatchedPathCallback callback);
         OID write_tree();
         void write();
 

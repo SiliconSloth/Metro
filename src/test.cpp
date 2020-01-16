@@ -9,8 +9,7 @@ int main() {
 	git_libgit2_init();
 
 	try {
-	    Repository repo = Repository::open(".");
-	    cout << metro::branch_exists(repo, "create-2");
+	    metro::create_callbacks();
 //		Repository repo = Repository::init("path", false);
 //		git_signature author;
 //		try {

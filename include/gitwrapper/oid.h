@@ -6,13 +6,14 @@ namespace git {
     class OID {
     public:
         git_oid oid;
+        bool isNull = false;
 
         explicit OID(git_oid oid) : oid(oid) {}
+        explicit OID() : isNull(true) {}
 
-        [[nodiscard]] string str() const {
-            char out[OID_LENGTH];
-            git_oid_tostr(out, OID_LENGTH, &oid);
-            return string(out);
-        }
+        bool operator==(const OID& other) const;
+        bool operator!=(const OID& other) const;
+
+        [[nodiscard]] string str() const;
     };
 }

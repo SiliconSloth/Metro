@@ -1,3 +1,4 @@
+#include <gitwrapper/strarray.h>
 #include "pch.h"
 
 namespace git {
@@ -12,6 +13,14 @@ namespace git {
     Repository Repository::open(const string& path) {
         git_repository *gitRepo = nullptr;
         int err = git_repository_open(&gitRepo, path.c_str());
+        check_error(err);
+
+        return Repository(gitRepo);
+    }
+
+    Repository Repository::clone(const string& url, const string& path, git_clone_options *options) {
+        git_repository *gitRepo = nullptr;
+        int err = git_clone(&gitRepo, url.c_str(), path.c_str(), options);
         check_error(err);
 
         return Repository(gitRepo);
@@ -54,6 +63,13 @@ namespace git {
         return Branch(branch);
     }
 
+    Commit Repository::lookup_commit(const OID& oid) const {
+        git_commit *commit;
+        int err = git_commit_lookup(&commit, repo.get(), &oid.oid);
+        check_error(err);
+        return Commit(commit);
+    }
+
     AnnotatedCommit Repository::lookup_annotated_commit(const OID& id) const {
         git_annotated_commit *commit;
         int err = git_annotated_commit_lookup(&commit, repo.get(), &id.oid);
@@ -61,16 +77,16 @@ namespace git {
         return AnnotatedCommit(commit);
     }
 
-    OID Repository::create_commit(const string& update_ref, const Signature &author, const Signature &committer,
-                              const string& message_encoding, const string& message, const Tree& tree,
-                              vector<Commit> parents) const {
+    OID Repository::create_commit(const string& updateRef, const Signature &author, const Signature &committer,
+                                  const string& messageEncoding, const string& message, const Tree& tree,
+                                  vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
         for (unsigned long long i = 0; i < parents.size(); i++) {
             parents_array[i] = parents[i].ptr().get();
         }
 
         git_oid id;
-        int err = git_commit_create(&id, repo.get(), update_ref.c_str(), &author, &committer, message_encoding.c_str(),
+        int err = git_commit_create(&id, repo.get(), updateRef.c_str(), &author, &committer, messageEncoding.c_str(),
                                     message.c_str(), tree.ptr().get(), parents.size(), parents_array);
         delete[] parents_array;
         check_error(err);
@@ -89,9 +105,21 @@ namespace git {
         check_error(err);
     }
 
-    void Repository::create_branch(const string& branch_name, Commit &target, bool force) const {
+    Branch Repository::create_reference(const string& name, const OID& oid, const bool force) const {
+        git_reference *ref;
+        int err = git_reference_create(&ref, repo.get(), name.c_str(), &oid.oid, force, nullptr);
+        check_error(err);
+        return Branch(ref);
+    }
+
+    void Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
+        check_error(err);
+    }
+
+    void Repository::remove_reference(const string& name) const {
+        int err = git_reference_remove(repo.get(), name.c_str());
         check_error(err);
     }
 
@@ -100,6 +128,24 @@ namespace git {
         int err = git_branch_iterator_new(&iter, repo.get(), flags);
         check_error(err);
         return BranchIterator(iter);
+    }
+
+    void Repository::foreach_reference(const foreach_reference_cb& callback, const void *payload) const {
+        foreach_reference_cb_payload cbp{callback, payload};
+        int err = git_reference_foreach(repo.get(), [](git_reference *reference, void *payload) {
+            auto *cb_payload = (foreach_reference_cb_payload*) payload;
+            return cb_payload->callback(Branch(reference), cb_payload->payload);
+        }, &cbp);
+        check_error(err);
+    }
+
+    void Repository::foreach_reference_glob(const string& glob, const foreach_reference_glob_cb& callback, const void *payload) const {
+        foreach_reference_glob_cb_payload cbp{callback, payload};
+        int err = git_reference_foreach_glob(repo.get(), glob.c_str(), [](const char *name, void *payload) {
+            auto *cb_payload = (foreach_reference_glob_cb_payload*) payload;
+            return cb_payload->callback(string(name), cb_payload->payload);
+        }, &cbp);
+        check_error(err);
     }
 
     StatusList Repository::new_status_list(const git_status_options &options) const {
@@ -149,5 +195,40 @@ namespace git {
         int err = git_merge(repo.get(), sources_array, sources.size(), &merge_opts, &checkout_opts);
         delete[] sources_array;
         check_error(err);
+    }
+
+    StrArray Repository::remote_list() const {
+        git_strarray array;
+        int err = git_remote_list(&array, repo.get());
+        check_error(err);
+
+        return StrArray(&array);
+    }
+
+    Remote Repository::remote_create(string name, string url) const {
+        git_remote *remote;
+        int err = git_remote_create(&remote, repo.get(), name.c_str(), url.c_str());
+        check_error(err);
+
+        return Remote(remote);
+    }
+
+    void Repository::remote_set_url(string remote, string url) const {
+        int err = git_remote_set_url(repo.get(), remote.c_str(), url.c_str());
+        check_error(err);
+    }
+
+    Remote Repository::lookup_remote(string name) const {
+        git_remote *remote;
+        int err = git_remote_lookup(&remote, repo.get(), name.c_str());
+        check_error(err);
+        return Remote(remote);
+    }
+
+    OID Repository::merge_base(OID one, OID two) const {
+        git_oid out;
+        int err = git_merge_base(&out, repo.get(), &one.oid, &two.oid);
+        check_error(err);
+        return OID(out);
     }
 }

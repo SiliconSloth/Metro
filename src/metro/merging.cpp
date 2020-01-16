@@ -58,7 +58,7 @@ namespace metro {
     }
 
     bool absorb(const Repository& repo, const string& mergeHead) {
-        if (has_suffix(mergeHead, WIPString)) {
+        if (is_wip(mergeHead)) {
             throw UnsupportedOperationException("Can't absorb WIP branch.");
         }
         assert_merging(repo);

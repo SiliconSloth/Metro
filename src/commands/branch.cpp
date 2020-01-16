@@ -14,8 +14,8 @@ Command branch {
             }
             string name = args.positionals[0];
 
-            if (has_suffix(name, WIPString)) {
-                throw MetroException("Branch name can't end in " + string(WIPString));
+            if (metro::is_wip(name)) {
+                throw MetroException("Branch name can't end in " + string(WIP_SUFFIX));
             }
 
             Repository repo = Repository::open(".");
