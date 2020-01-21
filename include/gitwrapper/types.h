@@ -12,4 +12,5 @@ namespace git {
     typedef git_push_options PushOptions;
     typedef git_diff_options DiffOptions;
     typedef git_time Time;
+    typedef void* Console;
 }

@@ -28,13 +28,13 @@ Command listCmd{
                     OID nth_parent_id = commit.parentID(i);
                     Commit nth_parent = commit.parent(i);
 
-                    metro::set_text_colour("rg------", hConsole);
+                    set_text_colour("rg------", hConsole);
                     cout << "Commit " << nth_parent.id().str() << endl;
-                    metro::set_text_colour("rgb-----", hConsole);
+                    set_text_colour("rgb-----", hConsole);
 
                     Signature author = nth_parent.author();
                     cout << "Author: " << author.name << " (" << author.email << ")" << endl;
-                    cout << "Date: " << metro::time_to_string(author.when) << endl;
+                    cout << "Date: " << time_to_string(author.when) << endl;
                     cout << "\n    " << nth_parent.message() << endl;
 
                     if (i != count - 1) cout << endl;
@@ -45,7 +45,7 @@ Command listCmd{
                 }
 
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-                cout << "Local Branches:" << endl;
+                cout << "Branches:" << endl;
                 for (Branch branch; iter.next(&branch);) {
                     cout << " - " << branch.name() << endl;
                 }

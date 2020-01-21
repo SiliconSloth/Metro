@@ -1,3 +1,5 @@
+#include "gitwrapper/types.h"
+
 using namespace std;
 
 int parse_pos_int(const string& str);
@@ -13,3 +15,7 @@ void split_at_first(string const& str, char const& c, string & before, string & 
 string read_all(const string& path);
 
 void write_all(const string& text, const string& path);
+
+string time_to_string(git_time time);
+
+void set_text_colour(string colour, void* handle);

@@ -397,44 +397,4 @@ namespace metro {
         int error = git_reference_list(&refs, repo.ptr().get());
         return StrArray(&refs);
     }
-
-    string time_to_string(Time time) {
-        char buf[80];
-        struct tm ts = *localtime(&time.time);
-        strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts);
-
-        int hour_offset = 0;
-        int minute_offset = time.offset;
-        while (minute_offset >= 60) {
-            minute_offset -= 60;
-            hour_offset++;
-        }
-
-        char buf2[5];
-        sprintf(buf2, "%02d%02d", hour_offset, minute_offset);
-
-        char buf3[100];
-        sprintf(buf3, "%s%c%s", buf, time.sign, buf2);
-
-        return string(buf3);
-    }
-
-    // Should be in format like "rgbi----" or "r--i-gb-"
-    // rgb is colour, i is intensity. The first 4 are the
-    // text, and the second 4 are the background
-    void set_text_colour(string colour, void* handle) {
-#ifdef _WIN32
-        int current = 0;
-        if (colour[0] == 'r') current |= FOREGROUND_RED;
-        if (colour[1] == 'g') current |= FOREGROUND_GREEN;
-        if (colour[2] == 'b') current |= FOREGROUND_BLUE;
-        if (colour[3] == 'i') current |= FOREGROUND_INTENSITY;
-        if (colour[4] == 'r') current |= BACKGROUND_RED;
-        if (colour[5] == 'g') current |= BACKGROUND_GREEN;
-        if (colour[6] == 'b') current |= BACKGROUND_BLUE;
-        if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
-
-        SetConsoleTextAttribute(handle, current);
-#endif //_WIN32
-    }
 }
