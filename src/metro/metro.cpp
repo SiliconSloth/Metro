@@ -3,42 +3,48 @@
 using namespace git;
 
 namespace metro {
-    // Returns true if the repo is currently in merging state.
+    // Tests if the repo is currently merging.
+    // repo: The repo
+    // returns: true if the repo is currently in merging state
     bool merge_ongoing(const Repository& repo) {
         try {
+            // Revision will only exist if merging
             repo.revparse_single("MERGE_HEAD");
-        } catch (exception&) {
+        } catch (GitException&) {
             return false;
         }
         return true;
     }
 
+    // Asserts that there is an ongoing merge
+    // repo: The repo
+    // throw: CurrentlyMergingException if merging
     void assert_merging(const Repository& repo) {
         if (merge_ongoing(repo)) {
             throw CurrentlyMergingException();
         }
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
-    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
+    // Finds differences between head and working dir index (must git add first)
     // repo: The repo
-    // message: The commit message
-    // parentCommits: The commit's parents
-    Diff commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
-        Signature author = repo.default_signature();
-
-        // Finds differences between head and working dir
+    // return: The diff created between head and working dir
+    Diff current_changes(const Repository& repo) {
         Tree current = get_commit(repo, "HEAD").tree();
         DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
-        Diff diff = Diff::tree_to_workdir(repo, current, &opts);
+        Diff diff = Diff::tree_to_workdir_with_index(repo, current, &opts);
 
-        // If no changes, exit
-        if (diff.num_deltas() == 0) {
-            throw UnsupportedOperationException("No files to commit");
-        }
+        return diff;
+    }
 
-        Index index = repo.index();
-        index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
+    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
+    // repo: The repo
+    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
+    // message: The commit message
+    // parentCommits: The commit's parents
+    void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
+        Signature author = repo.default_signature();
+
+        Index index = add_all(repo);
         // Write the files in the index into a tree that can be attached to the commit.
         OID oid = index.write_tree();
         Tree tree = repo.lookup_tree(oid);
@@ -48,8 +54,6 @@ namespace metro {
 
         // Commit the files to the head of the current branch.
         repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
-
-        return diff;
     }
 
     // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
@@ -57,30 +61,36 @@ namespace metro {
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    Diff commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
+    void commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
         for (const string& parentRev : parentRevs) {
             parentCommits.push_back(static_cast<Commit>(repo.revparse_single(parentRev)));
         }
 
-        return commit(repo, updateRef, message, parentCommits);
+        commit(repo, updateRef, message, parentCommits);
     }
 
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    Diff commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
-        return commit(repo, "HEAD", message, parentCommits);
+    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+        commit(repo, "HEAD", message, parentCommits);
     }
 
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    Diff commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
-        return commit(repo, "HEAD", message, parentRevs);
+    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
+        commit(repo, "HEAD", message, parentRevs);
+    }
+
+    Index add_all(const Repository& repo) {
+        Index index = repo.index();
+        index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
+        return index;
     }
 
     // Initialize an empty git repository in the specified directory,
