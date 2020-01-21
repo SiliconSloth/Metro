@@ -40,4 +40,9 @@ namespace git {
         const git_oid* oid = git_commit_parent_id(commit.get(), n);
         return OID(*oid);
     }
+
+    Signature Commit::author() const {
+        const Signature* sig = git_commit_author(commit.get());
+        return *sig;
+    }
 }

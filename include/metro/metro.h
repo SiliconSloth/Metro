@@ -89,4 +89,8 @@ namespace metro {
     void checkout_branch(Repository repo, string name);
 
     StrArray reference_list(const Repository& repo);
+
+    string time_to_string(Time time);
+
+    void set_text_colour(string colour, void* handle);
 }

@@ -47,8 +47,8 @@ Command deleteCmd {
                 if (args.positionals[0] == "commit") {
                     cout << "Usage: metro delete commit\n";
                 }
-                if (args.positionals[0] == "line") {
-                    cout << "Usage: metro delete branch <branch>";
+                if (args.positionals[0] == "branch") {
+                    cout << "Usage: metro delete branch <branch>\n";
                 }
             }
         }

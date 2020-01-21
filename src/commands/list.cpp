@@ -13,27 +13,41 @@ Command listCmd{
             Repository repo = Repository::open(".");
             metro::assert_merging(repo);
 
-            if (args.positionals[0] == "commit") {
+            if (args.positionals[0] == "commits") {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
                 Commit commit = metro::get_commit(repo, "HEAD");
                 unsigned int count = commit.parentcount();
+
+                void* hConsole;
+#ifdef _WIN32
+                hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif // _WIN32
                 for (unsigned int i = 0; i < count; i++) {
                     OID nth_parent_id = commit.parentID(i);
-
                     Commit nth_parent = commit.parent(i);
 
-                    cout << nth_parent.message() << endl;
+                    metro::set_text_colour("rg------", hConsole);
+                    cout << "Commit " << nth_parent.id().str() << endl;
+                    metro::set_text_colour("rgb-----", hConsole);
+
+                    Signature author = nth_parent.author();
+                    cout << "Author: " << author.name << " (" << author.email << ")" << endl;
+                    cout << "Date: " << metro::time_to_string(author.when) << endl;
+                    cout << "\n    " << nth_parent.message() << endl;
+
+                    if (i != count - 1) cout << endl;
                 }
-            } else if (args.positionals[0] == "branch") {
+            } else if (args.positionals[0] == "branches") {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                cout << "Local Branches:" << endl;
                 for (Branch branch; iter.next(&branch);) {
-                    cout << branch.name() << endl;
+                    cout << " - " << branch.name() << endl;
                 }
             } else {
                 throw UnexpectedPositionalException(args.positionals[0]);
@@ -42,15 +56,15 @@ Command listCmd{
 
     // printHelp
     [](const Arguments& args) {
-        if (args.positionals.empty() || (args.positionals[0] != "commit" && args.positionals[0] != "branch")) {
-            cout << "Usage: metro delete <commit/branch>\n";
+        if (args.positionals.empty() || (args.positionals[0] != "commits" && args.positionals[0] != "branches")) {
+            cout << "Usage: metro list <commits/branches>\n";
         }
         if (!args.positionals.empty()) {
-            if (args.positionals[0] == "commit") {
-                cout << "Usage: metro delete commit\n";
+            if (args.positionals[0] == "commits") {
+                cout << "Usage: metro list commits\n";
             }
-            if (args.positionals[0] == "line") {
-                cout << "Usage: metro delete branch <branch>";
+            if (args.positionals[0] == "branches") {
+                cout << "Usage: metro list branches\n";
             }
         }
     }
