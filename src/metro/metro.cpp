@@ -391,4 +391,10 @@ namespace metro {
         checkout(repo, name);
         move_head(repo, name);
     }
+
+    StrArray reference_list(const Repository& repo) {
+        git_strarray refs;
+        int error = git_reference_list(&refs, repo.ptr().get());
+        return StrArray(&refs);
+    }
 }

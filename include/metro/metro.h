@@ -87,4 +87,6 @@ namespace metro {
     void move_head(const Repository& repo, const string& name);
 
     void checkout_branch(Repository repo, string name);
+
+    StrArray reference_list(const Repository& repo);
 }

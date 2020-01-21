@@ -30,3 +30,4 @@
 #include "commands/absorb.cpp"
 #include "commands/resolve.cpp"
 #include "commands/sync.cpp"
+#include "commands/list.cpp"

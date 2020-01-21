@@ -29,5 +29,7 @@ namespace git {
         [[nodiscard]] Commit parent(unsigned int n) const;
 
         [[nodiscard]] vector<Commit> parents() const;
+
+        [[nodiscard]] OID parentID(int n) const;
     };
 }

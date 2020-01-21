@@ -35,4 +35,9 @@ namespace git {
         }
         return parents;
     }
+
+    OID Commit::parentID(int n) const {
+        const git_oid* oid = git_commit_parent_id(commit.get(), n);
+        return OID(*oid);
+    }
 }
