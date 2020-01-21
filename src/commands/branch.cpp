@@ -25,6 +25,7 @@ Command branch {
 
             metro::create_branch(repo, name);
             cout << "Created branch " + name + "." << endl;
+            cout << "Currently on branch " + metro::current_branch_name(repo) << endl;
         },
 
         // printHelp

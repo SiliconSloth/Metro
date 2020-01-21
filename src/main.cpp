@@ -157,9 +157,12 @@ int main(int argc, char *argv[]) {
                     try {
                         cmd->execute(args);
                         return 0;
-                    } catch (MetroException& e) {
+                    } catch (CommandArgumentException& e) {
                         cout << e.what() << "\n";
                         cmd->printHelp(args);
+                        return -1;
+                    } catch (MetroException& e) {
+                        cout << e.what() << "\n";
                         return -1;
                     } catch (GitException& e) {
                         cout << "Git Error: " << e.what() << "\n";

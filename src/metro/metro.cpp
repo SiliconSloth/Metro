@@ -185,30 +185,38 @@ namespace metro {
         throw BranchNotFoundException();
     }
 
-    //TODO: Should probably delete corresponding WIP branch too.
     void delete_branch(const Repository& repo, const string& name) {
         // If the user tries to delete the current branch,
         // we must switch out of it first.
         // Preferably switch into the master branch,
         // but if that does not exist just pick an arbitrary branch.
         if (name == current_branch_name(repo)) {
-            if (branch_exists(repo, "master")) {
+            if (branch_exists(repo, "master") && name != "master") {
                 switch_branch(repo, "master");
             } else {
+                bool found = false;
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 for (Branch branch; iter.next(&branch);) {
                     // Pick any branch that isn't the one being deleted and isn't a WIP branch.
-                    //TODO: What if this is the last non-WIP branch?
-                    if (branch.name() != name &&! is_wip(branch.name())) {
+                    if (branch.name() != name && !is_wip(branch.name())) {
                         switch_branch(repo, branch.name());
+                        found = true;
                         break;
                     }
+                }
+                if (!found) {
+                    throw UnsupportedOperationException("Can't delete only non-WIP branch");
                 }
             }
         }
 
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
+
+        if (branch_exists(repo, to_wip(name))) {
+            Branch branch = repo.lookup_branch(to_wip(name), GIT_BRANCH_LOCAL);
+            branch.delete_branch();
+        }
     }
 
     // Checks out the given commit without moving head,
