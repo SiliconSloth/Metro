@@ -231,4 +231,11 @@ namespace git {
         check_error(err);
         return OID(out);
     }
+
+    Config Repository::config() const {
+        git_config *config;
+        int err = git_repository_config(&config, repo.get());
+        check_error(err);
+        return Config(config);
+    }
 }
