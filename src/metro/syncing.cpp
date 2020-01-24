@@ -29,7 +29,6 @@ namespace metro {
         regex_search(name, matches, authPattern);
         // Since the regex starts with ^ there should be at most one match.
         for (auto match : matches) {
-            cout << "name" << endl;
             name = name.substr(match.length(), name.size() - match.length());
             break;
         }
