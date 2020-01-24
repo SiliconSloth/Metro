@@ -1,12 +1,54 @@
+#include <utility>
+
 // A version of memset that won't be optimized away by the compiler.
 // Used for overwriting sensitive memory for security reasons.
 typedef void* (*memset_t)(void*, int, size_t);
 static volatile memset_t memset_volatile = memset;
 
 namespace metro {
+    enum CredentialType{EMPTY, DEFAULT, USERPASS, SSH_KEY};
+
+    /*
+     * Store credentials of various types so that git_cred objects
+     * can be generated from them.
+     * Starts empty and is initialized as needed with store methods.
+     */
+    class CredentialStore {
+        CredentialType type = EMPTY;
+
+        string username;
+        string password;
+        string publicKey;
+        string privateKey;
+
+    public:
+        void store_default();
+
+        void store_userpass(string username, string password);
+
+        void store_ssh_key(string username, string password, string publicKey, string privateKey);
+
+        bool empty() {
+            return type == EMPTY;
+        };
+
+        /*
+         * Create git_cred object from the information in this store.
+         * Returns a Git error code.
+         */
+        int to_git(git_cred **cred);
+
+        ~CredentialStore();
+    };
+
     struct CredentialPayload {
-        git_cred **credentials;
+        CredentialStore *credStore;
         const Repository *repo;
+    };
+
+    struct HelperForeachPayload {
+        const string *url;
+        CredentialStore *credStore;
     };
 
     /*
@@ -25,16 +67,16 @@ namespace metro {
      * Iterate over the helpers specified in a repo's config until one of them
      * successfully provides credentials for the specified URL.
      */
-    void credentials_from_helper(const Repository  *repo, const string& url, git_cred **credentials);
+    void credentials_from_helper(const Repository  *repo, const string& url, CredentialStore& credStore);
 
     /*
      * Try to obtain credentials for the specified URL from the specified credential helper.
      * The helper name should be in config value format.
      */
-    void credentials_from_helper(const string& helper, const string& url, git_cred **credentials);
+    void credentials_from_helper(const string& helper, const string& url, CredentialStore& credStore);
 
     /*
      * Request credentials from the user on the command line.
      */
-    int manual_credential_entry(git_cred **cred, const char *url, unsigned int allowed_types);
+    void manual_credential_entry(const char *url, unsigned int allowed_types, CredentialStore& credStore);
 }

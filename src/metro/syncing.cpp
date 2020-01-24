@@ -146,17 +146,28 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
+    int transfer_progress(const git_transfer_progress* stats, void* payload) {
+        int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
+        string bar;
+        int i;
+        for (i = 0; i < progress; i++) {
+            bar.append("=");
+        }
+        for (; i < 100; i++) {
+            bar.append("-");
+        }
+        printf("\rProgress: [%s] %d%%", bar.c_str(), progress);
+        return GIT_OK;
+    }
+
 
     Repository clone(const string& url, const string& path) {
-        git_cred *credentials = nullptr;
+        CredentialStore credentials;
         Repository repo = clone(url, path, &credentials);
-        if (credentials != nullptr) {
-            git_cred_free(credentials);
-        }
         return repo;
     }
 
-    Repository clone(const string& url, const string& path, git_cred **credentials) {
+    Repository clone(const string& url, const string& path, CredentialStore *credentials) {
         const string repoPath = path + "/.git";
         if (Repository::exists(repoPath)) {
             throw RepositoryExistsException();
@@ -174,14 +185,11 @@ namespace metro {
     }
 
     void sync(const Repository& repo) {
-        git_cred *credentials = nullptr;
+        CredentialStore credentials;
         sync(repo, &credentials);
-        if (credentials != nullptr) {
-            git_cred_free(credentials);
-        }
     }
 
-    void sync(const Repository& repo, git_cred **credentials) {
+    void sync(const Repository& repo, CredentialStore *credentials) {
         save_wip(repo);
 
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;

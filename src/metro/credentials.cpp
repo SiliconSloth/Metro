@@ -6,6 +6,49 @@ namespace metro {
         memset_volatile(&str[0], 0, str.size());
     }
 
+    void CredentialStore::store_default() {
+        assert (type == EMPTY);
+        type = DEFAULT;
+    }
+
+    void CredentialStore::store_userpass(string username, string password) {
+        assert (type == EMPTY);
+        type = USERPASS;
+
+        this->username = move(username);
+        this->password = move(password);
+    }
+
+    void CredentialStore::store_ssh_key(string username, string password, string publicKey, string privateKey) {
+        assert (type == EMPTY);
+        type = SSH_KEY;
+
+        this->username = move(username);
+        this->password = move(password);
+        this->publicKey = move(publicKey);
+        this->privateKey = move(privateKey);
+    }
+
+    int CredentialStore::to_git(git_cred **cred) {
+        switch (type) {
+            case DEFAULT:
+                return git_cred_default_new(cred);
+            case USERPASS:
+                return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
+            case SSH_KEY:
+                return git_cred_ssh_key_new(cred, username.c_str(), publicKey.c_str(), privateKey.c_str(), password.c_str());
+            case EMPTY:
+                throw MetroException("Can't access empty credential store");
+        }
+    }
+
+    CredentialStore::~CredentialStore() {
+        erase_string(username);
+        erase_string(password);
+        erase_string(publicKey);
+        erase_string(privateKey);
+    }
+
     // Read a password from stdin without displaying the input to the user.
     void read_password(string& out) {
 #ifdef _WIN32
@@ -67,38 +110,31 @@ namespace metro {
 #endif //_WIN32
     }
 
-    int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload)  {
-        int err = GIT_OK;
+    int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
         auto credPayload = static_cast<CredentialPayload*>(payload);
-        git_cred **credentials = credPayload->credentials;
+        CredentialStore *credStore = credPayload->credStore;
 
-        if (*credentials == nullptr) {
-            credentials_from_helper(credPayload->repo, string(url), credentials);
+        if (credStore->empty()) {
+            credentials_from_helper(credPayload->repo, string(url), *credStore);
         }
 
-        if (*credentials == nullptr) {
-            err = manual_credential_entry(credentials, url, allowed_types);
+        if (credStore->empty()) {
+            manual_credential_entry(url, allowed_types, *credStore);
         }
 
-        *cred = *credentials;
-        return err;
+        return credStore->to_git(cred);
     }
 
-    struct HelperForeachPayload {
-        const string *url;
-        git_cred **credentials;
-    };
-
-    void credentials_from_helper(const Repository *repo, const string& url, git_cred **credentials) {
+    void credentials_from_helper(const Repository *repo, const string& url, CredentialStore& credStore) {
         try {
             // Iterate over the helpers specified in config.
             Config config = repo == nullptr? Config::open_default() : repo->config();
-            HelperForeachPayload payload{&url, credentials};
+            HelperForeachPayload payload{&url, &credStore};
             config.get_multivar_foreach("credential.helper", [](const git_config_entry *entry, void *payload) {
                 auto hfp = static_cast<HelperForeachPayload *>(payload);
                 // Skip the remaining helpers once one of them has provided credentials.
-                if (*hfp->credentials == nullptr) {
-                    credentials_from_helper(entry->value, *hfp->url, hfp->credentials);
+                if (hfp->credStore->empty()) {
+                    credentials_from_helper(entry->value, *hfp->url, *hfp->credStore);
                 }
                 return 0;
             }, &payload);
@@ -111,7 +147,7 @@ namespace metro {
         }
     }
 
-    void credentials_from_helper(const string& helper, const string& url, git_cred **credentials) {
+    void credentials_from_helper(const string& helper, const string& url, CredentialStore& credStore) {
         string helperOut, helperErr;
         string username, password;
 
@@ -167,8 +203,7 @@ namespace metro {
                 }
             }
 
-            int err = git_cred_userpass_plaintext_new(credentials, username.c_str(), password.c_str());
-            check_error(err);
+            credStore.store_userpass(username, password);
         } catch (exception& e) {
             // Just print error messages instead of crashing, so other helpers can be tried.
             cout << e.what() << endl;
@@ -181,16 +216,14 @@ namespace metro {
         erase_string(password);
     }
 
-    int manual_credential_entry(git_cred **cred, const char *url, unsigned int allowed_types) {
-        int err = GIT_OK;
-
+    void manual_credential_entry(const char *url, unsigned int allowed_types, CredentialStore& credStore) {
         string username;
         string password;
         string publicKey, privateKey;
 
         switch (allowed_types) {
             case GIT_CREDTYPE_DEFAULT:
-                err = git_cred_default_new(cred);
+                credStore.store_default();
                 break;
             case GIT_CREDTYPE_USERPASS_PLAINTEXT:
                 cout << "Username for " << url << ": ";
@@ -198,7 +231,7 @@ namespace metro {
                 cout << "Password for " << username << ": ";
                 read_password(password);
 
-                err = git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
+                credStore.store_userpass(username, password);
                 break;
             default:
                 cout << "Username for " << url << ": ";
@@ -207,10 +240,7 @@ namespace metro {
                 read_password(password);
 
                 get_keys(&publicKey, &privateKey);
-//                cout << "Metro currently doesn't support SSH. Please use HTTPS." << endl;
-                cout << "Public key is:\n" << publicKey << endl;
-                cout << "Private key is:\n" << privateKey << endl;
-                err = git_cred_ssh_key_new(cred, username.c_str(), publicKey.c_str(), privateKey.c_str(), password.c_str());
+                credStore.store_ssh_key(username, password, publicKey, privateKey);
                 break;
         }
 
@@ -219,7 +249,5 @@ namespace metro {
         erase_string(password);
         erase_string(publicKey);
         erase_string(privateKey);
-
-        return err;
     }
 }

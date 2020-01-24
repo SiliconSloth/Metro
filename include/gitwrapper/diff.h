@@ -19,8 +19,11 @@ namespace git {
         }
 
         size_t num_deltas();
+        size_t num_deltas_of_type(git_delta_t);
 
         static Diff tree_to_tree(const Repository& repo, const Tree& oldTree, const Tree& newTree,
                 const git_diff_options* opts);
+
+        static Diff tree_to_workdir(const Repository& repo, const Tree& oldTree, const git_diff_options* opts);
     };
 }
