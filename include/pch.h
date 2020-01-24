@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <regex>
 #include <cctype>
+#include <cassert>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -54,9 +55,9 @@
 #include "gitwrapper/diff.h"
 
 #include "metro/metro.h"
+#include "metro/credentials.h"
 #include "metro/merging.h"
 #include "metro/syncing.h"
 #include "metro/branch_descriptor.h"
-#include "metro/credentials.h"
 
 #endif //PCH_H

@@ -6,6 +6,49 @@ namespace metro {
         memset_volatile(&str[0], 0, str.size());
     }
 
+    void CredentialStore::store_default() {
+        assert (type == EMPTY);
+        type = DEFAULT;
+    }
+
+    void CredentialStore::store_userpass(string username, string password) {
+        assert (type == EMPTY);
+        type = USERPASS;
+
+        this->username = move(username);
+        this->password = move(password);
+    }
+
+    void CredentialStore::store_ssh_key(string username, string password, string publicKey, string privateKey) {
+        assert (type == EMPTY);
+        type = SSH_KEY;
+
+        this->username = move(username);
+        this->password = move(password);
+        this->publicKey = move(publicKey);
+        this->privateKey = move(privateKey);
+    }
+
+    int CredentialStore::to_git(git_cred **cred) {
+        switch (type) {
+            case DEFAULT:
+                return git_cred_default_new(cred);
+            case USERPASS:
+                return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
+            case SSH_KEY:
+                return git_cred_ssh_key_new(cred, username.c_str(), publicKey.c_str(), privateKey.c_str(), password.c_str());
+            case EMPTY:
+                throw MetroException("Can't access empty credential store");
+        }
+    }
+
+    CredentialStore::~CredentialStore() {
+        erase_string(username);
+        erase_string(password);
+        erase_string(publicKey);
+        erase_string(privateKey);
+    }
+
     // Read a password from stdin without displaying the input to the user.
     void read_password(string& out) {
 #ifdef _WIN32
@@ -68,17 +111,15 @@ namespace metro {
     }
 
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
-        int err = GIT_OK;
-        auto credentials = static_cast<git_cred**>(payload);
-
-        if (*credentials == nullptr) {
+        auto credStore = static_cast<CredentialStore *>(payload);
+        if (credStore->empty()) {
             string username;
             string password;
             string publicKey, privateKey;
 
             switch (allowed_types) {
                 case GIT_CREDTYPE_DEFAULT:
-                    err = git_cred_default_new(credentials);
+                    credStore->store_default();
                     break;
                 case GIT_CREDTYPE_USERPASS_PLAINTEXT:
                     cout << "Username for " << url << ": ";
@@ -86,7 +127,7 @@ namespace metro {
                     cout << "Password for " << username << ": ";
                     read_password(password);
 
-                    err = git_cred_userpass_plaintext_new(credentials, username.c_str(), password.c_str());
+                    credStore->store_userpass(username, password);
                     break;
                 default:
                     cout << "Username for " << url << ": ";
@@ -95,10 +136,7 @@ namespace metro {
                     read_password(password);
 
                     get_keys(&publicKey, &privateKey);
-//                cout << "Metro currently doesn't support SSH. Please use HTTPS." << endl;
-                    cout << "Public key is:\n" << publicKey << endl;
-                    cout << "Private key is:\n" << privateKey << endl;
-                    err = git_cred_ssh_key_new(credentials, username.c_str(), publicKey.c_str(), privateKey.c_str(), password.c_str());
+                    credStore->store_ssh_key(username, password, publicKey, privateKey);
                     break;
             }
 
@@ -109,7 +147,6 @@ namespace metro {
             erase_string(privateKey);
         }
 
-        *cred = *credentials;
-        return err;
+        return credStore->to_git(cred);
     }
 }

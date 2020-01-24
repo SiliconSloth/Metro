@@ -214,7 +214,7 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
-    int transfer_progress(const git_indexer_progress* stats, void* payload) {
+    int transfer_progress(const git_transfer_progress* stats, void* payload) {
         int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         string bar;
         int i;
@@ -230,15 +230,12 @@ namespace metro {
 
 
     Repository clone(const string& url, const string& path) {
-        git_cred *credentials = nullptr;
+        CredentialStore credentials;
         Repository repo = clone(url, path, &credentials);
-        if (credentials != nullptr) {
-            git_cred_free(credentials);
-        }
         return repo;
     }
 
-    Repository clone(const string& url, const string& path, git_cred** credentials) {
+    Repository clone(const string& url, const string& path, CredentialStore *credentials) {
         const string repoPath = path + "/.git";
         if (Repository::exists(repoPath)) {
             throw RepositoryExistsException();
@@ -248,6 +245,7 @@ namespace metro {
         options.fetch_opts.callbacks.credentials = acquire_credentials;
         options.fetch_opts.callbacks.payload = credentials;
         options.fetch_opts.callbacks.transfer_progress = transfer_progress;
+
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         sync(repo, credentials);
@@ -255,14 +253,11 @@ namespace metro {
     }
 
     void sync(const Repository& repo) {
-        git_cred *credentials = nullptr;
+        CredentialStore credentials;
         sync(repo, &credentials);
-        if (credentials != nullptr) {
-            git_cred_free(credentials);
-        }
     }
 
-    void sync(const Repository& repo, git_cred** credentials) {
+    void sync(const Repository& repo, CredentialStore *credentials) {
         save_wip(repo);
 
         Remote origin = repo.lookup_remote("origin");
