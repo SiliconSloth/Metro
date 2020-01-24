@@ -7,8 +7,8 @@ namespace git {
     }
 
     bool OID::operator==(const OID& other) const {
-        return (isNull == other.isNull)
-            && git_oid_equal(&oid, &other.oid);
+        return (isNull && other.isNull) ||
+            (!isNull && !other.isNull && git_oid_equal(&oid, &other.oid));
     }
 
     bool OID::operator!=(const OID& other) const {
