@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <regex>
 #include <cctype>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <cassert>
 
 #ifdef _WIN32
@@ -24,9 +24,11 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <pwd.h>
 #include <iostream>
 #include <fstream>
+#include <fcntl.h>
 #endif //_WIN32
 
 #include "git2.h"
