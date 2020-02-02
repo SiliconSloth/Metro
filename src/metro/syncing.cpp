@@ -177,6 +177,7 @@ namespace metro {
         options.fetch_opts.callbacks.credentials = acquire_credentials;
         CredentialPayload payload{credentials, nullptr};
         options.fetch_opts.callbacks.payload = &payload;
+        options.fetch_opts.callbacks.transfer_progress = transfer_progress;
 
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
