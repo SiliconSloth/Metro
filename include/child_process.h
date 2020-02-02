@@ -1,11 +1,22 @@
+#ifdef _WIN32
+#define Handle HANDLE
+#define wait_for_terminate(procHandle) WaitForSingleObject(procHandle, INFINITE)
+#define close_handle(handle) CloseHandle(handle)
+#elif __unix__
+#define Handle int
+#define wait_for_terminate(procHandle) waitpid(procHandle, nullptr, 0)
+#define close_handle(handle) ::close(handle)
+#endif
+
 struct Pipe {
-    HANDLE read;
-    HANDLE write;
+    Handle readHandle;
+    Handle writeHandle;
 
     Pipe(bool isOutput);
 
+    void write(const string& input);
     void flush(string& out);
-    void close();
+    void close() const;
 };
 
 /*
@@ -18,4 +29,4 @@ void run_command(const string& cmd, const string& input, string& output, string&
  * Start a command in a new process using the given pipes for stdin, stdout and stderr.
  * Returns a handle to the running process.
  */
-HANDLE start_command(const string& cmd, const Pipe& childIn, const Pipe& childOut, const Pipe& childErr);
+Handle start_command(const string& cmd, const Pipe& childIn, const Pipe& childOut, const Pipe& childErr);

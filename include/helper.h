@@ -19,6 +19,11 @@ bool whitespace_only(const string& s);
 
 void split_at_first(string const& str, char const& c, string & before, string & after);
 
+// Split a string consisting of a command followed by space-separated arguments
+// into separate arguments, taking into account quotation marks.
+// The behaviour of this function is modelled on Windows' CommandLineToArgvW function.
+vector<string> split_args(const string& command);
+
 string read_all(const string& path);
 
 void write_all(const string& text, const string& path);
