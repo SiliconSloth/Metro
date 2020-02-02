@@ -9,7 +9,7 @@ void run_command(const string& cmd, const string& input, string& output, string&
 
     // Write the entire input to the started process' stdin.
     if (!input.empty()) {
-        childOut.write(input);
+        childIn.write(input);
     }
     childIn.close();
 

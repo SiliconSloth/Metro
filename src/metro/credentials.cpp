@@ -169,7 +169,7 @@ namespace metro {
                     "host=" + desc.host + "\n" +
                     "path=" + desc.path + "\n\n";
 
-            run_command(helperCmd, details, helperOut, helperErr);
+            run_command(helperCmd + " get", details, helperOut, helperErr);
             if (!helperErr.empty()) {
                 throw MetroException(helperErr);
             }
@@ -196,7 +196,7 @@ namespace metro {
                     // when replacing the previous value.
                     if (strnequal(helperOut.c_str() + lineStart, "username", equals - lineStart) && username.empty()) {
                         username = helperOut.substr(equals+1, lineEnd - equals - 1);
-                    } else if (strnequal(helperOut.c_str() + lineStart, "password", equals - lineStart) && username.empty()) {
+                    } else if (strnequal(helperOut.c_str() + lineStart, "password", equals - lineStart) && password.empty()) {
                         password = helperOut.substr(equals+1, lineEnd - equals - 1);
                     }
                     //TODO: Support quit
