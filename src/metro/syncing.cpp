@@ -9,73 +9,6 @@ namespace metro {
 
     enum SyncType {PUSH, PULL, CONFLICT};
 
-    // Extract the name of a remote repo from its URL.
-    // Roughly speaking this is the last component of the path,
-    // excluding any final .git component or .git or .bundle file extension.
-    string name_from_url(const string& url) {
-        // Treat all types of slashes the same.
-        string name = url;
-        replace(name.begin(), name.end(), '\\', '/');
-
-        // Remove the protocol if present.
-        size_t protocolStop = url.find("://");
-        if (protocolStop != string::npos) {
-            name = name.substr(protocolStop+3, name.size() - (protocolStop+3));
-        }
-
-        // If a username is provided in the form user@server/something/repo, remove it.
-        const regex authPattern("^[^\\/]*@");
-        smatch matches;
-        regex_search(name, matches, authPattern);
-        // Since the regex starts with ^ there should be at most one match.
-        for (auto match : matches) {
-            name = name.substr(match.length(), name.size() - match.length());
-            break;
-        }
-
-        // Get the final component of the URL path, ignoring any empty/whitespace only components.
-        // If the last non-empty component is ".git" it will be ignored, but any prior ".git"s
-        // will be kept.
-        size_t lastSlash;
-        string lastComponent;
-        bool skippedGit = false;
-        while (true) {
-            lastSlash = name.find_last_of('/');
-            if (lastSlash != string::npos) {
-                lastComponent = name.substr(lastSlash+1, name.size() - (lastSlash+1));
-                name = name.substr(0, lastSlash);
-            } else {
-                // Stop searching once the first component of the URL is reached,
-                // even if it is invalid (that will be checked later).
-                break;
-            }
-
-            // If this component is suitable, stop searching.
-            if (!whitespace_only(lastComponent) && (lastComponent != ".git" || skippedGit)) {
-                name = lastComponent;
-                break;
-            }
-            // Only skip the first ".git".
-            if (lastComponent == ".git") {
-                skippedGit = true;
-            }
-        }
-
-        // If the repo name ends with ".git" or ".bundle", but this is not the entire name,
-        // remove the extension.
-        if (has_suffix(name, ".git") && name != ".git") {
-            name = name.substr(0, name.size() - 4);
-        } else if (has_suffix(name, ".bundle") && name != ".bundle") {
-            name = name.substr(0, name.size() - 7);
-        }
-
-        if (whitespace_only(name)) {
-            throw UnsupportedOperationException("Couldn't find repository name in URL.");
-        }
-
-        return name;
-    }
-
     // Increment the version number of a branch name to the next unused one for that branch.
     string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
         BranchDescriptor nextDesc(name);
@@ -242,7 +175,8 @@ namespace metro {
 
         git_clone_options options = GIT_CLONE_OPTIONS_INIT;
         options.fetch_opts.callbacks.credentials = acquire_credentials;
-        options.fetch_opts.callbacks.payload = credentials;
+        CredentialPayload payload{credentials, nullptr};
+        options.fetch_opts.callbacks.payload = &payload;
         options.fetch_opts.callbacks.transfer_progress = transfer_progress;
 
         Repository repo = git::Repository::clone(url, repoPath, &options);
@@ -259,11 +193,13 @@ namespace metro {
     void sync(const Repository& repo, CredentialStore *credentials) {
         save_wip(repo);
 
-        Remote origin = repo.lookup_remote("origin");
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
         fetchOpts.prune = GIT_FETCH_PRUNE;
         fetchOpts.callbacks.credentials = acquire_credentials;
-        fetchOpts.callbacks.payload = credentials;
+        CredentialPayload payload = {credentials, &repo};
+        fetchOpts.callbacks.payload = &payload;
+
+        Remote origin = repo.lookup_remote("origin");
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
@@ -336,7 +272,8 @@ namespace metro {
         if (!pushRefspecs.empty()) {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
-            options.callbacks.payload = credentials;
+            options.callbacks.payload = &payload;
+
             origin.push(StrArray(pushRefspecs), options);
         }
 

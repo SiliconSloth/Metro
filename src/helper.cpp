@@ -49,6 +49,62 @@ void split_at_first(string const& str, char const& c, string & before, string & 
     }
 }
 
+vector<string> split_args(const string& command) {
+    vector<string> args;
+    stringstream arg;
+    bool quoted = false;
+    // Count the number of consecutive backslashes.
+    int backslashes = 0;
+    for (auto& c : command) {
+        if (c == '\\') {
+            backslashes++;
+        } else if (c == '\"') {
+            // Treat a series of 2n consecutive backslashes before a "
+            // as n escaped backslashes.
+            for (; backslashes > 0; backslashes -= 2) {
+                arg << '\\';
+            }
+            // If there are no unescaped slashes then do not escape the ".
+            if (backslashes == 0) {
+                quoted = !quoted;
+            } else {
+                // If there was a backslash left over then the " was escaped.
+                arg << '\"';
+                backslashes = 0;
+            }
+        } else if (c == ' ') {
+            // Inside quotes spaces are escaped, otherwise they denote the end of an argument.
+            if (quoted) {
+                arg << ' ';
+            } else {
+                string argStr = arg.str();
+                if (!argStr.empty()) {
+                    args.push_back(argStr);
+                    arg = stringstream();
+                }
+            }
+        } else {
+            // Sequences of backslashes are not considered escaped if not followed by ".
+            for (; backslashes > 0; backslashes--) {
+                arg << '\\';
+            }
+            arg << c;
+        }
+    }
+
+    // Add any remaining backslashes.
+    for (; backslashes > 0; backslashes--) {
+        arg << '\\';
+    }
+
+    // Add the last argument if non-empty.
+    string argStr = arg.str();
+    if (!argStr.empty()) {
+        args.push_back(arg.str());
+    }
+    return args;
+}
+
 string read_all(const string& path) {
     //TODO: Exception if the file is not found/read fails
     ifstream file(path);
