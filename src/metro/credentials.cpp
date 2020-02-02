@@ -119,7 +119,7 @@ namespace metro {
         }
 
         if (credStore->empty()) {
-            manual_credential_entry(url, allowed_types, *credStore);
+            manual_credential_entry(credPayload->repo, url, allowed_types, *credStore);
         }
 
         return credStore->to_git(cred);
@@ -169,7 +169,7 @@ namespace metro {
                     "host=" + desc.host + "\n" +
                     "path=" + desc.path + "\n\n";
 
-            run_command(helperCmd + " get", details, helperOut, helperErr);
+            run_command(helperCmd, details, helperOut, helperErr);
             if (!helperErr.empty()) {
                 throw MetroException(helperErr);
             }
@@ -216,7 +216,56 @@ namespace metro {
         erase_string(password);
     }
 
-    void manual_credential_entry(const char *url, unsigned int allowed_types, CredentialStore& credStore) {
+    string get_askpass_cmd(const Repository *repo) {
+        string cmdStr;
+        const char *cmd = getenv("GIT_ASKPASS");
+        if (cmd == nullptr) {
+            try {
+                Config config = repo == nullptr? Config::open_default() : repo->config();
+                cmdStr = config.get_string_buf("core.askPass");
+                cmd = cmdStr.c_str();
+            } catch (exception& e) {
+                // Rather than crashing on exceptions, just print the error message and default to terminal entry.
+                // Don't even print the message if the error was just that no askPass was specified.
+                if (strcmp(e.what(), "config value 'core.askPass' was not found") != 0) {
+                    cout << e.what() << endl;
+                }
+            }
+        }
+
+        if (cmd == nullptr) {
+            cmd = getenv("SSH_ASKPASS");
+        }
+        return cmd == nullptr? "" : string(cmd);
+        //TODO: Support checking of GIT_TERMINAL_PROMPT
+    }
+
+    void read_from_askpass(const string& cmd, const string& prompt, bool isPassword, string& out) {
+        // If an askpass command was provided, try using it.
+        if (!cmd.empty()) {
+            string err;
+            try {
+                run_command(cmd + " \"" + prompt + ":\"", "", out, err);
+            } catch (exception& e) {
+                cout << e.what() << endl;
+            }
+            erase_string(err);
+        }
+
+        // Default to terminal-based entry.
+        if (out.empty()) {
+            cout << prompt << ": ";
+            if (isPassword) {
+                read_password(out);
+            } else {
+                getline(cin, out);
+            }
+        }
+    }
+
+    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore) {
+        string askpassCmd = get_askpass_cmd(repo);
+
         string username;
         string password;
         string publicKey, privateKey;
@@ -226,18 +275,14 @@ namespace metro {
                 credStore.store_default();
                 break;
             case GIT_CREDTYPE_USERPASS_PLAINTEXT:
-                cout << "Username for " << url << ": ";
-                getline(cin, username);
-                cout << "Password for " << username << ": ";
-                read_password(password);
+                read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
+                read_from_askpass(askpassCmd, "Password for " + username, true, password);
 
                 credStore.store_userpass(username, password);
                 break;
             default:
-                cout << "Username for " << url << ": ";
-                getline(cin, username);
-                cout << "SSH Keystore Password: ";
-                read_password(password);
+                read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
+                read_from_askpass(askpassCmd, "SSH Keystore Password: ", true, password);
 
                 get_keys(&publicKey, &privateKey);
                 credStore.store_ssh_key(username, password, publicKey, privateKey);

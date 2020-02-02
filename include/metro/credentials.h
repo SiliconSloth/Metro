@@ -75,8 +75,19 @@ namespace metro {
      */
     void credentials_from_helper(const string& helper, const string& url, CredentialStore& credStore);
 
+    // Try to retrieve a user-specified command to use for requesting passwords from Git's usual locations.
+    // First try the GIT_ASKPASS environment variable, then the core.askPass config value,
+    // then the SSH_ASKPASS environment variable.
+    // If no value could be found an empty string is returned.
+    string get_askpass_cmd(const Repository *repo);
+
+    // Prompt the user for input using the specified askpass command.
+    // If the command fails or an empty command string is provided, defaults to terminal entry.
+    // If isPassword is set then terminal entry will hide the user's input.
+    void read_from_askpass(const string& cmd, const string& prompt, bool isPassword, string& out);
+
     /*
      * Request credentials from the user on the command line.
      */
-    void manual_credential_entry(const char *url, unsigned int allowed_types, CredentialStore& credStore);
+    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore);
 }
