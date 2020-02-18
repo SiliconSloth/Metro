@@ -20,11 +20,10 @@ Option lookup_option(string const& flag) {
     bool usedContraction = !has_prefix(flag, "--");
     // Remove -- or -
     string name = flag.substr(usedContraction ? 1:2, string::npos);
-    for (unsigned long i = 0; i < sizeof(ALL_OPTIONS); i++) {
-        if (ALL_OPTIONS[i].contraction == name && usedContraction) {
-            return ALL_OPTIONS[i];
-        } else if (ALL_OPTIONS[i].name == name && !usedContraction) {
-            return ALL_OPTIONS[i];
+    for (const auto & option : ALL_OPTIONS) {
+        if ((option.contraction == name && usedContraction)
+         || (option.name == name && !usedContraction)) {
+            return option;
         }
     }
     throw UnknownOptionException(flag);
