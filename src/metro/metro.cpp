@@ -175,7 +175,6 @@ namespace metro {
         throw BranchNotFoundException();
     }
 
-    //TODO: Should probably delete corresponding WIP branch too.
     void delete_branch(const Repository& repo, const string& name) {
         // If the user tries to delete the current branch,
         // we must switch out of it first.
@@ -197,8 +196,12 @@ namespace metro {
             }
         }
 
-        Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
-        branch.delete_branch();
+        repo.lookup_branch(name, GIT_BRANCH_LOCAL).delete_branch();
+        // Also delete the WIP branch if present.
+        try {
+            repo.lookup_branch(to_wip(name), GIT_BRANCH_LOCAL).delete_branch();
+        } catch (exception& e) {
+        }
     }
 
     // Checks out the given commit without moving head,
