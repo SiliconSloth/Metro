@@ -179,6 +179,7 @@ namespace metro {
         options.fetch_opts.callbacks.payload = &payload;
         options.fetch_opts.callbacks.transfer_progress = transfer_progress;
 
+        credentials->tried = false;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         sync(repo, credentials);
@@ -200,6 +201,7 @@ namespace metro {
         fetchOpts.callbacks.payload = &payload;
 
         Remote origin = repo.lookup_remote("origin");
+        credentials->tried = false;
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
@@ -274,6 +276,7 @@ namespace metro {
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
 
+            credentials->tried = false;
             origin.push(StrArray(pushRefspecs), options);
         }
 

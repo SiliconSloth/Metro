@@ -22,6 +22,8 @@ namespace metro {
         string privateKey;
 
     public:
+        bool tried = false;
+
         void store_default();
 
         void store_userpass(string username, string password);
@@ -37,6 +39,8 @@ namespace metro {
          * Returns a Git error code.
          */
         int to_git(git_cred **cred);
+
+        void clear();
 
         ~CredentialStore();
     };

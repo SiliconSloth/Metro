@@ -42,11 +42,17 @@ namespace metro {
         }
     }
 
-    CredentialStore::~CredentialStore() {
+    void CredentialStore::clear() {
+        type = EMPTY;
+        tried = false;
         erase_string(username);
         erase_string(password);
         erase_string(publicKey);
         erase_string(privateKey);
+    }
+
+    CredentialStore::~CredentialStore() {
+        clear();
     }
 
     // Read a password from stdin without displaying the input to the user.
@@ -114,6 +120,11 @@ namespace metro {
         auto credPayload = static_cast<CredentialPayload*>(payload);
         CredentialStore *credStore = credPayload->credStore;
 
+        if (credStore->tried) {
+            cout << "Invalid credentials, please try again or press Ctrl+C to abort" << endl;
+            credStore->clear();
+        }
+
         if (credStore->empty()) {
             credentials_from_helper(credPayload->repo, string(url), *credStore);
         }
@@ -122,6 +133,7 @@ namespace metro {
             manual_credential_entry(credPayload->repo, url, allowed_types, *credStore);
         }
 
+        credStore->tried = true;
         return credStore->to_git(cred);
     }
 
