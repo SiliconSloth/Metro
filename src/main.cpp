@@ -124,6 +124,7 @@ Arguments parse_args(int argc, char *argv[]) {
 void printHelp() {
     cout << "Usage: metro <command> <args> [options]\n";
     for (const Command *cmd : allCommands) {
+        if (cmd->name == "sink") continue;
         cout << cmd->name << " - " << cmd->description << "\n";
     }
     cout << "Use --help for help.\n";

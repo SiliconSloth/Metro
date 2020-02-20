@@ -13,7 +13,8 @@ Command *allCommands[] = {
         &absorbCmd,
         &resolve,
         &syncCmd,
-        &listCmd
+        &listCmd,
+        &sinkCmd
 };
 
 // Contains a list of all valid options
