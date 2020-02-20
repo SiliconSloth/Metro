@@ -80,14 +80,16 @@ string time_to_string(Time time) {
     sprintf(buf2, "%02d%02d", hour_offset, minute_offset);
 
     char buf3[100];
-    sprintf(buf3, "%s%c%s", buf, time.sign, buf2);
+    sprintf(buf3, "%s%c%s", buf, '+', buf2);
 
     return string(buf3);
 }
 
-// Should be in format like "rgbi----" or "r--i-gb-"
+// Should be in format like "rgbi-----" or "r--i-gb--"
 // rgb is colour, i is intensity. The first 4 are the
-// text, and the second 4 are the background
+// text, and the second 4 are the background. The last
+// one is the mode: - for all, f for foreground, b for
+// background and r for reset (UNIX only)
 void set_text_colour(string colour, void* handle) {
 #ifdef _WIN32
     int current = 0;
@@ -101,5 +103,78 @@ void set_text_colour(string colour, void* handle) {
     if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
 
     SetConsoleTextAttribute(handle, current);
+#elif __unix__
+    if (colour[8] == 'r') {
+        printf("\033[0m");
+        return;
+    }
+    std::string col;
+    std::string bri;
+    std::string b_col;
+    std::string b_bri;
+    if (colour[0] == 'r') {
+        if (colour[1] == 'g') {
+            if (colour[2] == 'b') {
+                col = "37";
+            } else {
+                col = "33";
+            }
+        } else {
+            if (colour[2] == 'b') {
+                col = "35";
+            } else {
+                col = "31";
+            }
+        }
+    } else {
+        if (colour[1] == 'g') {
+            if (colour[2] == 'b') {
+                col = "36";
+            } else {
+                col = "32";
+            }
+        } else {
+            if (colour[2] == 'b') {
+                col = "34";
+            } else {
+                col = "30";
+            }
+        }
+    }
+    if (colour[3] == 'i') bri = "1";
+    else bri = "0";
+    if (colour[4] == 'r') {
+        if (colour[5] == 'g') {
+            if (colour[6] == 'b') {
+                b_col = "37";
+            } else {
+                b_col = "33";
+            }
+        } else {
+            if (colour[6] == 'b') {
+                b_col = "35";
+            } else {
+                b_col = "31";
+            }
+        }
+    } else {
+        if (colour[5] == 'g') {
+            if (colour[6] == 'b') {
+                b_col = "36";
+            } else {
+                b_col = "32";
+            }
+        } else {
+            if (colour[6] == 'b') {
+                b_col = "34";
+            } else {
+                b_col = "30";
+            }
+        }
+    }
+    if (colour[7] == 'i') b_bri = "1";
+    else b_bri = "0";
+    if (colour[8] == '-' || colour[8] == 'f') printf("\033[%s;%sm", bri.c_str(), col.c_str());
+    if (colour[8] == '-' || colour[8] == 'b') printf("\033[%s;%sm", b_bri.c_str(), b_col.c_str());
 #endif //_WIN32
 }

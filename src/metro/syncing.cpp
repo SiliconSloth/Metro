@@ -29,7 +29,6 @@ namespace metro {
         regex_search(name, matches, authPattern);
         // Since the regex starts with ^ there should be at most one match.
         for (auto match : matches) {
-            cout << "name" << endl;
             name = name.substr(match.length(), name.size() - match.length());
             break;
         }
@@ -214,7 +213,7 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
-    int transfer_progress(const git_indexer_progress* stats, void* payload) {
+    int transfer_progress(const git_transfer_progress* stats, void* payload) {
         int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         string bar;
         int i;
@@ -250,7 +249,7 @@ namespace metro {
         options.fetch_opts.callbacks.transfer_progress = transfer_progress;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
-        sync(repo, credentials);
+        force_pull(repo);
         return repo;
     }
 
@@ -348,5 +347,16 @@ namespace metro {
 
         update_sync_cache(repo);
         restore_wip(repo);
+    }
+
+    // Pulls all the repo branches assuming the remote is correct
+    void force_pull(const Repository& repo) {
+        map<string, RefTargets> branchTargets;
+        get_branch_targets(repo, &branchTargets);
+        for(const auto& entry : branchTargets) {
+            const string branchName = entry.first;
+            const RefTargets targets = entry.second;
+            change_branch_target(repo, branchName, targets.remote);
+        }
     }
 }

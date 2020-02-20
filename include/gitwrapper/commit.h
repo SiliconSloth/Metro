@@ -32,6 +32,6 @@ namespace git {
 
         [[nodiscard]] OID parentID(int n) const;
 
-        [[nodiscard]] Signature Commit::author() const;
+        [[nodiscard]] Signature author() const;
     };
 }
