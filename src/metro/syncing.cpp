@@ -358,5 +358,6 @@ namespace metro {
             const RefTargets targets = entry.second;
             change_branch_target(repo, branchName, targets.remote);
         }
+        update_sync_cache(repo);
     }
 }
