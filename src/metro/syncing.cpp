@@ -195,7 +195,7 @@ namespace metro {
         credentials->tried = false;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
-        sync(repo, credentials);
+        force_pull(repo);
         return repo;
     }
 
@@ -295,5 +295,17 @@ namespace metro {
 
         update_sync_cache(repo);
         restore_wip(repo);
+    }
+
+    // Pulls all the repo branches assuming the remote is correct
+    void force_pull(const Repository& repo) {
+        map<string, RefTargets> branchTargets;
+        get_branch_targets(repo, &branchTargets);
+        for(const auto& entry : branchTargets) {
+            const string branchName = entry.first;
+            const RefTargets targets = entry.second;
+            change_branch_target(repo, branchName, targets.remote);
+        }
+        update_sync_cache(repo);
     }
 }

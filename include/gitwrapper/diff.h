@@ -25,5 +25,7 @@ namespace git {
                 const git_diff_options* opts);
 
         static Diff tree_to_workdir(const Repository& repo, const Tree& oldTree, const git_diff_options* opts);
+
+        static Diff tree_to_workdir_with_index(const Repository& repo, const Tree& oldTree, const git_diff_options* opts);
     };
 }

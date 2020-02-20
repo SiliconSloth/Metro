@@ -1,3 +1,5 @@
+#include "gitwrapper/types.h"
+
 using namespace std;
 
 /*
@@ -27,3 +29,7 @@ vector<string> split_args(const string& command);
 string read_all(const string& path);
 
 void write_all(const string& text, const string& path);
+
+string time_to_string(git_time time);
+
+void set_text_colour(string colour, void* handle);

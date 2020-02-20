@@ -17,11 +17,14 @@ Command deleteCmd {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
-                metro::delete_last_commit(repo, true);
+
+                bool isSoft = args.options.find("soft") != args.options.end();
+
+                metro::delete_last_commit(repo, !isSoft);
                 cout << "Deleted last commit.\n";
             } else if (args.positionals[0] == "branch") {
                 if (args.positionals.size() < 2) {
-                    throw MissingPositionalException("branch");
+                    throw MissingPositionalException("Branch name");
                 }
                 if (args.positionals.size() > 2) {
                     throw UnexpectedPositionalException(args.positionals[2]);
@@ -44,8 +47,8 @@ Command deleteCmd {
                 if (args.positionals[0] == "commit") {
                     cout << "Usage: metro delete commit\n";
                 }
-                if (args.positionals[0] == "line") {
-                    cout << "Usage: metro delete branch <branch>";
+                if (args.positionals[0] == "branch") {
+                    cout << "Usage: metro delete branch <branch>\n";
                 }
             }
         }

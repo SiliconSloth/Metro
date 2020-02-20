@@ -6,31 +6,38 @@ namespace metro {
 
     void assert_merging(const Repository& repo);
 
+    // Finds differences between head and working dir index (must git add first)
+    // repo: The repo
+    // return: The diff created between head and working dir
+    Diff current_changes(const Repository& repo);
+
     // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
     // updateRef: The reference to update to point to the new commit
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    Diff commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits);
+    void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits);
 
     // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
     // updateRef: The reference to update to point to the new commit
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    Diff commit(const Repository& repo, const string& updateRef, const string& message, initializer_list<string> parentRevs);
+    void commit(const Repository& repo, const string& updateRef, const string& message, initializer_list<string> parentRevs);
 
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentCommits: The commit's parents
-    Diff commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits);
+    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits);
 
     // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
     // repo: The repo
     // message: The commit message
     // parentRevs: The revisions corresponding to the commit's parents
-    Diff commit(const Repository& repo, const string& message, initializer_list<string> parentRevs);
+    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs);
+
+    Index add_all(const Repository& repo);
 
     // Initialize an empty git repository in the specified directory,
     // with an initial commit.
@@ -80,4 +87,6 @@ namespace metro {
     void move_head(const Repository& repo, const string& name);
 
     void checkout_branch(Repository repo, string name);
+
+    StrArray reference_list(const Repository& repo);
 }

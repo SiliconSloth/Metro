@@ -18,7 +18,15 @@ Command commit {
             metro::assert_merging(repo);
 
             try {
-                Diff diff = metro::commit(repo, message, { "HEAD" });
+                metro::add_all(repo);
+                Diff diff = metro::current_changes(repo);
+
+                // If no changes, exit
+                if (diff.num_deltas() == 0) {
+                    throw UnsupportedOperationException("No files to commit");
+                }
+
+                metro::commit(repo, message, { "HEAD" });
 
                 // Deletes WIP branch if any
                 string name = metro::current_branch_name(repo);

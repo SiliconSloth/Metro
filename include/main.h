@@ -12,12 +12,14 @@ Command *allCommands[] = {
         &info,
         &absorbCmd,
         &resolve,
-        &syncCmd
+        &syncCmd,
+        &listCmd
 };
 
 // Contains a list of all valid options
 const Option ALL_OPTIONS[] = {
         {"help", "h", false},
         {"timeout", "t", true},
-        {"force", "f", false}
+        {"force", "f", false},
+        {"soft", "s", false} 
 };
