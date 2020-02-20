@@ -29,6 +29,7 @@
 #include <iostream>
 #include <fstream>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #endif //_WIN32
 
 #include "git2.h"
