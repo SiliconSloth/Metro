@@ -63,25 +63,29 @@ Command listCmd{
                         set_text_colour("-g------f", hConsole);
                         cout << branch.name() << endl;
                         set_text_colour("rgb-----r", hConsole);
-                    } else if (metro::is_wip(name) && metro::to_wip(current) == name) {
-                        cout << " ~ ";
-                        set_text_colour("r-------f", hConsole);
-                        cout << current << endl;
-                        set_text_colour("rg------f", hConsole);
-                        cout << " (WIP BRANCH)" << endl;
-                        set_text_colour("rgb-----r", hConsole);
                     } else if (metro::is_wip(name)) {
-                        cout << " ~ ";
-                        set_text_colour("--bi----f", hConsole);
-                        cout << metro::un_wip(name) << " (WIP BRANCH)" << endl;
-                        set_text_colour("rgb-----r", hConsole);
-                    } else if (has_prefix(name, current + "#")) {
-                        cout << " + ";
-                        set_text_colour("-gbi----f", hConsole);
-                        cout << current << " <- " << name.substr(name.find("#") + 1) << endl;
+                        continue;
+                    } else if (name.find('#') != std::string::npos) {
+                        cout << "   " << name.substr(0, name.find('#'));
+                        set_text_colour("-gb-----f", hConsole);
+                        cout << "#" << name.substr(name.find('#') + 1) << endl;
                         set_text_colour("rgb-----r", hConsole);
                     } else {
-                        cout << " - " << name << endl;
+                        bool isWip = false;
+                        BranchIterator iter2 = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                        for (Branch branch2; iter2.next(&branch2);) {
+                            if (branch2.name() == metro::to_wip(name)) {
+                                isWip = true;
+                                break;
+                            }
+                        }
+                        cout << "   " << name;
+                        if (isWip) {
+                            set_text_colour("--bi----f", hConsole);
+                            cout << " (WIP)";
+                            set_text_colour("rgb-----r", hConsole);
+                        }
+                        cout << endl;
                     }
                 }
             } else {
