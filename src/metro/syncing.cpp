@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <sys/ioctl.h>
 
 namespace metro {
     struct RefTargets {
@@ -148,15 +149,22 @@ namespace metro {
 
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
+
+        struct winsize w;
+        ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
         string bar;
         int i;
-        for (i = 0; i < progress; i++) {
-            bar.append("=");
+        int width = w.ws_col - 17;
+        if (width > 0) {
+            for (i = 0; i < (progress * width) / 100; i++) {
+                bar.append("=");
+            }
+            for (; i < width; i++) {
+                bar.append("-");
+            }
+            cout << "\r" << "Progress: [" << bar << "] " << progress << "%" << flush;
         }
-        for (; i < 100; i++) {
-            bar.append("-");
-        }
-        printf("\rProgress: [%s] %d%%", bar.c_str(), progress);
         return GIT_OK;
     }
 
