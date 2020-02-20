@@ -16,7 +16,10 @@ Command clone_repo {
             string url = args.positionals[0];
             // Ignore slash direction.
             replace(url.begin(), url.end(), '\\', '/');
-            string name = metro::name_from_url(url);
+            string name = metro::UrlDescriptor(url).repository;
+            if (name.empty()) {
+                throw UnsupportedOperationException("Couldn't find repository name in URL.");
+            }
 
             cout << "Cloning " << url << " into " << name << endl;
             metro::clone(url, name);

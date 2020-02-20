@@ -212,7 +212,8 @@ namespace metro {
 
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
-
+        
+        // Also delete the WIP branch if present.
         if (branch_exists(repo, to_wip(name))) {
             Branch branch = repo.lookup_branch(to_wip(name), GIT_BRANCH_LOCAL);
             branch.delete_branch();

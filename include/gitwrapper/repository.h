@@ -79,6 +79,8 @@ namespace git {
         Remote lookup_remote(string name) const;
 
         OID merge_base(OID one, OID two) const;
+
+        Config config() const;
     };
 
 }

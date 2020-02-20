@@ -2,6 +2,7 @@
 
 #include "helper.cpp"
 #include "error.cpp"
+#include "child_process.cpp"
 
 #include "gitwrapper/oid.cpp"
 #include "gitwrapper/index.cpp"
@@ -12,12 +13,14 @@
 #include "gitwrapper/commit.cpp"
 #include "gitwrapper/conflict_iterator.cpp"
 #include "gitwrapper/diff.cpp"
+#include "gitwrapper/config.cpp"
 
 #include "metro/metro.cpp"
 #include "metro/merging.cpp"
+#include "metro/credentials.cpp"
 #include "metro/syncing.cpp"
 #include "metro/branch_descriptor.cpp"
-#include "metro/credentials.cpp"
+#include "metro/url_descriptor.cpp"
 
 #include "commands/create.cpp"
 #include "commands/clone.cpp"
