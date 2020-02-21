@@ -234,3 +234,27 @@ void set_text_colour(string colour, void* handle) {
     if (colour[8] == '-' || colour[8] == 'b') printf("\033[%s;%sm", b_bri.c_str(), b_col.c_str());
 #endif //_WIN32
 }
+
+void print_progress(int progress) {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+        int width = csbi.srWindow.Right - csbi.srWindow.Left - 16;
+#elif __unix__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col - 17;
+#endif
+
+    string bar;
+    int i;
+    if (width > 0) {
+        for (i = 0; i < (progress * width) / 100; i++) {
+            bar.append("=");
+        }
+        for (; i < width; i++) {
+            bar.append("-");
+        }
+        cout << "\r" << "Progress: [" << bar << "] " << progress << "%" << flush;
+    }
+}
