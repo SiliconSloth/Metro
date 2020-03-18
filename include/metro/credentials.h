@@ -6,7 +6,7 @@ typedef void* (*memset_t)(void*, int, size_t);
 static volatile memset_t memset_volatile = memset;
 
 namespace metro {
-    enum CredentialType{EMPTY, DEFAULT, USERPASS, SSH_KEY};
+    enum CredentialType{EMPTY, DEFAULT, USERPASS, SSH_KEY, RAW};
 
     /*
      * Store credentials of various types so that git_cred objects
@@ -15,6 +15,7 @@ namespace metro {
      */
     class CredentialStore {
         CredentialType type = EMPTY;
+        git_cred *cred;
 
         string username;
         string password;
@@ -29,6 +30,8 @@ namespace metro {
         void store_userpass(string username, string password);
 
         void store_ssh_key(string username, string password, string publicKey, string privateKey);
+
+        void store_raw(git_cred *cred);
 
         bool empty() {
             return type == EMPTY;
@@ -93,5 +96,5 @@ namespace metro {
     /*
      * Request credentials from the user on the command line.
      */
-    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore);
+    void manual_credential_entry(const Repository *repo, const char *url, const char *username_from_url, unsigned int allowed_types, CredentialStore& credStore);
 }

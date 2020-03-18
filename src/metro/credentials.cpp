@@ -29,6 +29,13 @@ namespace metro {
         this->privateKey = move(privateKey);
     }
 
+    void CredentialStore::store_raw(git_cred *cred) {
+        assert (type == EMPTY);
+        type = RAW;
+
+        this->cred = cred;
+    }
+
     int CredentialStore::to_git(git_cred **cred) {
         switch (type) {
             case DEFAULT:
@@ -37,6 +44,9 @@ namespace metro {
                 return git_cred_userpass_plaintext_new(cred, username.c_str(), password.c_str());
             case SSH_KEY:
                 return git_cred_ssh_key_new(cred, username.c_str(), publicKey.c_str(), privateKey.c_str(), password.c_str());
+            case RAW:
+                *cred = this->cred;
+                return 0;
             case EMPTY:
                 throw MetroException("Can't access empty credential store");
         }
@@ -84,17 +94,20 @@ namespace metro {
         auto credPayload = static_cast<CredentialPayload*>(payload);
         CredentialStore *credStore = credPayload->credStore;
 
+        // Check if credentials are already invalid
         if (credStore->tried) {
             cout << "Invalid credentials, please try again or press Ctrl+C to abort" << endl;
             credStore->clear();
         }
 
+        // If no creds, get via helper
         if (credStore->empty()) {
             credentials_from_helper(credPayload->repo, string(url), *credStore);
         }
 
+        // If didn't get any from helper, manually enter
         if (credStore->empty()) {
-            manual_credential_entry(credPayload->repo, url, allowed_types, *credStore);
+            manual_credential_entry(credPayload->repo, url, username_from_url, allowed_types, *credStore);
         }
 
         credStore->tried = true;
@@ -239,35 +252,45 @@ namespace metro {
         }
     }
 
-    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore) {
+    void manual_credential_entry(const Repository *repo, const char *url, const char *username_from_url, unsigned int allowed_types, CredentialStore& credStore) {
         string askpassCmd = get_askpass_cmd(repo);
 
         string username;
         string password;
 
-        switch (allowed_types) {
-            case GIT_CREDTYPE_DEFAULT:
-                credStore.store_default();
-                break;
-            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
-                read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
-                read_from_askpass(askpassCmd, "Password for " + username, true, password);
+        if (allowed_types & GIT_CREDTYPE_DEFAULT) {
+            credStore.store_default();
+        } else if (allowed_types & GIT_CREDTYPE_USERPASS_PLAINTEXT) {
+            read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
+            read_from_askpass(askpassCmd, "Password for " + username, true, password);
 
-                credStore.store_userpass(username, password);
-                break;
-            default:
-                read_from_askpass(askpassCmd, "SSH keystore passphrase: ", true, password);
+            credStore.store_userpass(username, password);
+//        } else if (allowed_types & GIT_CREDTYPE_SSH_KEY) { TODO check if libgit2 later release of this works
+//            git_cred *cred;
+//            int err = git_credential_ssh_key_from_agent(&cred, username_from_url);
+//            check_error(err);
+//
+//            credStore.store_raw(cred);
+        } else if (allowed_types & GIT_CREDTYPE_SSH_CUSTOM) {
+#ifdef _WIN32
+            cout << "SSH for Windows not yet supported" << endl;
+            return;
+#endif
 
-                const char* home;
-                home = getenv("HOME");
+            read_from_askpass(askpassCmd, "SSH keystore passphrase", true, password);
 
-                if (home == NULL) {
-                    home = getpwuid(getuid())->pw_dir;
-                }
+            const char *home;
+            home = getenv("HOME");
 
-                //TODO: Don't force these defaults
-                credStore.store_ssh_key("git", password, string(home) + "/.ssh/id_rsa.pub", string(home) + "/.ssh/id_rsa");
-                break;
+            if (home == NULL) {
+                home = getpwuid(getuid())->pw_dir;
+            }
+
+            //TODO: Don't force these defaults
+            credStore.store_ssh_key(username_from_url, password, string(home) + "/.ssh/id_rsa.pub",
+                                    string(home) + "/.ssh/id_rsa");
+        } else {
+            cout << "Unknown credential method" << endl;
         }
 
         // Erase sensitive information from memory.
