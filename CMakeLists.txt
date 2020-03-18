@@ -9,6 +9,8 @@ IF (DEFINED libgitInclude)
 ENDIF()
 set(libgitBuild $ENV{LIBGIT_BUILD_DIR})
 
+set(libsshBuild $ENV{LIBSSH_BUILD_DIR})
+
 include_directories("include")
 add_executable(metro src/main.cpp)
 
@@ -24,5 +26,7 @@ IF (UNIX)
         add_library(git2 STATIC IMPORTED)
         set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitBuild}/libgit2.a")
     ENDIF()
-    target_link_libraries(metro git2 pthread z ssl crypto ssh2 http_parser stdc++fs)
+    add_library(libssh2 STATIC IMPORTED)
+    set_target_properties(libssh2 PROPERTIES IMPORTED_LOCATION "${libsshBuild}/libssh2.a")
+    target_link_libraries(metro git2 pthread z ssl crypto libssh2 http_parser stdc++fs pcre)
 ENDIF()
