@@ -148,6 +148,7 @@ namespace metro {
 
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
+        print_progress(progress);
 
         return GIT_OK;
     }

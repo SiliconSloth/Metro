@@ -258,3 +258,21 @@ void print_progress(int progress) {
         cout << "\r" << "Progress: [" << bar << "] " << progress << "%" << flush;
     }
 }
+
+void clear_line() {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+        int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#elif __unix__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+#endif
+
+    cout << "\r";
+    for (int i = 0; i < width; i++) {
+        cout << " ";
+    }
+    cout << "\r";
+}

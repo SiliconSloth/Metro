@@ -23,7 +23,8 @@ Command clone_repo {
 
             cout << "Cloning " << url << " into " << name << endl;
             metro::clone(url, name);
-            cout << endl << "Cloning complete." << endl;
+            clear_line();
+            cout << "Cloning complete." << endl;
         },
 
         // printHelp

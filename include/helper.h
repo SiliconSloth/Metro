@@ -33,3 +33,7 @@ void write_all(const string& text, const string& path);
 string time_to_string(git_time time);
 
 void set_text_colour(string colour, void* handle);
+
+void print_progress(int progress);
+
+void clear_line();
