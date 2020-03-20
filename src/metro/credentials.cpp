@@ -89,7 +89,7 @@ namespace metro {
             credStore->clear();
         }
 
-        if (credStore->empty()) {
+        if (credStore->empty() && allowed_types == GIT_CREDTYPE_USERPASS_PLAINTEXT) {
             credentials_from_helper(credPayload->repo, string(url), *credStore);
         }
 
