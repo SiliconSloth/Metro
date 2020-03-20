@@ -259,11 +259,17 @@ namespace metro {
                 read_from_askpass(askpassCmd, "SSH keystore passphrase: ", true, password);
 
                 const char* home;
+#ifdef WIN32
+                home = getenv("USERPROFILE");
+#else
                 home = getenv("HOME");
+#endif
 
+#ifdef __unix__
                 if (home == NULL) {
                     home = getpwuid(getuid())->pw_dir;
                 }
+#endif
 
                 //TODO: Don't force these defaults
                 credStore.store_ssh_key("git", password, string(home) + "/.ssh/id_rsa.pub", string(home) + "/.ssh/id_rsa");
