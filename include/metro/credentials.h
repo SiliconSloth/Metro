@@ -93,5 +93,5 @@ namespace metro {
     /*
      * Request credentials from the user on the command line.
      */
-    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore);
+    void manual_credential_entry(const Repository *repo, const char *url, const char *username_from_url, unsigned int allowed_types, CredentialStore& credStore);
 }

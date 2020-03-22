@@ -80,57 +80,23 @@ namespace metro {
 #endif //_WIN32
     }
 
-    void get_keys(string *pub, string *pri) {
-#ifdef _WIN32
-        cout << "Metro currently doesn't support SSH on Windows. Please use HTTPS." << endl;
-        return;
-#elif __unix__
-        const char* home;
-        home = getenv("HOME");
-
-        if (home == NULL) {
-            home = getpwuid(getuid())->pw_dir;
-        }
-
-        ifstream keyfile;
-        keyfile.open(string(home) + "/.ssh/id_rsa.pub");
-        if (keyfile.is_open()) {
-            string line;
-            while (getline(keyfile, line)) {
-                pub->append(line);
-            }
-            keyfile.close();
-        } else {
-            cout << "Public Key not found at " + string(home) + "/.ssh/id_rsa.pub" << endl;
-        }
-        keyfile.open(string(home) + "/.ssh/id_rsa");
-        if (keyfile.is_open()) {
-            string line;
-            while (getline(keyfile, line)) {
-                pri->append(line);
-            }
-            keyfile.close();
-        } else {
-            cout << "Public Key not found at " + string(home) + "/.ssh/id_rsa" << endl;
-        }
-#endif //_WIN32
-    }
-
     int acquire_credentials(git_cred **cred, const char *url, const char *username_from_url, unsigned int allowed_types, void *payload) {
         auto credPayload = static_cast<CredentialPayload*>(payload);
         CredentialStore *credStore = credPayload->credStore;
 
+        // Check if credentials are already invalid
         if (credStore->tried) {
             cout << "Invalid credentials, please try again or press Ctrl+C to abort" << endl;
             credStore->clear();
         }
 
-        if (credStore->empty()) {
+        // If no creds, get via helper
+        if (credStore->empty() && (allowed_types & GIT_CREDTYPE_USERPASS_PLAINTEXT)) {
             credentials_from_helper(credPayload->repo, string(url), *credStore);
         }
 
         if (credStore->empty()) {
-            manual_credential_entry(credPayload->repo, url, allowed_types, *credStore);
+            manual_credential_entry(credPayload->repo, url, username_from_url, allowed_types, *credStore);
         }
 
         credStore->tried = true;
@@ -275,36 +241,44 @@ namespace metro {
         }
     }
 
-    void manual_credential_entry(const Repository *repo, const char *url, unsigned int allowed_types, CredentialStore& credStore) {
+    void manual_credential_entry(const Repository *repo, const char *url, const char *username_from_url, unsigned int allowed_types, CredentialStore& credStore) {
         string askpassCmd = get_askpass_cmd(repo);
 
         string username;
         string password;
-        string publicKey, privateKey;
 
-        switch (allowed_types) {
-            case GIT_CREDTYPE_DEFAULT:
-                credStore.store_default();
-                break;
-            case GIT_CREDTYPE_USERPASS_PLAINTEXT:
-                read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
-                read_from_askpass(askpassCmd, "Password for " + username, true, password);
+        if (allowed_types & GIT_CREDTYPE_DEFAULT) {
+            credStore.store_default();
+        } else if (allowed_types & GIT_CREDTYPE_USERPASS_PLAINTEXT) {
+            read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
+            read_from_askpass(askpassCmd, "Password for " + username, true, password);
 
-                credStore.store_userpass(username, password);
-                break;
-            default:
-                read_from_askpass(askpassCmd, "Username for " + string(url), false, username);
-                read_from_askpass(askpassCmd, "SSH Keystore Password: ", true, password);
+            credStore.store_userpass(username, password);
+        } else if (allowed_types & GIT_CREDTYPE_SSH_CUSTOM) {
+            read_from_askpass(askpassCmd, "SSH keystore passphrase", true, password);
 
-                get_keys(&publicKey, &privateKey);
-                credStore.store_ssh_key(username, password, publicKey, privateKey);
-                break;
+                const char* home;
+#ifdef WIN32
+                home = getenv("USERPROFILE");
+#else
+                home = getenv("HOME");
+#endif
+
+#ifdef __unix__
+                if (home == NULL) {
+                    home = getpwuid(getuid())->pw_dir;
+                }
+#endif
+
+            //TODO: Don't force these defaults
+            credStore.store_ssh_key(username_from_url, password, string(home) + "/.ssh/id_rsa.pub",
+                                    string(home) + "/.ssh/id_rsa");
+        } else {
+            cout << "Unknown credential method" << endl;
         }
 
         // Erase sensitive information from memory.
         erase_string(username);
         erase_string(password);
-        erase_string(publicKey);
-        erase_string(privateKey);
     }
 }
