@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
 #include <termios.h>
 #include <unistd.h>
 #include <sys/types.h>

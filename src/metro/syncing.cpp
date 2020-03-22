@@ -156,7 +156,7 @@ namespace metro {
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
         int width = csbi.srWindow.Right - csbi.srWindow.Left - 16;
-#elif __unix__
+#elif __unix__  || __APPLE__ || __MACH__
         struct winsize w;
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         int width = w.ws_col - 17;
