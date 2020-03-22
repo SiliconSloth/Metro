@@ -97,7 +97,7 @@ Handle start_command(const string& cmd, const Pipe& childIn, const Pipe& childOu
     return procInfo.hProcess;
 }
 
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
 Pipe::Pipe(bool isOutput) {
     Handle handles[2];
     if (pipe(handles) < 0) {
