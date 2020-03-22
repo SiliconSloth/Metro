@@ -30,6 +30,7 @@
 #include <fstream>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <time.h>
 #endif //_WIN32
 
 #include "git2.h"
