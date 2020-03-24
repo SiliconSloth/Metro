@@ -9,5 +9,3 @@
   - [Handling branches](./branches.md)
   - [Absorbing code](./absorb.md)
 - [Metro vs Git](./metro-vs-git.md)
-
-[About](./about.md)
