@@ -274,27 +274,29 @@ void print_push_progress(unsigned int progress, size_t bytes) {
     int width = w.ws_col;
 #endif
 
-    print_progress_width(progress, width - 37);
+    print_progress_width(progress, width - 40);
 
-    chrono::milliseconds ms = chrono::duration_cast<chrono::milliseconds>(
-            chrono::system_clock::now().time_since_epoch()
-    );
+//    chrono::milliseconds ms = chrono::duration_cast<chrono::milliseconds>(
+//            chrono::system_clock::now().time_since_epoch()
+//    );
+
+    chrono::time_point<chrono::system_clock, chrono::nanoseconds> time = std::chrono::high_resolution_clock::now();
 
     cout << " | " << bytes_to_string(bytes) << " | ";
 
-    static unsigned int last_time;
+    static chrono::time_point<chrono::system_clock, chrono::nanoseconds> last_time;
     static size_t average_speed;
     static unsigned int count;
     static size_t last_bytes;
     size_t total_speed;
 
-    if (last_time != 0) {
-        size_t current_speed = 1000 * (bytes - last_bytes) / (ms.count() - last_time);
+    if (count != 0) {
+        size_t current_speed = 1000 * (bytes - last_bytes) / std::chrono::duration_cast<std::chrono::milliseconds>(time - last_time).count();
         total_speed = (current_speed + (average_speed * count)) / (count + 1);
     } else {
         total_speed = 0;
     }
-    last_time = ms.count();
+    last_time = time;
     average_speed = total_speed;
     count++;
     last_bytes = bytes;
