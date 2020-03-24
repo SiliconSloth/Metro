@@ -192,6 +192,7 @@ namespace metro {
         fetchOpts.callbacks.credentials = acquire_credentials;
         CredentialPayload payload = {credentials, &repo};
         fetchOpts.callbacks.payload = &payload;
+        fetchOpts.callbacks.transfer_progress = transfer_progress;
 
         Remote origin = repo.lookup_remote("origin");
         credentials->tried = false;
@@ -268,6 +269,7 @@ namespace metro {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
+            options.callbacks.transfer_progress = transfer_progress;
 
             credentials->tried = false;
             origin.push(StrArray(pushRefspecs), options);
