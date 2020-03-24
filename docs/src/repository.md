@@ -4,10 +4,6 @@ To create a repository with metro, you use the create command:
 ```
 metro create
 ```
-Or alternatively to include origin:
-```
-metro create git@github.com:SiliconSloth/Metro.git
-```
 
 > **Git Equivalent**
 > 
@@ -15,5 +11,4 @@ metro create git@github.com:SiliconSloth/Metro.git
 > ```bash
 > git init
 > git commit -m "Initial commit"
-> git remote add origin git@github.com:SiliconSloth/Metro.git
 > ```

@@ -25,20 +25,11 @@ metro patch
 ## Deleting a Commit
 You can also delete a commit by using delete:
 ```bash
-metro delete commit <num>
+metro delete commit
 ```
-Using <num> to specify how far back to go (or leave blank for last)
 
 Which is the alternative to `reset` in Git:
 ```bash
-git reset --soft HEAD~1
+git reset --hard HEAD~1
 ```
-
-Keep in mind your changes for all those commits will still be stored in the WIP commit.
-
-However you can delete that too using:
-```bash
-metro delete commit WIP
-```
-This will return the repository to the last commit
 
