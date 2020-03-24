@@ -149,8 +149,15 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
+    int push_transfer_progress(unsigned int current, unsigned int total, size_t bytes, void *payload) {
+        unsigned int progress = (100 * current) / total;
+        print_push_progress(progress, bytes);
+
+        return GIT_OK;
+    }
+
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
-        int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
+        unsigned int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         print_progress(progress);
         return GIT_OK;
     }
@@ -197,8 +204,9 @@ namespace metro {
         fetchOpts.callbacks.transfer_progress = transfer_progress;
 
         Remote origin = repo.lookup_remote("origin");
+        cout << "Syncing with " << git_remote_url(origin.ptr().get()) << "." << endl;
         credentials->tried = false;
-        cout << "Fetching changes..." << endl;
+//        cout << "Fetching changes..." << endl; TODO needed?
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
@@ -229,11 +237,11 @@ namespace metro {
 
                     if (targets.local == base) {
                         cout << "Branch " << branchName << " has been modified both locally and remotely, "
-                             << "but in different ways. All remote commits will be retained locally." << endl;
+                             << "but in different ways. The local branch has been updated." << endl;
                         syncType = PULL;
                     } else if (targets.remote == base) {
                         cout << "Branch " << branchName << " has been modified both locally and remotely, "
-                             << "but in different ways. All local commits will be retained remotely." << endl;
+                             << "but in different ways. The remote branch has been updated." << endl;
                         syncType = PUSH;
                     } else {
                         syncType = CONFLICT;
@@ -242,11 +250,11 @@ namespace metro {
 
                 switch (syncType) {
                     case PUSH:
-                        cout << "Pushing " << branchName << endl;
+//                        cout << "Pushing " << branchName << endl; TODO needed?
                         pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
                         break;
                     case PULL:
-                        cout << "Pulling " << branchName << endl;
+//                        cout << "Pulling " << branchName << endl; TODO needed?
                         change_branch_target(repo, branchName, targets.remote);
                         break;
                     case CONFLICT:
@@ -255,7 +263,9 @@ namespace metro {
                         break;
                 }
             } else {
-                cout << "Branch " << branchName << " is already synced" << endl;
+                if (branchName == current_branch_name(repo)) {
+                    cout << "Branch " << branchName << " is already synced." << endl;
+                }
             }
         }
 
@@ -276,11 +286,12 @@ namespace metro {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
-            options.callbacks.transfer_progress = transfer_progress;
+            options.callbacks.push_transfer_progress = push_transfer_progress;
 
             credentials->tried = false;
             cout << "Pushing changes..." << endl;
             origin.push(StrArray(pushRefspecs), options);
+            clear_line();
         }
 
         update_sync_cache(repo);

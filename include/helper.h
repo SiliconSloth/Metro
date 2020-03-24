@@ -34,6 +34,10 @@ string time_to_string(git_time time);
 
 void set_text_colour(string colour, void* handle);
 
-void print_progress(int progress);
+void print_progress(unsigned int progress);
+
+void print_push_progress(unsigned int progress, size_t bytes);
 
 void clear_line();
+
+string bytes_to_string(size_t bytes);

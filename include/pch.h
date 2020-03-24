@@ -17,6 +17,9 @@
 #include <cctype>
 #include <experimental/filesystem>
 #include <cassert>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
 #ifdef _WIN32
 #include <windows.h>
