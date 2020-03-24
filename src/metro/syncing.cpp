@@ -102,7 +102,10 @@ namespace metro {
     // Can create and delete branches as needed.
     void change_branch_target(const Repository& repo, const string& branchName, const OID& newTarget) {
         if (newTarget.isNull) {
-            delete_branch(repo, branchName);
+            // If this was a WIP branch it might already have been deleted when the base branch was deleted.
+            if ((branch_exists(repo, branchName))) {
+                delete_branch(repo, branchName);
+            }
         } else {
             repo.create_reference("refs/heads/" + branchName, newTarget, true);
             // Update the working dir if this is the current branch.
@@ -149,7 +152,6 @@ namespace metro {
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         print_progress(progress);
-
         return GIT_OK;
     }
 
@@ -196,6 +198,7 @@ namespace metro {
 
         Remote origin = repo.lookup_remote("origin");
         credentials->tried = false;
+        cout << "Fetching changes..." << endl;
         origin.fetch(StrArray(), fetchOpts);
 
         map<string, RefTargets> branchTargets;
@@ -239,9 +242,11 @@ namespace metro {
 
                 switch (syncType) {
                     case PUSH:
+                        cout << "Pushing " << branchName << endl;
                         pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
                         break;
                     case PULL:
+                        cout << "Pulling " << branchName << endl;
                         change_branch_target(repo, branchName, targets.remote);
                         break;
                     case CONFLICT:
@@ -249,6 +254,8 @@ namespace metro {
                                 branchTargets, conflictBranchNames, pushRefspecs);
                         break;
                 }
+            } else {
+                cout << "Branch " << branchName << " is already synced" << endl;
             }
         }
 
@@ -272,6 +279,7 @@ namespace metro {
             options.callbacks.transfer_progress = transfer_progress;
 
             credentials->tried = false;
+            cout << "Pushing changes..." << endl;
             origin.push(StrArray(pushRefspecs), options);
         }
 

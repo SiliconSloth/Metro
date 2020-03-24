@@ -20,7 +20,7 @@ namespace git {
             char **strings = new char*[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 strings[i] = new char[list[i].size() + 1];
-                strcpy_s(strings[i], list[i].size() + 1, list[i].c_str());
+                strncpy(strings[i], list[i].c_str(), list[i].size() + 1);
             }
             return new git_strarray{strings, list.size()};
         }

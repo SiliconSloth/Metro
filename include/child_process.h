@@ -2,7 +2,7 @@
 #define Handle HANDLE
 #define wait_for_terminate(procHandle) WaitForSingleObject(procHandle, INFINITE)
 #define close_handle(handle) CloseHandle(handle)
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
 #define Handle int
 #define wait_for_terminate(procHandle) waitpid(procHandle, nullptr, 0)
 #define close_handle(handle) ::close(handle)

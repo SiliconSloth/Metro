@@ -122,7 +122,7 @@ void write_all(const string& text, const string& path) {
 
 string time_to_string(Time time) {
     char buf[80];
-    struct tm ts = *localtime(&time.time);
+    struct tm ts = *localtime(reinterpret_cast<const time_t *>(&time.time));
     strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts);
 
     int hour_offset = 0;
@@ -238,9 +238,9 @@ void set_text_colour(string colour, void* handle) {
 void print_progress(int progress) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        int width = csbi.srWindow.Right - csbi.srWindow.Left - 16;
-#elif __unix__
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left - 16;
+#elif __unix__  || __APPLE__ || __MACH__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col - 17;
