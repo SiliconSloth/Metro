@@ -1,7 +1,7 @@
 # Summary
 
 [Introduction](./introduction.md)
-- [Installation](./installation.md)
+- [Building](building.md)
 - [Commands](./commands.md)
   - [Creating a repository](./repository.md)
   - [Making commits](./commit.md)
