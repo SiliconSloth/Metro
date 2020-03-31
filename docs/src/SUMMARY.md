@@ -1,7 +1,10 @@
 # Summary
 
 [Introduction](./introduction.md)
-- [Installation](./installation.md)
+- [Building](building/building.md)
+  - [Building for Windows](building/windows.md)
+  - [Building for Linux](building/linux.md)
+  - [Building for macOS](building/macos.md)
 - [Commands](./commands.md)
   - [Creating a repository](./repository.md)
   - [Making commits](./commit.md)
@@ -9,5 +12,3 @@
   - [Handling branches](./branches.md)
   - [Absorbing code](./absorb.md)
 - [Metro vs Git](./metro-vs-git.md)
-
-[About](./about.md)

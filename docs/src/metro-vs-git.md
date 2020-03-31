@@ -72,5 +72,4 @@ We've tried to reduce the number of inconveniences you encounter with git as muc
 * Push and pull combined into one command to sync the current line with the remote
 * Simple method to delete or return to past commits
 * Patching last commit with current work to fix mistakes or reduce small commits
-* Ignores files recently added to .ignore's rather than deleting them from other machines that then sync
-* Locking lines to avoid new users committing all their code to the production line
+* Ignores files recently added to .gitignore rather than deleting them from other machines that then sync
