@@ -2,7 +2,7 @@
 
 Metro has been built and tested on Windows, Linux and macOS.
 It depends on libgit2 and libssh2 on all platforms, and additionally OpenSSL on Windows.
-It also requires [CMake](https://cmake.org) to build on any platform.
+It also requires [CMake](https://cmake.org) 3.10 or later to build on any platform.
 
 The guides below will walk you through building Metro and all of its dependencies from source on each platform.
 Alternatively you could install the dependencies via another method, such as your system package manager, however
@@ -43,7 +43,7 @@ Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit syste
    By this point the file `build/src/Debug/libssh2.lib` should exist.
    
 ### 3. Build libgit2
-1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 0.28.4
+1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 0.28.4.
 3. Open Command Prompt and switch to the libgit2 directory.
 4. Run the following commands, where `C:/.../libssh2-1.9.0` is the path of your libssh2 directory.
    Note that all backslashes in the path must be replaced with forward slashes to appease CMake.
@@ -74,3 +74,47 @@ Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit syste
    This should create the `metro.exe` file in `build\Debug`.
 4. If you want to be able to run Metro from any directory on your computer,
    add the directory containing `metro.exe` to your PATH variable.
+   
+## Linux (Ubuntu)
+ 
+### 1. Build libssh2
+1. Download and extract the [libssh2](https://www.libssh2.org/) source code. Metro has been tested with version 1.9.0.
+2. Open a terminal and switch to the libssh2 directory.
+3. Run the following commands:
+   ```shell
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build .
+   ```
+   By this point the file `build/src/libssh2.a` should exist.
+   
+### 2. Build libgit2
+1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 0.28.4.
+3. Open a terminal and switch to the libgit2 directory.
+4. Run the following commands:
+   ```shell
+   mkdir build
+   cd build
+   cmake -DBUILD_SHARED_LIBS=OFF ..
+   cmake --build .
+   ```
+   By this point the file `build/libgit2.a` should exist.
+   
+### 3. Build Metro
+1. Set the following environment variables, replacing `/.../` with the absolute path of each directory:
+   * `LIBGIT_INCLUDE_DIR` to `/.../libgit2-0.28.4/include`
+   * `LIBGIT_BUILD_DIR` to `/.../libgit2-0.28.4/build`
+   * `LIBSSH_BUILD_DIR` to `/.../libssh2-1.9.0/build/src`
+2. Clone the Metro repository by running: \
+   `git clone https://github.com/SiliconSloth/Metro`
+3. Switch into the `Metro` directory and run the following commands:
+   ```shell
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build .
+   ```
+   This should create the `metro` file in `build`.
+4. If you want to be able to run Metro from any directory on your computer,
+   add the directory containing `metro` to your path.
