@@ -1,4 +1,4 @@
-## Building for Windows
+# Building for Windows
 
 These instructions assume you already have Visual Studio installed, and therefore have access to the
 Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit systems.

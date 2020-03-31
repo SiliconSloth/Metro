@@ -1,4 +1,4 @@
-## Building for macOS
+# Building for macOS
 
 ### 1. Install OpenSSL
 1. Install [Homebrew](https://brew.sh/) if you do not have it already.

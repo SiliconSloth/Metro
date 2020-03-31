@@ -1,4 +1,4 @@
-## Building for Linux
+# Building for Linux
  
 ### 1. Build libssh2
 1. Download and extract the [libssh2](https://www.libssh2.org/) source code. Metro has been tested with version 1.9.0.
