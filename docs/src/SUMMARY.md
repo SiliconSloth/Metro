@@ -1,7 +1,10 @@
 # Summary
 
 [Introduction](./introduction.md)
-- [Building](building.md)
+- [Building](building/building.md)
+  - [Building for Windows](building/windows.md)
+  - [Building for Linux](building/linux.md)
+  - [Building for macOS](building/macos.md)
 - [Commands](./commands.md)
   - [Creating a repository](./repository.md)
   - [Making commits](./commit.md)
