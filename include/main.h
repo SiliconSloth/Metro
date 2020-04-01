@@ -22,5 +22,7 @@ const Option ALL_OPTIONS[] = {
         {"help", "h", false},
         {"timeout", "t", true},
         {"force", "f", false},
-        {"soft", "s", false} 
+        {"soft", "s", false},
+        {"push", "u", false},
+        {"pull", "d", false}
 };

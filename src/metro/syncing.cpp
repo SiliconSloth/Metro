@@ -189,12 +189,12 @@ namespace metro {
         return repo;
     }
 
-    void sync(const Repository& repo) {
+    void sync(const Repository& repo, SyncDirection direction, bool force) {
         CredentialStore credentials;
-        sync(repo, &credentials);
+        sync(repo, &credentials, direction, force);
     }
 
-    void sync(const Repository& repo, CredentialStore *credentials) {
+    void sync(const Repository& repo, CredentialStore *credentials, SyncDirection direction, bool force) {
         save_wip(repo);
 
         git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
@@ -252,12 +252,16 @@ namespace metro {
 
                 switch (syncType) {
                     case PUSH:
-                        cout << "Pushing " << branchName << " to origin/" << branchName << "..." << endl;
-                        pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
+                        if (direction == UP || direction == BOTH) {
+                            cout << "Pushing " << branchName << " to origin/" << branchName << "..." << endl;
+                            pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
+                        }
                         break;
                     case PULL:
-                        cout << "Pulling from origin/" << branchName << " to " << branchName << "..." << endl;
-                        change_branch_target(repo, branchName, targets.remote);
+                        if (direction == DOWN || direction == BOTH) {
+                            cout << "Pulling from origin/" << branchName << " to " << branchName << "..." << endl;
+                            change_branch_target(repo, branchName, targets.remote);
+                        }
                         break;
                     case CONFLICT:
                         create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
@@ -284,14 +288,13 @@ namespace metro {
             }
         }
 
-        if (!pushRefspecs.empty()) {
+        if (!pushRefspecs.empty() && (direction == UP || direction == BOTH)) {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
             options.callbacks.push_transfer_progress = push_transfer_progress;
 
             credentials->tried = false;
-//            cout << "Pushing changes..." << endl;
             origin.push(StrArray(pushRefspecs), options);
             attempt_clear_line();
         }

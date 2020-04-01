@@ -40,6 +40,8 @@ void print_progress(unsigned int progress, size_t bytes);
 
 void attempt_clear_line();
 
+string clear_line_string();
+
 void clear_line();
 
 string bytes_to_string(size_t bytes);

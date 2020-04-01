@@ -237,7 +237,7 @@ void set_text_colour(string colour, void* handle) {
 #endif //_WIN32
 }
 
-void print_progress_width(unsigned int progress, unsigned int width) {
+string print_progress_width(unsigned int progress, unsigned int width) {
     string bar;
     int i;
     if (width > 0) {
@@ -247,8 +247,11 @@ void print_progress_width(unsigned int progress, unsigned int width) {
         for (; i < width; i++) {
             bar.append("-");
         }
-        cout << "\r" << "Progress: [" << bar << "] " << progress << "%" << flush;
+        stringstream s;
+        s << "\r" << "Progress: [" << bar << "] " << progress << "%";
+        return s.str();
     }
+    return "";
 }
 
 void print_progress(unsigned int progress) {
@@ -262,7 +265,7 @@ void print_progress(unsigned int progress) {
     int width = w.ws_col;
 #endif
 
-    print_progress_width(progress, width - 17);
+    cout << print_progress_width(progress, width - 17);
     progress_bar = true;
 }
 
@@ -277,11 +280,9 @@ void print_progress(unsigned int progress, size_t bytes) {
     int width = w.ws_col;
 #endif
 
-    print_progress_width(progress, width - 40);
+    string bar = print_progress_width(progress, width - 40);
 
     chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
-
-    cout << " | " << bytes_to_string(bytes) << " | ";
 
     static chrono::system_clock::time_point last_time;
     static size_t average_speed;
@@ -290,7 +291,12 @@ void print_progress(unsigned int progress, size_t bytes) {
     size_t total_speed;
 
     if (count != 0) {
-        size_t current_speed = 1000 * (bytes - last_bytes) / std::chrono::duration_cast<std::chrono::milliseconds>(time - last_time).count();
+        float delta_time = std::chrono::duration_cast<std::chrono::microseconds>(time - last_time).count();
+        // If time too small, assume minimum possible
+        if (delta_time == 0) {
+            delta_time = 1;
+        }
+        size_t current_speed = 1000000.f * (float) (bytes - last_bytes) / delta_time;
         total_speed = (current_speed + (average_speed * count)) / (count + 1);
     } else {
         total_speed = 0;
@@ -300,12 +306,25 @@ void print_progress(unsigned int progress, size_t bytes) {
     count++;
     last_bytes = bytes;
 
-    cout << bytes_to_string(total_speed) << "/s" << flush;
+    int max_width = 8; //xxx.xxYB
+    string size = bytes_to_string(bytes);
+    string speed = bytes_to_string(total_speed);
+    stringstream size_space;
+    stringstream speed_space;
+    for (int i = size.length(); i < max_width; i++) {
+        size_space << " ";
+    }
+    for (int i = speed.length(); i < max_width; i++) {
+        speed_space << " ";
+    }
+
+    cout << bar << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
     progress_bar = true;
 }
 
 void attempt_clear_line() {
     if (progress_bar) {
+        cout << "\033[1A";
         clear_line();
         progress_bar = false;
     }
@@ -314,8 +333,8 @@ void attempt_clear_line() {
 void clear_line() {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-        int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 #elif __unix__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -330,7 +349,7 @@ void clear_line() {
 }
 
 string bytes_to_string(size_t bytes) {
-    std::stringstream stream;
+    stringstream stream;
     stream << std::fixed << setprecision(2);
     if (bytes < 1000) {
         stream << bytes;

@@ -45,6 +45,12 @@ struct UnknownOptionException : public CommandArgumentException {
     {}
 };
 
+struct InvalidOptionException : public CommandArgumentException {
+    explicit InvalidOptionException(const string arg, const string arg2):
+            CommandArgumentException(arg, "Invalid option: " + arg + " with " + arg2)
+    {}
+};
+
 struct MissingValueException : public CommandArgumentException {
     explicit MissingValueException(const string arg):
             CommandArgumentException(arg, "Option needs a value: " + arg)
