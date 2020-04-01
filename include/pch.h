@@ -34,7 +34,7 @@
 #include <fstream>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <time.h>
+#include <ctime>
 #include <experimental/filesystem>
 using namespace std::experimental;
 #endif //_WIN32
