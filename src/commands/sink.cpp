@@ -24,19 +24,19 @@ Command sinkCmd{
             print_progress(0);
             cout << "\033[1000D\033[" + to_string(length + 2) + "A" << flush;
             cout << "           metro sink" << flush;
-            usleep(wait_time);
+            this_thread::sleep_for(chrono::microseconds(wait_time));
             cout << "\r                      " << endl;
             cout << "           metro sink" << flush;
 
             for (int i = 0; i < length; i++) {
-                usleep(wait_time);
+                this_thread::sleep_for(chrono::microseconds(wait_time));
                 cout << "\r                       " << endl;
                 cout << "           metro sink" << flush;
                 cout << "\033[100D\033[" + to_string(length - i) + "B";
                 print_progress(((i + 1) * 100) / length);
                 cout << "\033[100D\033[" + to_string(length - i) + "A" << flush;
             }
-            usleep(wait_time);
+            this_thread::sleep_for(chrono::microseconds(wait_time));
             cout << endl << endl << "Successfully sank Metro." << endl << "Did you mean \"metro sync\"?" << endl;
 //            cout << "\033[2J\033[;H" << flush;
         },

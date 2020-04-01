@@ -280,11 +280,11 @@ void print_push_progress(unsigned int progress, size_t bytes) {
 //            chrono::system_clock::now().time_since_epoch()
 //    );
 
-    chrono::time_point<chrono::system_clock, chrono::nanoseconds> time = std::chrono::high_resolution_clock::now();
+    chrono::steady_clock::time_point time = std::chrono::high_resolution_clock::now();
 
     cout << " | " << bytes_to_string(bytes) << " | ";
 
-    static chrono::time_point<chrono::system_clock, chrono::nanoseconds> last_time;
+    static chrono::steady_clock::time_point last_time;
     static size_t average_speed;
     static unsigned int count;
     static size_t last_bytes;

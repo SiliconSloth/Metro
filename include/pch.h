@@ -15,11 +15,12 @@
 #include <algorithm>
 #include <regex>
 #include <cctype>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cassert>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <thread>
 
 #ifdef _WIN32
 #include <windows.h>
