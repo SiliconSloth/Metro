@@ -36,7 +36,9 @@ void set_text_colour(string colour, void* handle);
 
 void print_progress(unsigned int progress);
 
-void print_push_progress(unsigned int progress, size_t bytes);
+void print_progress(unsigned int progress, size_t bytes);
+
+void attempt_clear_line();
 
 void clear_line();
 

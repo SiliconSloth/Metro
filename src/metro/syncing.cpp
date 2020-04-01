@@ -151,14 +151,14 @@ namespace metro {
 
     int push_transfer_progress(unsigned int current, unsigned int total, size_t bytes, void *payload) {
         unsigned int progress = (100 * current) / total;
-        print_push_progress(progress, bytes);
+        print_progress(progress, bytes);
 
         return GIT_OK;
     }
 
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         unsigned int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
-        print_progress(progress);
+        print_progress(progress, stats->received_bytes);
         return GIT_OK;
     }
 
@@ -185,6 +185,7 @@ namespace metro {
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         force_pull(repo);
+        attempt_clear_line();
         return repo;
     }
 
@@ -206,8 +207,9 @@ namespace metro {
         Remote origin = repo.lookup_remote("origin");
         cout << "Syncing with " << git_remote_url(origin.ptr().get()) << "." << endl;
         credentials->tried = false;
-//        cout << "Fetching changes..." << endl; TODO needed?
+        cout << "Fetching all branches from origin..." << endl;
         origin.fetch(StrArray(), fetchOpts);
+        attempt_clear_line();
 
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
@@ -250,11 +252,11 @@ namespace metro {
 
                 switch (syncType) {
                     case PUSH:
-//                        cout << "Pushing " << branchName << endl; TODO needed?
+                        cout << "Pushing " << branchName << " to origin/" << branchName << "..." << endl;
                         pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
                         break;
                     case PULL:
-//                        cout << "Pulling " << branchName << endl; TODO needed?
+                        cout << "Pulling from origin/" << branchName << " to " << branchName << "..." << endl;
                         change_branch_target(repo, branchName, targets.remote);
                         break;
                     case CONFLICT:
@@ -289,9 +291,9 @@ namespace metro {
             options.callbacks.push_transfer_progress = push_transfer_progress;
 
             credentials->tried = false;
-            cout << "Pushing changes..." << endl;
+//            cout << "Pushing changes..." << endl;
             origin.push(StrArray(pushRefspecs), options);
-            clear_line();
+            attempt_clear_line();
         }
 
         update_sync_cache(repo);

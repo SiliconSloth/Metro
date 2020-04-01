@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <regex>
 #include <cctype>
-#include <filesystem>
 #include <cassert>
 #include <chrono>
 #include <iomanip>
@@ -24,6 +23,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <filesystem>
 #elif __unix__ || __APPLE__ || __MACH__
 #include <termios.h>
 #include <unistd.h>
@@ -35,6 +35,8 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <time.h>
+#include <experimental/filesystem>
+using namespace std::experimental;
 #endif //_WIN32
 
 #include "git2.h"

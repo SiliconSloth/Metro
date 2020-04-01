@@ -2,6 +2,8 @@
 
 using namespace std;
 
+bool progress_bar = false;
+
 // Convert a string to a non-negative integer, returning -1 on failure.
 int parse_pos_int(const string& str) {
     try {
@@ -261,9 +263,10 @@ void print_progress(unsigned int progress) {
 #endif
 
     print_progress_width(progress, width - 17);
+    progress_bar = true;
 }
 
-void print_push_progress(unsigned int progress, size_t bytes) {
+void print_progress(unsigned int progress, size_t bytes) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -276,15 +279,11 @@ void print_push_progress(unsigned int progress, size_t bytes) {
 
     print_progress_width(progress, width - 40);
 
-//    chrono::milliseconds ms = chrono::duration_cast<chrono::milliseconds>(
-//            chrono::system_clock::now().time_since_epoch()
-//    );
-
-    chrono::steady_clock::time_point time = std::chrono::high_resolution_clock::now();
+    chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
 
     cout << " | " << bytes_to_string(bytes) << " | ";
 
-    static chrono::steady_clock::time_point last_time;
+    static chrono::system_clock::time_point last_time;
     static size_t average_speed;
     static unsigned int count;
     static size_t last_bytes;
@@ -302,6 +301,14 @@ void print_push_progress(unsigned int progress, size_t bytes) {
     last_bytes = bytes;
 
     cout << bytes_to_string(total_speed) << "/s" << flush;
+    progress_bar = true;
+}
+
+void attempt_clear_line() {
+    if (progress_bar) {
+        clear_line();
+        progress_bar = false;
+    }
 }
 
 void clear_line() {
