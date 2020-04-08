@@ -274,17 +274,20 @@ void print_progress(unsigned int progress, size_t bytes) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
     int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+
+    chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
+    static chrono::time_point<chrono::steady_clock> last_time;
 #elif __unix__  || __APPLE__ || __MACH__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col;
+
+    chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
+    static chrono::system_clock::time_point last_time;
 #endif
 
     string bar = print_progress_width(progress, width - 40);
 
-    chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
-
-    static chrono::system_clock::time_point last_time;
     static size_t average_speed;
     static unsigned int count;
     static size_t last_bytes;
