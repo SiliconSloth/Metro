@@ -220,6 +220,16 @@ namespace metro {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
 
+            // Make nicer branch name to print for WIP
+            string printBranchName = branchName;
+            bool isWIP = false;
+            if (has_suffix(printBranchName, "#wip")) {
+                string temp;
+                split_at_first(printBranchName, '#', printBranchName, temp);
+                printBranchName.append(" wip branch");
+                isWIP = true;
+            }
+
             if (targets.local != targets.remote) {
                 SyncType syncType;
 
@@ -238,11 +248,11 @@ namespace metro {
                     }
 
                     if (targets.local == base) {
-                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
+                        cout << "Branch " << printBranchName << " has been modified both locally and remotely, "
                              << "but in different ways. The local branch has been updated." << endl;
                         syncType = PULL;
                     } else if (targets.remote == base) {
-                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
+                        cout << "Branch " << printBranchName << " has been modified both locally and remotely, "
                              << "but in different ways. The remote branch has been updated." << endl;
                         syncType = PUSH;
                     } else {
@@ -253,13 +263,13 @@ namespace metro {
                 switch (syncType) {
                     case PUSH:
                         if (direction == UP || direction == BOTH) {
-                            cout << "Pushing " << branchName << " to origin/" << branchName << "..." << endl;
+                            cout << "Pushing " << printBranchName << " to origin/" << printBranchName << "..." << endl;
                             pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
                         }
                         break;
                     case PULL:
                         if (direction == DOWN || direction == BOTH) {
-                            cout << "Pulling from origin/" << branchName << " to " << branchName << "..." << endl;
+                            cout << "Pulling from origin/" << printBranchName << " to " << printBranchName << "..." << endl;
                             change_branch_target(repo, branchName, targets.remote);
                         }
                         break;
@@ -270,7 +280,11 @@ namespace metro {
                 }
             } else {
                 if (branchName == current_branch_name(repo)) {
-                    cout << "Branch " << branchName << " is already synced." << endl;
+                    if (!isWIP) {
+                        cout << "Branch " << branchName << " is already synced." << endl;
+                    } else {
+                        cout << "WIP Branch " << branchName << " is already synced." << endl;
+                    }
                 }
             }
         }

@@ -45,3 +45,7 @@ string clear_line_string();
 void clear_line();
 
 string bytes_to_string(size_t bytes);
+
+void enable_ansi();
+
+void disable_ansi();

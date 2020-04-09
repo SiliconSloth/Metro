@@ -42,12 +42,13 @@ bool whitespace_only(const string& s) {
 // The outputs are stored in before and after.
 void split_at_first(string const& str, char const& c, string & before, string & after) {
     size_t index = str.find(c);
+    const string tempStr = str; // Can't assume str != before
     if (index == -1) {
-        before = str;
+        before = tempStr;
         after = "";
     } else {
-        before = str.substr(0, index);
-        after = str.substr(index + 1, string::npos);
+        before = tempStr.substr(0, index);
+        after = tempStr.substr(index + 1, string::npos);
     }
 }
 
@@ -273,7 +274,7 @@ void print_progress(unsigned int progress, size_t bytes) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    int width = csbi.srWindow.Right - csbi.srWindow.Left;
 
     chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
     static chrono::time_point<chrono::steady_clock> last_time;
@@ -326,11 +327,13 @@ void print_progress(unsigned int progress, size_t bytes) {
 }
 
 void attempt_clear_line() {
+    enable_ansi();
     if (progress_bar) {
         cout << "\033[1A";
         clear_line();
         progress_bar = false;
     }
+    disable_ansi();
 }
 
 void clear_line() {
@@ -370,4 +373,29 @@ string bytes_to_string(size_t bytes) {
         stream << (float) bytes / 1000000000000.0f;
         return  stream.str() + "TB";
     }
+}
+
+static HANDLE sout;
+static DWORD initial;
+
+void enable_ansi() {
+#ifdef _WIN32
+    DWORD mode = 0;
+    sout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if(sout == INVALID_HANDLE_VALUE) exit(GetLastError());
+    if(!GetConsoleMode(sout, &mode)) exit(GetLastError());
+    initial = mode;
+
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+    if(!SetConsoleMode(sout, mode)) exit(GetLastError());
+#endif //_WIN32
+}
+
+void disable_ansi() {
+#ifdef _WIN32
+    printf("\x1b[0m");
+    if(!SetConsoleMode(sout, initial)) exit(GetLastError());
+#endif //_WIN32
 }

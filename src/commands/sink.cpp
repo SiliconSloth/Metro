@@ -15,10 +15,9 @@ Command sinkCmd{
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
             int height = w.ws_row;
 #endif
-
+            enable_ansi();
             u_int wait_time = 70000;
             int length = height - 6;
-//            cout << "\033[2J\033[;H" << flush;
             for (int i = 0; i < length + 4; i++) cout << endl;
             cout << "\033[" + to_string(length + 2) + "B";
             print_progress(0);
@@ -38,7 +37,7 @@ Command sinkCmd{
             }
             this_thread::sleep_for(chrono::microseconds(wait_time));
             cout << endl << endl << "Successfully sank Metro." << endl << "Did you mean \"metro sync\"?" << endl;
-//            cout << "\033[2J\033[;H" << flush;
+            disable_ansi();
         },
 
     // printHelp
