@@ -38,6 +38,7 @@ jobs:
       uses: lukka/run-cmake@v1.4
       with:
         cmakeListsTxtPath: ${{ github.workspace }}/deps/libssh/CMakeLists.txt
+        buildDirectory: ${{ github.workspace }}/deps/libssh/build
         
     - name: Returns to deps
       run: |
@@ -47,8 +48,8 @@ jobs:
       run: |
         mkdir libgit2
         cd libgit2
-        wget https://github.com/libgit2/libgit2/releases/download/v1.0.0/libgit2-1.0.0.tar.gz
-        tar -xzvf libgit2-1.0.0.tar.gz
+        wget https://github.com/libgit2/libgit2/releases/download/v1.0.0/libgit2-1.0.0.zip
+        unzip libgit2-1.0.0.zip
         mv libgit2-1.0.0/* .
         mkdir build
         cd build
@@ -58,6 +59,8 @@ jobs:
       uses: lukka/run-cmake@v1.4
       with:
         cmakeListsTxtPath: ${{ github.workspace }}/deps/libgit2/CMakeLists.txt
+        buildDirectory: ${{ github.workspace }}/deps/libgit2/build
+        buildWithCMakeArgs: "-DBUILD_SHARED_LIBS=OFF"
         
     - name: Prepare Build
       run: |
