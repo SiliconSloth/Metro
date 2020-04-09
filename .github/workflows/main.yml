@@ -52,14 +52,19 @@ jobs:
     
     # Runs cmake on the libgit2
     - name: Build LibGit2
-      uses: ashutoshvarma/action-cmake-build@v1
-      with:
-        build-dir: ${{ runner.workspace }}/deps/libgit2/build
-        configure-options: "-DBUILD_SHARED_LIBS=OFF"
+      run: |
+        cd deps/libgit2/build
+        cmake -DBUILD_SHARED_LIBS=OFF ..
+        cmake --build .
 
     # Runs cmake on the project
     - name: Build Metro
-      uses: lukka/run-cmake@v1.4
-      with:
-        configure-options: "-DLIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include -DLIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build -DLIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src"
+      run: |
+        LIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include
+        LIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build
+        LIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build .
         
