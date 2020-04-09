@@ -216,12 +216,9 @@ namespace metro {
 
             // Make nicer branch name to print for WIP
             string printBranchName = branchName;
-            bool isWIP = false;
-            if (has_suffix(printBranchName, "#wip")) {
-                string temp;
-                split_at_first(printBranchName, '#', printBranchName, temp);
-                printBranchName.append(" wip branch");
-                isWIP = true;
+            bool isWIP = is_wip(branchName);
+            if (isWIP) {
+                printBranchName = un_wip(branchName) + " wip branch";
             }
 
             if (targets.local != targets.remote) {
@@ -283,7 +280,7 @@ namespace metro {
                     if (!isWIP) {
                         cout << "Branch " << branchName << " is already synced." << endl;
                     } else {
-                        cout << "WIP Branch " << branchName << " is already synced." << endl;
+                        cout << "WIP branch " << branchName << " is already synced." << endl;
                     }
                 }
             }
