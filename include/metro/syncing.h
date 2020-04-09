@@ -1,4 +1,11 @@
 namespace metro {
+    struct RefTargets {
+        OID local;
+        OID remote;
+        OID synced;
+    };
+
+    enum SyncType {PUSH, PULL, CONFLICT};
     enum SyncDirection {UP, DOWN, BOTH};
 
     Repository clone(const string& url, const string& path);
