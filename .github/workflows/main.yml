@@ -28,7 +28,8 @@ jobs:
         mkdir deps/libssh
         cd deps/libssh
         wget https://github.com/libssh2/libssh2/releases/download/libssh2-1.9.0/libssh2-1.9.0.tar.gz
-        tar -xzf libssh2-1.9.0.tar.gz
+        tar -xzvf libssh2-1.9.0.tar.gz
+        ls
         mkdir build
         cd build
         
@@ -47,7 +48,8 @@ jobs:
         mkdir libgit2
         cd libgit2
         wget https://github.com/libgit2/libgit2/releases/download/v1.0.0/libgit2-1.0.0.tar.gz
-        tar -xzf libgit2-1.0.0.tar.gz
+        tar -xzvf libgit2-1.0.0.tar.gz
+        ls
         mkdir build
         cd build
     
