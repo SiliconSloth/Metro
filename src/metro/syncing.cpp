@@ -32,21 +32,15 @@ namespace metro {
         return diff.num_deltas() == 0;
     }
 
-    void clear_sync_cache(const Repository& repo) {
-        repo.foreach_reference([](const Branch& ref, const void *payload) {
-            if (has_prefix(ref.reference_name(), "refs/synced/")) {
+    void update_sync_cache(const Repository& repo, const vector<string>& branches) {
+        for (const auto& name : branches) {
+            if (branch_exists(repo, name)) {
+                Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
+                repo.create_reference("refs/synced/" + name, branch.target(), true);
+            } else {
+                Branch ref = repo.lookup_reference("refs/synced/" + name);
                 ref.delete_reference();
             }
-            return 0;
-        }, nullptr);
-    }
-
-    void update_sync_cache(const Repository& repo) {
-        clear_sync_cache(repo);
-
-        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-        for (Branch branch; iter.next(&branch);) {
-            repo.create_reference("refs/synced/" + branch.name(), branch.target(), false);
         }
     }
 
@@ -112,7 +106,7 @@ namespace metro {
     // The new branch with the local changes is scheduled to be pushed to remote.
     void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
             const OID& localTarget, const OID& remoteTarget, const map<string, RefTargets>& branchTargets,
-            map<string, string>& conflictBranchNames, vector<string>& pushRefspecs) {
+            map<string, string>& conflictBranchNames, vector<string>& pushRefspecs, vector<string>& syncedBranches) {
 
         // If a new name has already been generated for this branch (or the base branch if this is a WIP branch),
         // use the existing new name. Otherwise generate a new one.
@@ -138,7 +132,9 @@ namespace metro {
 
         // Point the old branch to the fetched remote commits.
         repo.create_reference("refs/heads/" + name, remoteTarget, true);
+        syncedBranches.push_back(name);
         pushRefspecs.push_back(make_push_refspec(newName, false));
+        syncedBranches.push_back(newName);
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
@@ -209,6 +205,7 @@ namespace metro {
 
         map<string, string> conflictBranchNames;
         vector<string> pushRefspecs;
+        vector<string> syncedBranches;
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
@@ -258,17 +255,19 @@ namespace metro {
                         if (direction == UP || direction == BOTH) {
                             cout << "Pushing " << printBranchName << " to origin/" << printBranchName << "..." << endl;
                             pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
+                            syncedBranches.push_back(branchName);
                         }
                         break;
                     case PULL:
                         if (direction == DOWN || direction == BOTH) {
                             cout << "Pulling from origin/" << printBranchName << " to " << printBranchName << "..." << endl;
                             change_branch_target(repo, branchName, targets.remote);
+                            syncedBranches.push_back(branchName);
                         }
                         break;
                     case CONFLICT:
                         create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
-                                branchTargets, conflictBranchNames, pushRefspecs);
+                                branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
                         break;
                 }
             } else {
@@ -291,7 +290,7 @@ namespace metro {
                 OID target = repo.lookup_branch(oldName, GIT_BRANCH_LOCAL).target();
                 // Create branch pointing to same commit as old branch.
                 create_conflict_branches(repo, origin, oldName, target, target,
-                        branchTargets, conflictBranchNames, pushRefspecs);
+                        branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
             }
         }
 
@@ -306,7 +305,7 @@ namespace metro {
             attempt_clear_line();
         }
 
-        update_sync_cache(repo);
+        update_sync_cache(repo, syncedBranches);
         restore_wip(repo);
     }
 
@@ -314,11 +313,15 @@ namespace metro {
     void force_pull(const Repository& repo) {
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
+
+        vector<string> syncedBranches;
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
             change_branch_target(repo, branchName, targets.remote);
+            syncedBranches.push_back(branchName);
         }
-        update_sync_cache(repo);
+
+        update_sync_cache(repo, syncedBranches);
     }
 }

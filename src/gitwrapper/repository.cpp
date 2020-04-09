@@ -56,6 +56,13 @@ namespace git {
         return Tree(tree);
     }
 
+    Branch Repository::lookup_reference(const string& name) const {
+        git_reference *ref;
+        int err = git_reference_lookup(&ref, repo.get(), name.c_str());
+        check_error(err);
+        return Branch(ref);
+    }
+
     Branch Repository::lookup_branch(const string &name, git_branch_t branchType) const {
         git_reference *branch;
         int err = git_branch_lookup(&branch, repo.get(), name.c_str(), branchType);
