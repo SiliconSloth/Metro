@@ -60,9 +60,10 @@ jobs:
     - name: Prepare Build
       uses: |
         cd ../../..
-        LIBGIT_INCLUDE_DIR=${{ github.workspace }}/deps/libgit2/include
-        LIBGIT_BUILD_DIR=${{ github.workspace }}/deps/libgit2/build
-        LIBSSH_BUILD_DIR=${{ github.workspace }}/deps/libssh/build/src
+        CURRENT_DIR="$(pwd)"
+        LIBGIT_INCLUDE_DIR=$CURRENT_DIR/deps/libgit2/include
+        LIBGIT_BUILD_DIR=$CURRENT_DIR/deps/libgit2/build
+        LIBSSH_BUILD_DIR=$CURRENT_DIR/deps/libssh/build/src
         mkdir build
         cd build
 
