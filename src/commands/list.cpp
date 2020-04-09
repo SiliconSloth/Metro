@@ -18,7 +18,16 @@ void print_from_commit(Commit commit, void *hConsole) {
     for (unsigned int i = 0; i < count; i++) {
         Commit nth_parent = commit.parent(i);
 
-        print_from_commit(nth_parent, hConsole);
+        while (true) {
+            cout << ":" << flush;
+            char next = getchar();
+            enable_ansi();
+            cout << "\033[1A";
+            clear_line();
+            disable_ansi();
+            if (next == '\n') { print_from_commit(nth_parent, hConsole); break; }
+            else if (next == 'q') return;
+        }
 
         if (i != count - 1) cout << endl;
     }

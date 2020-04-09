@@ -26,6 +26,12 @@ void split_at_first(string const& str, char const& c, string & before, string & 
 // The behaviour of this function is modelled on Windows' CommandLineToArgvW function.
 vector<string> split_args(const string& command);
 
+// Print the given list of options and their contractions and descriptions in a user-friendly manner.
+void print_options(const vector<string>& options);
+
+// Print string right-padded to given length.
+void print_padded(const string& str, size_t len);
+
 string read_all(const string& path);
 
 void write_all(const string& text, const string& path);
@@ -33,3 +39,19 @@ void write_all(const string& text, const string& path);
 string time_to_string(git_time time);
 
 void set_text_colour(string colour, void* handle);
+
+void print_progress(unsigned int progress);
+
+void print_progress(unsigned int progress, size_t bytes);
+
+void attempt_clear_line();
+
+string clear_line_string();
+
+void clear_line();
+
+string bytes_to_string(size_t bytes);
+
+void enable_ansi();
+
+void disable_ansi();

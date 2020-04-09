@@ -2,6 +2,8 @@
 
 using namespace std;
 
+bool progress_bar = false;
+
 // Convert a string to a non-negative integer, returning -1 on failure.
 int parse_pos_int(const string& str) {
     try {
@@ -40,12 +42,13 @@ bool whitespace_only(const string& s) {
 // The outputs are stored in before and after.
 void split_at_first(string const& str, char const& c, string & before, string & after) {
     size_t index = str.find(c);
+    const string tempStr = str; // Can't assume str != before
     if (index == -1) {
-        before = str;
+        before = tempStr;
         after = "";
     } else {
-        before = str.substr(0, index);
-        after = str.substr(index + 1, string::npos);
+        before = tempStr.substr(0, index);
+        after = tempStr.substr(index + 1, string::npos);
     }
 }
 
@@ -105,6 +108,34 @@ vector<string> split_args(const string& command) {
     return args;
 }
 
+void print_options(const vector<string>& options) {
+    cout << endl << "Options:" << endl;
+    for (const auto& name : options) {
+        // Find the option whose name matches the one given.
+        bool found = false;
+        for (const auto& opt : ALL_OPTIONS) {
+            if (opt.name == name) {
+                print_padded("--" + name, 8);
+                print_padded("-" + opt.contraction, 5);
+                cout << opt.description << endl;
+
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            cout << "Developer warning: Unknown option \"" << name << "\"" << endl;
+        }
+    }
+}
+
+void print_padded(const string& str, size_t len) {
+    cout << str;
+    for (size_t i = 0; i < len - str.length(); i++) {
+        cout << " ";
+    }
+}
+
 string read_all(const string& path) {
     //TODO: Exception if the file is not found/read fails
     ifstream file(path);
@@ -141,13 +172,19 @@ string time_to_string(Time time) {
     return string(buf3);
 }
 
+static int defaultColour = -1;
+
 // Should be in format like "rgbi-----" or "r--i-gb--"
 // rgb is colour, i is intensity. The first 4 are the
 // text, and the second 4 are the background. The last
 // one is the mode: - for all, f for foreground, b for
-// background and r for reset (UNIX only)
+// background and r for reset
 void set_text_colour(string colour, void* handle) {
 #ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO term;
+    GetConsoleScreenBufferInfo(handle, &term);
+    if (defaultColour == -1) defaultColour = term.wAttributes;
+
     int current = 0;
     if (colour[0] == 'r') current |= FOREGROUND_RED;
     if (colour[1] == 'g') current |= FOREGROUND_GREEN;
@@ -157,6 +194,9 @@ void set_text_colour(string colour, void* handle) {
     if (colour[5] == 'g') current |= BACKGROUND_GREEN;
     if (colour[6] == 'b') current |= BACKGROUND_BLUE;
     if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
+    if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
+    if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
+    if (colour[8] == 'r') current = defaultColour;
 
     SetConsoleTextAttribute(handle, current);
 #elif __unix__
@@ -232,5 +272,169 @@ void set_text_colour(string colour, void* handle) {
     else b_bri = "0";
     if (colour[8] == '-' || colour[8] == 'f') printf("\033[%s;%sm", bri.c_str(), col.c_str());
     if (colour[8] == '-' || colour[8] == 'b') printf("\033[%s;%sm", b_bri.c_str(), b_col.c_str());
+#endif //_WIN32
+}
+
+string print_progress_width(unsigned int progress, unsigned int width) {
+    string bar;
+    int i;
+    if (width > 0) {
+        for (i = 0; i < (progress * width) / 100; i++) {
+            bar.append("=");
+        }
+        for (; i < width; i++) {
+            bar.append("-");
+        }
+        stringstream s;
+        s << "\r" << "Progress: [" << bar << "] " << progress << "%";
+        return s.str();
+    }
+    return "";
+}
+
+void print_progress(unsigned int progress) {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#elif __unix__  || __APPLE__ || __MACH__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+#endif
+
+    cout << print_progress_width(progress, width - 17);
+    progress_bar = true;
+}
+
+void print_progress(unsigned int progress, size_t bytes) {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left;
+
+    chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
+    static chrono::time_point<chrono::steady_clock> last_time;
+#elif __unix__  || __APPLE__ || __MACH__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+
+    chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
+    static chrono::system_clock::time_point last_time;
+#endif
+
+    string bar = print_progress_width(progress, width - 40);
+
+    static size_t average_speed;
+    static unsigned int count;
+    static size_t last_bytes;
+    size_t total_speed;
+
+    if (count != 0) {
+        float delta_time = std::chrono::duration_cast<std::chrono::microseconds>(time - last_time).count();
+        // If time too small, assume minimum possible
+        if (delta_time == 0) {
+            delta_time = 1;
+        }
+        size_t current_speed = 1000000.f * (float) (bytes - last_bytes) / delta_time;
+        total_speed = (current_speed + (average_speed * count)) / (count + 1);
+    } else {
+        total_speed = 0;
+    }
+    last_time = time;
+    average_speed = total_speed;
+    count++;
+    last_bytes = bytes;
+
+    int max_width = 8; //xxx.xxYB
+    string size = bytes_to_string(bytes);
+    string speed = bytes_to_string(total_speed);
+    stringstream size_space;
+    stringstream speed_space;
+    for (int i = size.length(); i < max_width; i++) {
+        size_space << " ";
+    }
+    for (int i = speed.length(); i < max_width; i++) {
+        speed_space << " ";
+    }
+
+    cout << bar << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
+    progress_bar = true;
+}
+
+void attempt_clear_line() {
+    enable_ansi();
+    if (progress_bar) {
+        cout << "\033[1A";
+        clear_line();
+        progress_bar = false;
+    }
+    disable_ansi();
+}
+
+void clear_line() {
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#elif __unix__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+#endif
+
+    cout << "\r";
+    for (int i = 0; i < width; i++) {
+        cout << " ";
+    }
+    cout << "\r";
+}
+
+string bytes_to_string(size_t bytes) {
+    stringstream stream;
+    stream << std::fixed << setprecision(2);
+    if (bytes < 1000) {
+        stream << bytes;
+        return  stream.str() + "B";
+    } else if (bytes < 1000000) {
+        stream << (float) bytes / 1000.0f;
+        return  stream.str() + "KB";
+    } else if (bytes < 1000000000) {
+        stream << (float) bytes / 1000000.0f;
+        return  stream.str() + "MB";
+    } else if (bytes < 1000000000000L) {
+        stream << (float) bytes / 1000000000.0f;
+        return  stream.str() + "GB";
+    } else if (bytes < 1000000000000000L) {
+        stream << (float) bytes / 1000000000000.0f;
+        return  stream.str() + "TB";
+    }
+}
+
+#ifdef _WIN32
+static HANDLE sout;
+static DWORD initial;
+#endif //_WIN32
+
+void enable_ansi() {
+#ifdef _WIN32
+    DWORD mode = 0;
+    sout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if(sout == INVALID_HANDLE_VALUE) exit(GetLastError());
+    if(!GetConsoleMode(sout, &mode)) exit(GetLastError());
+    initial = mode;
+
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+    if(!SetConsoleMode(sout, mode)) exit(GetLastError());
+#endif //_WIN32
+}
+
+void disable_ansi() {
+#ifdef _WIN32
+    printf("\x1b[0m");
+    if(!SetConsoleMode(sout, initial)) exit(GetLastError());
 #endif //_WIN32
 }

@@ -51,5 +51,6 @@ Command deleteCmd {
                     cout << "Usage: metro delete branch <branch>\n";
                 }
             }
+            print_options({"help", "soft"});
         }
 };
