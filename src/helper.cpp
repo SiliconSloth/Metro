@@ -108,6 +108,34 @@ vector<string> split_args(const string& command) {
     return args;
 }
 
+void print_options(const vector<string>& options) {
+    cout << endl << "Options:" << endl;
+    for (const auto& name : options) {
+        // Find the option whose name matches the one given.
+        bool found = false;
+        for (const auto& opt : ALL_OPTIONS) {
+            if (opt.name == name) {
+                print_padded("--" + name, 8);
+                print_padded("-" + opt.contraction, 5);
+                cout << opt.description << endl;
+
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            cout << "Developer warning: Unknown option \"" << name << "\"" << endl;
+        }
+    }
+}
+
+void print_padded(const string& str, size_t len) {
+    cout << str;
+    for (size_t i = 0; i < len - str.length(); i++) {
+        cout << " ";
+    }
+}
+
 string read_all(const string& path) {
     //TODO: Exception if the file is not found/read fails
     ifstream file(path);

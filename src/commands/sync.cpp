@@ -27,5 +27,6 @@ Command syncCmd {
         // printHelp
         [](const Arguments &args) {
             cout << "Usage: metro sync" << endl;
+            print_options({"help", "pull", "push"});
         }
 };

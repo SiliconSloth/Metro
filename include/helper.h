@@ -26,6 +26,12 @@ void split_at_first(string const& str, char const& c, string & before, string & 
 // The behaviour of this function is modelled on Windows' CommandLineToArgvW function.
 vector<string> split_args(const string& command);
 
+// Print the given list of options and their contractions and descriptions in a user-friendly manner.
+void print_options(const vector<string>& options);
+
+// Print string right-padded to given length.
+void print_padded(const string& str, size_t len);
+
 string read_all(const string& path);
 
 void write_all(const string& text, const string& path);
