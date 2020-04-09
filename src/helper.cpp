@@ -412,8 +412,10 @@ string bytes_to_string(size_t bytes) {
     }
 }
 
+#ifdef _WIN32
 static HANDLE sout;
 static DWORD initial;
+#endif //_WIN32
 
 void enable_ansi() {
 #ifdef _WIN32
