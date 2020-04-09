@@ -144,13 +144,19 @@ string time_to_string(Time time) {
     return string(buf3);
 }
 
+static int defaultColour = -1;
+
 // Should be in format like "rgbi-----" or "r--i-gb--"
 // rgb is colour, i is intensity. The first 4 are the
 // text, and the second 4 are the background. The last
 // one is the mode: - for all, f for foreground, b for
-// background and r for reset (UNIX only)
+// background and r for reset
 void set_text_colour(string colour, void* handle) {
 #ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO term;
+    GetConsoleScreenBufferInfo(handle, &term);
+    if (defaultColour == -1) defaultColour = term.wAttributes;
+
     int current = 0;
     if (colour[0] == 'r') current |= FOREGROUND_RED;
     if (colour[1] == 'g') current |= FOREGROUND_GREEN;
@@ -160,6 +166,9 @@ void set_text_colour(string colour, void* handle) {
     if (colour[5] == 'g') current |= BACKGROUND_GREEN;
     if (colour[6] == 'b') current |= BACKGROUND_BLUE;
     if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
+    if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
+    if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
+    if (colour[8] == 'r') current = defaultColour;
 
     SetConsoleTextAttribute(handle, current);
 #elif __unix__
