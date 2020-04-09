@@ -105,8 +105,10 @@ namespace metro {
     // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
     // The new branch with the local changes is scheduled to be pushed to remote.
     void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
-            const OID& localTarget, const OID& remoteTarget, const map<string, RefTargets>& branchTargets,
-            map<string, string>& conflictBranchNames, vector<string>& pushRefspecs, vector<string>& syncedBranches) {
+            const OID& localTarget, const OID& remoteTarget, const SyncDirection& direction,
+            const map<string, RefTargets>& branchTargets, map<string, string>& conflictBranchNames,
+            vector<string>& pushRefspecs, vector<string>& syncedBranches) {
+        assert(direction != UP);  // Should never try to sync conflicting branches with --push
 
         // If a new name has already been generated for this branch (or the base branch if this is a WIP branch),
         // use the existing new name. Otherwise generate a new one.
@@ -133,8 +135,10 @@ namespace metro {
         // Point the old branch to the fetched remote commits.
         repo.create_reference("refs/heads/" + name, remoteTarget, true);
         syncedBranches.push_back(name);
-        pushRefspecs.push_back(make_push_refspec(newName, false));
-        syncedBranches.push_back(newName);
+        if (direction != DOWN) {
+            pushRefspecs.push_back(make_push_refspec(newName, false));
+            syncedBranches.push_back(newName);
+        }
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
@@ -267,7 +271,7 @@ namespace metro {
                         break;
                     case CONFLICT:
                         if (direction != UP) {
-                            create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
+                            create_conflict_branches(repo, origin, branchName, targets.local, targets.remote, direction,
                                                      branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
                         } else {
                             cout << "Branch " << branchName << " conflicts with remote, not pushing." << endl;
@@ -293,7 +297,7 @@ namespace metro {
             if (branch_exists(repo, oldName) &&! branch_exists(repo, newName)) {
                 OID target = repo.lookup_branch(oldName, GIT_BRANCH_LOCAL).target();
                 // Create branch pointing to same commit as old branch.
-                create_conflict_branches(repo, origin, oldName, target, target,
+                create_conflict_branches(repo, origin, oldName, target, target, direction,
                         branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
             }
         }
