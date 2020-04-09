@@ -1,6 +1,6 @@
 #include "pch.h"
 
-// Contains a list of all commands
+// List of all commands
 Command *allCommands[] = {
         &create,
         &clone_repo,
@@ -17,12 +17,12 @@ Command *allCommands[] = {
         &sinkCmd
 };
 
-// Contains a list of all valid options
+// List of all valid options
+// Keep them in alphabetical order to make help messages easier to read
 const Option ALL_OPTIONS[] = {
-        {"help", "h", false},
-        {"timeout", "t", true},
-        {"force", "f", false},
-        {"soft", "s", false},
-        {"push", "u", false},
-        {"pull", "d", false}
+        {"force", "f", false, "Not yet implemented"},
+        {"help", "h", false, "Explain how to use command"},
+        {"pull", "d", false, "Only pull changes, without pushing changes to remote"},
+        {"push", "u", false, "Only push changes, without pulling changes from remote. Requires no conflicts"},
+        {"soft", "s", false, "Delete the last commit without reverting changes in the working directory"}
 };
