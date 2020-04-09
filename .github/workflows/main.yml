@@ -40,14 +40,10 @@ jobs:
         cmakeListsTxtPath: ${{ github.workspace }}/deps/libssh/CMakeLists.txt
         buildDirectory: ${{ github.workspace }}/deps/libssh/build
         
-    - name: Returns to deps
-      run: |
-        cd ../..
-    
     - name: Install LibGit2
       run: |
-        mkdir libgit2
-        cd libgit2
+        mkdir deps/libgit2
+        cd deps/libgit2
         wget https://github.com/libgit2/libgit2/releases/download/v1.0.0/libgit2-1.0.0.zip
         unzip libgit2-1.0.0.zip
         mv libgit2-1.0.0/* .
@@ -64,7 +60,6 @@ jobs:
         
     - name: Prepare Build
       run: |
-        cd ../../..
         CURRENT_DIR="$(pwd)"
         LIBGIT_INCLUDE_DIR=$CURRENT_DIR/deps/libgit2/include
         LIBGIT_BUILD_DIR=$CURRENT_DIR/deps/libgit2/build
