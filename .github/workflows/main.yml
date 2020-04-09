@@ -66,6 +66,5 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        ls $GITHUB_WORKSPACE/deps/libgit2/build/deps/http-parser
-        cmake --build . -L$GITHUB_WORKSPACE/deps/libgit2/build/deps/http-parser
+        cmake --build .
         
