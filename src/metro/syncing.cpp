@@ -1,13 +1,6 @@
 #include "pch.h"
 
 namespace metro {
-    struct RefTargets {
-        OID local;
-        OID remote;
-        OID synced;
-    };
-
-    enum SyncType {PUSH, PULL, CONFLICT};
 
     // Increment the version number of a branch name to the next unused one for that branch.
     string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
