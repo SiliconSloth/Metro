@@ -188,7 +188,7 @@ By this point the file <code>build/src/Debug/libssh2.lib</code> should exist.</l
 Note that all backslashes in the path must be replaced with forward slashes to appease CMake.
 <pre><code class="language-batch">mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=C:/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=C:/.../libssh2-1.9.0/build/src/Debug/libssh2.lib -DLIBSSH2_LDFLAGS=&quot;&quot; ..
+cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=C:/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=C:/.../libssh2-1.9.0/build/src/Debug/libssh2.lib -DLIBSSH2_LDFLAGS=&quot;&quot; -DUSE_BUNDLED_ZLIB=ON ..
 cmake --build .
 </code></pre>
 By this point the file <code>build/Debug/git2.lib</code> should exist.</li>

@@ -167,7 +167,7 @@ By this point the file <code>build/src/libssh2.a</code> should exist.</li>
 <li>Run the following commands:
 <pre><code class="language-shell">mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=/.../libssh2-1.9.0/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" ..
+cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=/.../libssh2-1.9.0/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
 cmake --build .
 </code></pre>
 By this point the file <code>build/libgit2.a</code> should exist.</li>
