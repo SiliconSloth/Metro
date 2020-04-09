@@ -56,7 +56,7 @@ jobs:
       with:
         cmakeListsTxtPath: ${{ github.workspace }}/deps/libgit2/CMakeLists.txt
         buildDirectory: ${{ github.workspace }}/deps/libgit2/build
-        buildWithCMakeArgs: "-DBUILD_SHARED_LIBS=OFF"
+        cmakeAppendedArgs: "-DBUILD_SHARED_LIBS=OFF"
         
     - name: Prepare Build
       run: |
