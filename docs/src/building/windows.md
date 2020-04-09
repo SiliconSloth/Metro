@@ -6,7 +6,7 @@ Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit syste
 ### 1. Build OpenSSL
 1. Install [Perl](http://strawberryperl.com/) and [NASM](https://www.nasm.us/). Make sure that they are both on the PATH, such that the `perl` and `nasm` commands
    can be run from the build directory.
-2. Download and extract the [OpenSSL](https://www.openssl.org/) source distribution. Metro has been tested with version 1.1.1e.
+2. Download and extract the [OpenSSL](https://www.openssl.org/) source distribution. Metro has been tested with version 1.1.1f.
 3. If you want to build a 32-bit version of Metro, open the **Developer Command Prompt**.
    If you want to build a 64-bit version of Metro, open the **x64 Native Tools Command Prompt**.
    It is essential that you use the right command prompt, otherwise you will experience build errors.
@@ -33,22 +33,22 @@ Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit syste
    By this point the file `build/src/Debug/libssh2.lib` should exist.
    
 ### 3. Build libgit2
-1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 0.28.4.
+1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 1.0.0.
 3. Open Command Prompt and switch to the libgit2 directory.
 4. Run the following commands, where `C:/.../libssh2-1.9.0` is the path of your libssh2 directory.
    Note that all backslashes in the path must be replaced with forward slashes to appease CMake.
    ```batch
    mkdir build
    cd build
-   cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=C:/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=C:/.../libssh2-1.9.0/build/src/Debug/libssh2.lib -DLIBSSH2_LDFLAGS="" ..
+   cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=C:/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=C:/.../libssh2-1.9.0/build/src/Debug/libssh2.lib -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
    cmake --build .
    ```
    By this point the file `build/Debug/git2.lib` should exist.
    
 ### 4. Build Metro
 1. Set the following environment variables, replacing `C:\...\ ` with the absolute path of each directory:
-   * `LIBGIT_INCLUDE_DIR` to `C:\...\libgit2-0.28.4\include`
-   * `LIBGIT_BUILD_DIR` to `C:\...\libgit2-0.28.4\build\Debug`
+   * `LIBGIT_INCLUDE_DIR` to `C:\...\libgit2-1.0.0\include`
+   * `LIBGIT_BUILD_DIR` to `C:\...\libgit2-1.0.0\build\Debug`
    * `LIBSSH_BUILD_DIR` to `C:\...\libssh2-1.9.0\build\src\Debug`
    
    `OPENSSL_ROOT_DIR` should still be set from building OpenSSL.

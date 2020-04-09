@@ -1,7 +1,7 @@
 ![Banner](banner.png)
 # Simple and flexible version control and code syncing
 # WORK IN PROGRESS
-![CI](https://github.com/SiliconSloth/Metro/workflows/CI/badge.svg)
+![ubuntu-latest-build](https://github.com/SiliconSloth/Metro/workflows/ubuntu-latest-build/badge.svg)
 
 ## Development Setup
 Metro is written in C++ and uses CMake. It depends on libgit2 and libssh2 on all platforms,

@@ -13,21 +13,21 @@
    By this point the file `build/src/libssh2.a` should exist.
    
 ### 2. Build libgit2
-1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 0.28.4.
+1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 1.0.0.
 3. Open a terminal and switch to the libgit2 directory.
 4. Run the following commands:
    ```shell
    mkdir build
    cd build
-   cmake -DBUILD_SHARED_LIBS=OFF ..
+   cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=/.../libssh2-1.9.0/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
    cmake --build .
    ```
    By this point the file `build/libgit2.a` should exist.
    
 ### 3. Build Metro
 1. Set the following environment variables, replacing `/.../` with the absolute path of each directory:
-   * `LIBGIT_INCLUDE_DIR` to `/.../libgit2-0.28.4/include`
-   * `LIBGIT_BUILD_DIR` to `/.../libgit2-0.28.4/build`
+   * `LIBGIT_INCLUDE_DIR` to `/.../libgit2-1.0.0/include`
+   * `LIBGIT_BUILD_DIR` to `/.../libgit2-1.0.0/build`
    * `LIBSSH_BUILD_DIR` to `/.../libssh2-1.9.0/build/src`
 2. Clone the Metro repository by running: \
    `git clone https://github.com/SiliconSloth/Metro`
