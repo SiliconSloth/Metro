@@ -35,10 +35,10 @@ jobs:
         
     # Runs cmake on the libssh
     - name: Build LibSSH
-      uses: lukka/run-cmake@v1.4
+      uses: ashutoshvarma/action-cmake-build@v1
       with:
-        cmakeListsTxtPath: ${{ github.workspace }}/deps/libssh/CMakeLists.txt
-        buildDirectory: ${{ github.workspace }}/deps/libssh/build
+        target: ${{ runner.workspace }}/deps/libssh/CMakeLists.txt
+        build-dir: ${{ runner.workspace }}/deps/libssh/build
         
     - name: Download and Extract LibGit2
       run: |
@@ -52,15 +52,15 @@ jobs:
     
     # Runs cmake on the libgit2
     - name: Build LibGit2
-      uses: lukka/run-cmake@v1.4
+      uses: ashutoshvarma/action-cmake-build@v1
       with:
-        cmakeListsTxtPath: ${{ github.workspace }}/deps/libgit2/CMakeLists.txt
-        buildDirectory: ${{ github.workspace }}/deps/libgit2/build
-        cmakeAppendedArgs: "-DBUILD_SHARED_LIBS=OFF"
+        target: ${{ runner.workspace }}/deps/libgit2/CMakeLists.txt
+        build-dir: ${{ runner.workspace }}/deps/libgit2/build
+        configure-options: "-DBUILD_SHARED_LIBS=OFF"
 
     # Runs cmake on the project
     - name: Build Metro
       uses: lukka/run-cmake@v1.4
       with:
-        cmakeAppendedArgs: "-DLIBGIT_INCLUDE_DIR=/home/runner/work/Metro/Metro/deps/libgit2/include -DLIBGIT_BUILD_DIR=/home/runner/work/Metro/Metro/deps/libgit2/build -DLIBSSH_BUILD_DIR=/home/runner/work/Metro/Metro/deps/libssh/build/src"
+        configure-options: "-DLIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include -DLIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build -DLIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src"
         
