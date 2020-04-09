@@ -35,9 +35,10 @@ jobs:
         
     # Runs cmake on the libssh
     - name: Build LibSSH
-      uses: ashutoshvarma/action-cmake-build@v1
-      with:
-        build-dir: ${{ runner.workspace }}/deps/libssh/build
+      run: |
+        cd deps/libssh/build
+        cmake ..
+        cmake --build .
         
     - name: Download and Extract LibGit2
       run: |
