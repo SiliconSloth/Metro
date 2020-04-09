@@ -54,7 +54,7 @@ jobs:
     - name: Build LibGit2
       run: |
         cd deps/libgit2/build
-        cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=$GITHUB_WORKSPACE/deps/libssh/include -DLIBSSH2_LIBRARIES=$GITHUB_WORKSPACE/deps/libssh/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" ..
+        cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=$GITHUB_WORKSPACE/deps/libssh/include -DLIBSSH2_LIBRARIES=$GITHUB_WORKSPACE/deps/libssh/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
         cmake --build .
 
     # Runs cmake on the project
