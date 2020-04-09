@@ -37,7 +37,6 @@ jobs:
     - name: Build LibSSH
       uses: ashutoshvarma/action-cmake-build@v1
       with:
-        target: ${{ runner.workspace }}/deps/libssh/CMakeLists.txt
         build-dir: ${{ runner.workspace }}/deps/libssh/build
         
     - name: Download and Extract LibGit2
@@ -54,7 +53,6 @@ jobs:
     - name: Build LibGit2
       uses: ashutoshvarma/action-cmake-build@v1
       with:
-        target: ${{ runner.workspace }}/deps/libgit2/CMakeLists.txt
         build-dir: ${{ runner.workspace }}/deps/libgit2/build
         configure-options: "-DBUILD_SHARED_LIBS=OFF"
 
