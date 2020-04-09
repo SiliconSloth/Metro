@@ -60,9 +60,9 @@ jobs:
     # Runs cmake on the project
     - name: Build Metro
       run: |
-        LIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include
-        LIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build
-        LIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src
+        export LIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include
+        export LIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build
+        export LIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src
         mkdir build
         cd build
         cmake ..
