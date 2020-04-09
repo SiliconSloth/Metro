@@ -266,8 +266,12 @@ namespace metro {
                         }
                         break;
                     case CONFLICT:
-                        create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
-                                branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
+                        if (direction != UP) {
+                            create_conflict_branches(repo, origin, branchName, targets.local, targets.remote,
+                                                     branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
+                        } else {
+                            cout << "Branch " << branchName << " conflicts with remote, not pushing." << endl;
+                        }
                         break;
                 }
             } else {
