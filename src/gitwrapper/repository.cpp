@@ -11,11 +11,21 @@ namespace git {
     }
 
     Repository Repository::open(const string& path) {
-        git_repository *gitRepo = nullptr;
-        int err = git_repository_open(&gitRepo, path.c_str());
-        check_error(err);
+        filesystem::path original(path);
+        filesystem::path git_path(path + "/.git");
 
-        return Repository(gitRepo);
+        if (filesystem::exists(git_path)) {
+            git_repository *gitRepo = nullptr;
+            int err = git_repository_open(&gitRepo, path.c_str());
+            check_error(err);
+
+            return Repository(gitRepo);
+        } else if (filesystem::exists(original)) {
+            return Repository::open(path + "/..");
+        } else {
+            // In this case, it is not a git repository
+            throw RepositoryNotExistsException();
+        }
     }
 
     Repository Repository::clone(const string& url, const string& path, git_clone_options *options) {
