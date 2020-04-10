@@ -2,6 +2,7 @@
 
 #include "helper.cpp"
 #include "error.cpp"
+#include "exit.cpp"
 #include "child_process.cpp"
 
 #include "gitwrapper/oid.cpp"

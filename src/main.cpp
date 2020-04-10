@@ -130,10 +130,17 @@ void printHelp() {
     cout << "Use --help for help.\n";
 }
 
+
 /*
  * Entry point of the program, passing off parsing to above functions
  */
 int main(int argc, char *argv[]) {
+#ifdef _WIN32
+    SetConsoleCtrlHandler(on_application_exit, TRUE); // Ignore failure to set exit activity
+#elif __unix__ || __APPLE__ || __MACH__
+    signal(SIGINT, on_application_exit);
+#endif //_WIN32
+
     git_libgit2_init();
 
     try {
@@ -165,6 +172,8 @@ int main(int argc, char *argv[]) {
                         cout << e.what() << "\n";
                         return -1;
                     } catch (GitException& e) {
+                        // If Ctrl~C was issued, Git errpr is expected and should be ignored
+                        if (exit_config.received) return 0;
                         cout << "Git Error: " << e.what() << "\n";
                         return -1;
                     } catch (exception& e) {
