@@ -87,6 +87,12 @@ struct RepositoryExistsException : public MetroException {
     {}
 };
 
+struct RepositoryNotExistsException : public MetroException {
+    explicit RepositoryNotExistsException():
+            MetroException("There is no Git repository in this directory.\nYou can create one with metro create.")
+    {}
+};
+
 struct CurrentlyMergingException : public MetroException {
     explicit CurrentlyMergingException():
             MetroException("Branch has conflicts, please finish resolving them.\nRun metro resolve when you are done.")
