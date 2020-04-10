@@ -1,3 +1,4 @@
+#include <pch.h>
 #include "pch.h"
 
 namespace metro {
@@ -152,6 +153,12 @@ namespace metro {
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         unsigned int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         print_progress(progress, stats->received_bytes);
+
+        if (exit_config.cancel) {
+            exit_config.received = true;
+            return GIT_ERROR;
+        }
+
         return GIT_OK;
     }
 
@@ -175,6 +182,7 @@ namespace metro {
         options.fetch_opts.callbacks.transfer_progress = transfer_progress;
 
         credentials->tried = false;
+        exit_config.started = true;
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         force_pull(repo);

@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <sstream>
 #include <thread>
+#include <csignal>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,6 +37,7 @@
 #include <sys/ioctl.h>
 #include <ctime>
 #include <experimental/filesystem>
+#include <signal.h>
 using namespace std::experimental;
 #endif //_WIN32
 
@@ -48,6 +50,7 @@ using namespace std::experimental;
 #include "commands.h"
 #include "helper.h"
 #include "error.h"
+#include "exit.h"
 #include "child_process.h"
 
 #include "gitwrapper/types.h"

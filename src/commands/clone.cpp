@@ -21,6 +21,9 @@ Command clone_repo {
                 throw UnsupportedOperationException("Couldn't find repository name in URL.");
             }
 
+            exit_config.cloning = true;
+            exit_config.directory = name;
+
             cout << "Cloning " << url << " into " << name << endl;
             metro::clone(url, name);
             cout << "Cloning complete." << endl;
