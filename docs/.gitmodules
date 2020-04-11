@@ -1,0 +1,2 @@
+[submodule "libssh2"]
+	branch = 1.8.x
