@@ -5,62 +5,42 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include(CheckCXXSymbolExists)
 project (Metro)
 
+# Module seatch path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-find_package(PCRE2)
-find_package(HTTP_Parser)
 
-set(libgitInclude $ENV{LIBGIT_INCLUDE_DIR})
-IF (DEFINED libgitInclude)
-    include_directories("${libgitInclude}")
-ENDIF()
-set(libgitBuild $ENV{LIBGIT_BUILD_DIR})
+# Use environmental variable to find OpenSSL
+set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 
-set(libsshBuild $ENV{LIBSSH_BUILD_DIR})
-set(opensslRoot $ENV{OPENSSL_ROOT_DIR})
-
-include_directories("include")
-add_executable(metro src/main.cpp)
-
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Static Library" FORCE)
-add_subdirectory("deps/libssh2" libssh2)
-
-set(USE_SSH CACHE BOOZZL "Manual SSH entry" FORCE)
-set(LIBSSH2_FOUND 1)
+# LibGit2 Options
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Static Library" FORCE)      # Force static library
+set(USE_SSH OFF CACHE BOOL "Manual SSH entry" FORCE)                    # Enter SSH manually
+set(LIBSSH2_FOUND 1)                                                    # Manual SSH directory settings
 set(LIBSSH2_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/libssh2/include")
 set(LIBSSH2_LIBRARIES "${CMAKE_BINARY_DIR}/libssh2/src/libssh2.lib")
 set(LIBSSH2_LDFLAGS "")
-set(USE_BUNDLED_ZLIB ON CACHE BOOL "Use Bundled ZLib" FORCE)
-set(BUILD_CLAR OFF CACHE BOOL "Disables Tests" FORCE)
+set(USE_BUNDLED_ZLIB ON CACHE BOOL "Use Bundled ZLib" FORCE)            # Want to ensure bundled zlib is used
+set(BUILD_CLAR OFF CACHE BOOL "Disables Tests" FORCE)                   # Disable tests - no python required
+
+# Build dependencies
+add_subdirectory("deps/libssh2" libssh2)
 add_subdirectory("deps/libgit2" libgit2)
-#target_include_directories(libgit2 "${CMAKE_SOURCE_DIR}/libssh2/include")
+include_directories("deps/libgit2/include")
+
+# Include directory and start file for metro
+include_directories("include")
+add_executable(metro src/main.cpp)
 
 IF (WIN32)
-#    IF (DEFINED libgitBuild)
-#        add_library(git2 STATIC IMPORTED)
-#        set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitBuild}/git2.lib")
-#    ENDIF()
-#    IF (DEFINED libsshBuild)
-#        add_library(libssh2 STATIC IMPORTED)
-#        set_target_properties(libssh2 PROPERTIES IMPORTED_LOCATION "${libsshBuild}/libssh2.lib")
-#    ENDIF()
-    IF (DEFINED opensslRoot)
+    # On Windows SSL must be installed/build manually
+    IF (DEFINED OPENSSL_ROOT_DIR)
         add_library(ssl STATIC IMPORTED)
-        set_target_properties(ssl PROPERTIES IMPORTED_LOCATION "${opensslRoot}/libssl.lib")
+        set_target_properties(ssl PROPERTIES IMPORTED_LOCATION "${OPENSSL_ROOT_DIR}/libssl.lib")
         add_library(crypto STATIC IMPORTED)
-        set_target_properties(crypto PROPERTIES IMPORTED_LOCATION "${opensslRoot}/libcrypto.lib")
+        set_target_properties(crypto PROPERTIES IMPORTED_LOCATION "${OPENSSL_ROOT_DIR}/libcrypto.lib")
     ENDIF()
     target_link_libraries(metro git2 libssh2 ssl crypto winhttp Rpcrt4 crypt32)
 ENDIF()
 IF (UNIX)
-    IF (DEFINED libgitBuild)
-        add_library(git2 STATIC IMPORTED)
-        set_target_properties(git2 PROPERTIES IMPORTED_LOCATION "${libgitBuild}/libgit2.a")
-    ENDIF()
-    IF (DEFINED libsshBuild)
-        add_library(libssh2 STATIC IMPORTED)
-        set_target_properties(libssh2 PROPERTIES IMPORTED_LOCATION "${libsshBuild}/libssh2.a")
-    ENDIF()
-
     IF (APPLE)
         target_link_libraries(metro git2 pthread crypto libssh2 iconv "-framework CoreFoundation" "-framework Security")
     ELSE()
