@@ -18,11 +18,13 @@ void on_application_exit(int sig_num) {
 
 #ifdef _WIN32
     Sleep(1000);
-#elif __unix__ || __APPLE__ || __MACH__
+#elif __unix__
+    sleep(1);
+#elif __APPLE__ || __MACH__
     sleep(1);
 #endif //_WIN32
 
-    using namespace filesystem;
+    using namespace std_filesystem;
     path current = current_path();
     path full(current.string() + "\\" + exit_config.directory);
     remove_all(full); // Remove whether exists or not

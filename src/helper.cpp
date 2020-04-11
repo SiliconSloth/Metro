@@ -315,13 +315,20 @@ void print_progress(unsigned int progress, size_t bytes) {
 
     chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
     static chrono::time_point<chrono::steady_clock> last_time;
-#elif __unix__  || __APPLE__ || __MACH__
+#elif __unix__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col;
 
     chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
     static chrono::system_clock::time_point last_time;
+#elif __APPLE__ || __MACH__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+
+    chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
+    static chrono::time_point<chrono::steady_clock> last_time;
 #endif
 
     string bar = print_progress_width(progress, width - 40);
@@ -378,7 +385,7 @@ void clear_line() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
     int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col;
