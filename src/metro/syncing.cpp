@@ -2,6 +2,19 @@
 
 namespace metro {
 
+    void DualTarget::add_target(const OID& target, bool wip) {
+        if (wip) {
+            head = target;
+            hasWip = true;
+        } else {
+            base = target;
+            // head == base only if no WIP has been set yet.
+            if (head.isNull) {
+                head = target;
+            }
+        }
+    }
+
     // Increment the version number of a branch name to the next unused one for that branch.
     string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
         BranchDescriptor nextDesc(name);
@@ -51,7 +64,7 @@ namespace metro {
             name = name.substr(prefix.size(), name.size() - prefix.size());
             // Create a blank entry if none is present.
             if (branchTargets.find(name) == branchTargets.end()) {
-                branchTargets[name] = {OID(), OID(), OID()};
+                branchTargets[name] = RefTargets();
             }
             return true;
         }
@@ -61,15 +74,25 @@ namespace metro {
     // Find the local, remote and sync-cached target OIDs of each local, remote and cached branch.
     void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
         repo.foreach_reference([](const Branch& ref, const void *payload) {
-            string name = ref.reference_name();
             auto branchTargets = (map<string, RefTargets>*) payload;
 
+            // Base and WIP branches will be paired together in a DualTarget.
+            string name = ref.reference_name();
+            bool isWip = is_wip(name);
+            name = un_wip(name);
+
+            // Create an empty RefTargets if none is present and get the corresponding DualTarget from it.
+            DualTarget *dualTarget = nullptr;
             if (prepare_branch_targets(*branchTargets, name, "refs/heads/")) {
-                (*branchTargets)[name].local = ref.target();
+                dualTarget = &(*branchTargets)[name].local;
             } else if (prepare_branch_targets(*branchTargets, name, "refs/remotes/origin/")) {
-                (*branchTargets)[name].remote = ref.target();
+                dualTarget = &(*branchTargets)[name].remote;
             } else if (prepare_branch_targets(*branchTargets, name, "refs/synced/")) {
-                (*branchTargets)[name].synced = ref.target();
+                dualTarget = &(*branchTargets)[name].synced;
+            }
+
+            if (dualTarget != nullptr) {
+                dualTarget->add_target(ref.target(), isWip);
             }
             return 0;
         }, out);
@@ -81,6 +104,21 @@ namespace metro {
             return ":refs/heads/" + branchName;
         } else {
             return "+refs/heads/" + branchName + ":refs/heads/" + branchName;
+        }
+    }
+
+    // Add refspecs for pushing the specified base branch and its WIP branch.
+    // Only pushes each branch if the local and remote targets differ.
+    void queue_push(const string& branchName, const RefTargets& targets, vector<string>& refspecs) {
+        if (targets.local.base != targets.remote.base) {
+            refspecs.push_back(make_push_refspec(branchName, targets.local.base.isNull));
+        }
+
+        // If neither side has a WIP branch, don't try to push it.
+        // If exactly one does, then push; in this case the heads are guaranteed to differ assuming valid WIP branch.
+        // If both have WIP branches only push if the heads differ.
+        if ((targets.local.hasWip || targets.remote.hasWip) && targets.local.head != targets.remote.head) {
+            refspecs.push_back(make_push_refspec(to_wip(branchName), !targets.local.hasWip));
         }
     }
 
@@ -102,44 +140,58 @@ namespace metro {
         }
     }
 
+    // Pull a fetched branch and its WIP counterpart by setting their targets to the fetched commits.
+    void pull(const Repository& repo, const string& branchName, const RefTargets& targets) {
+        if (targets.local.base != targets.remote.base) {
+            change_branch_target(repo, branchName, targets.remote.base);
+        }
+
+        // If neither side has a WIP branch, don't try to pull it.
+        // If exactly one does, then pull; in this case the heads are guaranteed to differ assuming valid WIP branch.
+        // If both have WIP branches only pull if the heads differ.
+        if ((targets.local.hasWip || targets.remote.hasWip) && targets.local.head != targets.remote.head) {
+            change_branch_target(repo, to_wip(branchName), targets.remote.hasWip? targets.remote.head : OID());
+        }
+    }
+
     // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
     // The new branch with the local changes is scheduled to be pushed to remote.
     void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
-            const OID& localTarget, const OID& remoteTarget, const SyncDirection& direction,
-            const map<string, RefTargets>& branchTargets, map<string, string>& conflictBranchNames,
+            const RefTargets& targets, const SyncDirection& direction, const map<string, RefTargets>& branchTargets,
             vector<string>& pushRefspecs, vector<string>& syncedBranches) {
         assert(direction != UP);  // Should never try to sync conflicting branches with --push
 
-        // If a new name has already been generated for this branch (or the base branch if this is a WIP branch),
-        // use the existing new name. Otherwise generate a new one.
-        const string nameUnwipped = un_wip(name);
-        string newName;
-        if (conflictBranchNames.find(nameUnwipped) != conflictBranchNames.end()) {
-            newName = conflictBranchNames[nameUnwipped];
-            if (is_wip(name)) {
-                newName = to_wip(newName);
-            }
-        } else {
-            newName = next_conflict_branch_name(name, branchTargets);
-            conflictBranchNames[nameUnwipped] = un_wip(newName);
+        // Generate the new branch name.
+        string newName = next_conflict_branch_name(name, branchTargets);
+
+        repo.create_reference("refs/heads/" + newName, targets.local.base, false);
+        if (targets.local.hasWip) {
+            repo.create_reference("refs/heads/" + to_wip(newName), targets.local.head, false);
         }
 
-        repo.create_reference("refs/heads/" + newName, localTarget, false);
+        cout << "Branch " << name << " had remote changes that conflicted with yours; your commits have been moved to " << newName << "." << endl;
         // If this is the current branch, move the head to the new branch
         // so the user stays on their version of the branch.
         // We don't need to checkout as the contents will not have changed.
         if (name == current_branch_name(repo)) {
             move_head(repo, newName);
+            cout << "You've been moved to " << newName << "." << endl;
         }
 
-        // Point the old branch to the fetched remote commits.
-        repo.create_reference("refs/heads/" + name, remoteTarget, true);
+        // Pull the remote branch under the original branch name.
+        pull(repo, name, targets);
         syncedBranches.push_back(name);
+        syncedBranches.push_back(to_wip(name));
+
         if (direction != DOWN) {
             pushRefspecs.push_back(make_push_refspec(newName, false));
+            if (targets.local.hasWip) {
+                pushRefspecs.push_back(make_push_refspec(to_wip(newName), false));
+            }
+
             syncedBranches.push_back(newName);
+            syncedBranches.push_back(to_wip(newName));
         }
-        cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
     int push_transfer_progress(unsigned int current, unsigned int total, size_t bytes, void *payload) {
@@ -200,50 +252,76 @@ namespace metro {
         Remote origin = repo.lookup_remote("origin");
         cout << "Syncing with " << git_remote_url(origin.ptr().get()) << "." << endl;
         credentials->tried = false;
-        cout << "Fetching all branches from origin..." << endl;
+        cout << "Fetching all branches from remote..." << endl;
         origin.fetch(StrArray(), fetchOpts);
         attempt_clear_line();
 
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
 
-        map<string, string> conflictBranchNames;
         vector<string> pushRefspecs;
+        // Branches that are known to have matching targets on remote and local after this sync operation.
         vector<string> syncedBranches;
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
 
-            // Make nicer branch name to print for WIP
-            string printBranchName = branchName;
-            bool isWIP = is_wip(branchName);
-            if (isWIP) {
-                printBranchName = un_wip(branchName) + " wip branch";
+            if (targets.local.base == targets.remote.base) {
+                syncedBranches.push_back(branchName);
             }
 
-            if (targets.local != targets.remote) {
+            if (targets.local.head == targets.remote.head) {
+                if (targets.local.hasWip) {
+                    syncedBranches.push_back(to_wip(branchName));
+                }
+
+                if (branchName == current_branch_name(repo)) {
+                    cout << "Branch " << branchName << " is already synced." << endl;
+                }
+            } else {
+                // If the local and remote branches both have WIP branches, and the contents of the WIP commits
+                // are the same, the decision about which syncing action to perform should be delegated to the base
+                // branches instead of the heads as would usually be done. This ensures that if the WIP commits are
+                // technically different commits but have the same contents, an unnecessary conflict resolution between
+                // them is avoided.
+
+                OID uniqueLocal = targets.local.head;
+                OID uniqueRemote = targets.remote.head;
+                OID uniqueSynced = targets.synced.head;
+
+                if (targets.local.hasWip && targets.remote.hasWip
+                    && commit_contents_identical(repo, targets.local.head, targets.remote.head)) {
+
+                    uniqueLocal = targets.local.base;
+                    uniqueRemote = targets.remote.base;
+                    uniqueSynced = targets.synced.base;
+                }
+
                 SyncType syncType;
 
-                // If WIP commits have identical contents (but possibly different metadata)
-                // just keep the remote one.
-                if (is_wip(branchName) && commit_contents_identical(repo, targets.local, targets.remote)) {
+                // If the unique heads are the same, but the true heads differ, this means the only difference
+                // in the branches is the metadata of the WIP commit. Therefore just pull the remote version
+                // to keep them synced.
+                if (uniqueLocal == uniqueRemote) {
                     syncType = PULL;
-                } else if (targets.local == targets.synced) {
+                } else if (uniqueLocal == uniqueSynced) {
+                    // Only remote has changed so pull.
                     syncType = PULL;
-                } else if (targets.remote == targets.synced) {
+                } else if (uniqueRemote == uniqueSynced) {
+                    // Only local has changed so push.
                     syncType = PUSH;
                 } else {
                     OID base;
-                    if (!targets.local.isNull && !targets.remote.isNull) {
-                        base = repo.merge_base(targets.local, targets.remote);
+                    if (!(uniqueLocal.isNull || uniqueRemote.isNull)) {
+                        base = repo.merge_base(uniqueLocal, uniqueRemote);
                     }
 
-                    if (targets.local == base) {
-                        cout << "Branch " << printBranchName << " has been modified both locally and remotely, "
+                    if (uniqueLocal == base) {
+                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
                              << "but in different ways. The local branch has been updated." << endl;
                         syncType = PULL;
-                    } else if (targets.remote == base) {
-                        cout << "Branch " << printBranchName << " has been modified both locally and remotely, "
+                    } else if (uniqueRemote == base) {
+                        cout << "Branch " << branchName << " has been modified both locally and remotely, "
                              << "but in different ways. The remote branch has been updated." << endl;
                         syncType = PUSH;
                     } else {
@@ -254,52 +332,38 @@ namespace metro {
                 switch (syncType) {
                     case PUSH:
                         if (direction == UP || direction == BOTH) {
-                            cout << "Pushing " << printBranchName << " to origin/" << printBranchName << "..." << endl;
-                            pushRefspecs.push_back(make_push_refspec(branchName, targets.local.isNull));
+                            cout << "Pushing " << branchName << "..." << endl;
+                            queue_push(branchName, targets, pushRefspecs);
+
                             syncedBranches.push_back(branchName);
+                            syncedBranches.push_back(to_wip(branchName));
                         }
                         break;
                     case PULL:
                         if (direction == DOWN || direction == BOTH) {
-                            cout << "Pulling from origin/" << printBranchName << " to " << printBranchName << "..." << endl;
-                            change_branch_target(repo, branchName, targets.remote);
+                            cout << "Pulling " << branchName << "..." << endl;
+                            pull(repo, branchName, targets);
+
                             syncedBranches.push_back(branchName);
+                            syncedBranches.push_back(to_wip(branchName));
                         }
                         break;
                     case CONFLICT:
                         if (direction != UP) {
-                            create_conflict_branches(repo, origin, branchName, targets.local, targets.remote, direction,
-                                                     branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
+                            create_conflict_branches(repo, origin, branchName, targets, direction,
+                                                     branchTargets, pushRefspecs, syncedBranches);
                         } else {
                             cout << "Branch " << branchName << " conflicts with remote, not pushing." << endl;
                         }
                         break;
                 }
-            } else {
-                if (branchName == current_branch_name(repo)) {
-                    if (!isWIP) {
-                        cout << "Branch " << branchName << " is already synced." << endl;
-                    } else {
-                        cout << "WIP branch " << branchName << " is already synced." << endl;
-                    }
-                }
             }
         }
 
-        // Make sure that if a new WIP branch was created, the corresponding base branch is also created.
-        for(const auto& entry : conflictBranchNames) {
-            const string oldName = entry.first;
-            const string newName = entry.second;
+        if (!pushRefspecs.empty()) {
+            // Pushes shouldn't be queued in the first place when using --pull.
+            assert(direction == UP || direction == BOTH);
 
-            if (branch_exists(repo, oldName) &&! branch_exists(repo, newName)) {
-                OID target = repo.lookup_branch(oldName, GIT_BRANCH_LOCAL).target();
-                // Create branch pointing to same commit as old branch.
-                create_conflict_branches(repo, origin, oldName, target, target, direction,
-                        branchTargets, conflictBranchNames, pushRefspecs, syncedBranches);
-            }
-        }
-
-        if (!pushRefspecs.empty() && (direction == UP || direction == BOTH)) {
             PushOptions options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
@@ -314,7 +378,7 @@ namespace metro {
         restore_wip(repo);
     }
 
-    // Pulls all the repo branches assuming the remote is correct
+    // Pull all the repo branches assuming the remote is correct.
     void force_pull(const Repository& repo) {
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
@@ -323,8 +387,10 @@ namespace metro {
         for(const auto& entry : branchTargets) {
             const string branchName = entry.first;
             const RefTargets targets = entry.second;
-            change_branch_target(repo, branchName, targets.remote);
+            pull(repo, branchName, targets);
+
             syncedBranches.push_back(branchName);
+            syncedBranches.push_back(to_wip(branchName));
         }
 
         update_sync_cache(repo, syncedBranches);

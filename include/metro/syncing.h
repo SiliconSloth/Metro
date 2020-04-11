@@ -1,8 +1,22 @@
 namespace metro {
+    /*
+     * Represents a base branch and it's corresponding WIP branch.
+     * base is the target of the base branch. If there is no WIP branch for that base branch, head == base.
+     * If there is a WIP branch, then head is the target of the WIP branch.
+     */
+    struct DualTarget {
+        OID head;
+        OID base;
+        bool hasWip = false;
+
+        // Set the base or WIP target according to the above rules.
+        void add_target(const OID& target, bool wip);
+    };
+
     struct RefTargets {
-        OID local;
-        OID remote;
-        OID synced;
+        DualTarget local;
+        DualTarget remote;
+        DualTarget synced;
     };
 
     enum SyncType {PUSH, PULL, CONFLICT};
