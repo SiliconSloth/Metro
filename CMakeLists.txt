@@ -11,12 +11,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 # Use environmental variable to find OpenSSL
 set(OPENSSL_ROOT_DIR $ENV{OPENSSL_ROOT_DIR})
 
+IF (WIN32)
+    set(EXT ".lib")
+ENDIF()
+IF (UNIX)
+    set(EXT ".a")
+ENDIF()
+
 # LibGit2 Options
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Static Library" FORCE)      # Force static library
 set(USE_SSH OFF CACHE BOOL "Manual SSH entry" FORCE)                    # Enter SSH manually
 set(LIBSSH2_FOUND 1)                                                    # Manual SSH directory settings
 set(LIBSSH2_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/deps/libssh2/include")
-set(LIBSSH2_LIBRARIES "${CMAKE_BINARY_DIR}/libssh2/src/libssh2.lib")
+set(LIBSSH2_LIBRARIES "${CMAKE_BINARY_DIR}/libssh2/src/libssh2${EXT}")
 set(LIBSSH2_LDFLAGS "")
 set(USE_BUNDLED_ZLIB ON CACHE BOOL "Use Bundled ZLib" FORCE)            # Want to ensure bundled zlib is used
 set(BUILD_CLAR OFF CACHE BOOL "Disables Tests" FORCE)                   # Disable tests - no python required
