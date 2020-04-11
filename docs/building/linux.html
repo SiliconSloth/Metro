@@ -148,51 +148,20 @@
                 <div id="content" class="content">
                     <main>
                         <h1><a class="header" href="#building-for-linux" id="building-for-linux">Building for Linux</a></h1>
-<h3><a class="header" href="#1-build-libssh2" id="1-build-libssh2">1. Build libssh2</a></h3>
-<ol>
-<li>Download and extract the <a href="https://www.libssh2.org/">libssh2</a> source code. Metro has been tested with version 1.9.0.</li>
-<li>Open a terminal and switch to the libssh2 directory.</li>
-<li>Run the following commands:
+<h3><a class="header" href="#1-clone-metro" id="1-clone-metro">1. Clone Metro</a></h3>
+<p>Clone using the command <code>git clone --recursive https://github.com/SiliconSloth/Metro</code></p>
+<p>Alternatively you can clone normally and use <code>git submodule update --init --recursive</code> to get dependancies</p>
+<h3><a class="header" href="#2-build-metro" id="2-build-metro">2. Build Metro</a></h3>
+<p>Switch into the <code>Metro</code> directory and run the following commands:</p>
 <pre><code class="language-shell">mkdir build
 cd build
 cmake ..
 cmake --build .
 </code></pre>
-By this point the file <code>build/src/libssh2.a</code> should exist.</li>
-</ol>
-<h3><a class="header" href="#2-build-libgit2" id="2-build-libgit2">2. Build libgit2</a></h3>
-<ol>
-<li>Download and extract the <a href="https://libgit2.org/">libgit2</a> source code. Metro has been tested with version 1.0.0.</li>
-<li>Open a terminal and switch to the libgit2 directory.</li>
-<li>Run the following commands:
-<pre><code class="language-shell">mkdir build
-cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=/.../libssh2-1.9.0/build/src/libssh2.a -DLIBSSH2_LDFLAGS=&quot;&quot; -DUSE_BUNDLED_ZLIB=ON ..
-cmake --build .
-</code></pre>
-By this point the file <code>build/libgit2.a</code> should exist.</li>
-</ol>
-<h3><a class="header" href="#3-build-metro" id="3-build-metro">3. Build Metro</a></h3>
-<ol>
-<li>Set the following environment variables, replacing <code>/.../</code> with the absolute path of each directory:
-<ul>
-<li><code>LIBGIT_INCLUDE_DIR</code> to <code>/.../libgit2-1.0.0/include</code></li>
-<li><code>LIBGIT_BUILD_DIR</code> to <code>/.../libgit2-1.0.0/build</code></li>
-<li><code>LIBSSH_BUILD_DIR</code> to <code>/.../libssh2-1.9.0/build/src</code></li>
-</ul>
-</li>
-<li>Clone the Metro repository by running: <br />
-<code>git clone https://github.com/SiliconSloth/Metro</code></li>
-<li>Switch into the <code>Metro</code> directory and run the following commands:
-<pre><code class="language-shell">mkdir build
-cd build
-cmake ..
-cmake --build .
-</code></pre>
-This should create the <code>metro</code> file in <code>build</code>.</li>
-<li>If you want to be able to run Metro from any directory on your computer,
-add the directory containing <code>metro</code> to your path.</li>
-</ol>
+<p>This should create the <code>metro</code> file in <code>build</code>.</p>
+<h3><a class="header" href="#3-add-to-path" id="3-add-to-path">3. Add to PATH</a></h3>
+<p>If you want to be able to run Metro from any directory on your computer, add the directory containing <code>metro</code> to your path.</p>
+<p>You can do this by adding <code>export PATH=PATH:/path-to-metro/build</code> to <code>~/.bashrc</code> or similar</p>
 
                     </main>
 

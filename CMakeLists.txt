@@ -27,6 +27,7 @@ set(LIBSSH2_LIBRARIES "${CMAKE_BINARY_DIR}/libssh2/src/libssh2${EXT}")
 set(LIBSSH2_LDFLAGS "")
 set(USE_BUNDLED_ZLIB ON CACHE BOOL "Use Bundled ZLib" FORCE)            # Want to ensure bundled zlib is used
 set(BUILD_CLAR OFF CACHE BOOL "Disables Tests" FORCE)                   # Disable tests - no python required
+set(CRYPTO_BACKEND OpenSSL)                                             # Ensure LibSSH2 uses OpenSSL
 
 # Build dependencies
 add_subdirectory("deps/libssh2" libssh2)

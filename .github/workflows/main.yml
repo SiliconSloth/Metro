@@ -25,6 +25,7 @@ jobs:
     # Runs cmake on the project
     - name: Build Metro
       run: |
+        git submodule update --init --recursive
         mkdir build
         cd build
         cmake ..
