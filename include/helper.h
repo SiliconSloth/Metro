@@ -114,11 +114,11 @@ string read_all(const string& path);
 void write_all(const string& text, const string& path);
 
 /**
- * Converts a git_time object to a corresponding string format.
- * @param time The time as a git_time object.
+ * Converts a git::Time object to a corresponding string format.
+ * @param time The time as a git::Time object.
  * @return The time in a string format.
  */
-string time_to_string(git_time time);
+string time_to_string(git::Time time);
 
 /**
  * Sets the colour of the terminal cross-platform using a set of rules.

@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace git {
     string Commit::message() const {
         return string(git_commit_message(commit.get()));

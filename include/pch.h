@@ -1,9 +1,6 @@
 #ifndef PCH_H
 #define PCH_H
 
-// Standard namespace used widely - avoids unnecessary verbosity
-using namespace std;
-
 #include <string>
 #include <vector>
 #include <map>
@@ -49,6 +46,13 @@ using namespace std::experimental;
 #define git_error_last giterr_last
 #endif
 
+using std::cout;
+using std::endl;
+using std::flush;
+using std::vector;
+using std::map;
+using std::string;
+using std::function;
 
 #include "commands.h"
 #include "helper.h"

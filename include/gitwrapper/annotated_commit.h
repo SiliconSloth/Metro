@@ -1,6 +1,13 @@
+/*
+ * Defines a wrapper for the git_annotated_commit type.
+ */
+
 #pragma once
 
 namespace git {
+    /**
+     * Annotated commits, the input to merge and rebase.
+     */
     class AnnotatedCommit {
     private:
         shared_ptr<git_annotated_commit> commit;

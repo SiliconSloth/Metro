@@ -145,7 +145,7 @@ void write_all(const string& text, const string& path) {
     file.close();
 }
 
-string time_to_string(Time time) {
+string time_to_string(git::Time time) {
     char buf[80];
     struct tm ts = *localtime(reinterpret_cast<const time_t *>(&time.time));
     strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts); // Format of time

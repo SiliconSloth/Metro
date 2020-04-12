@@ -41,15 +41,15 @@ namespace git {
         return err >= 0;
     }
 
+    string Repository::path() const {
+        return string(git_repository_path(repo.get()));
+    }
+
     Signature &Repository::default_signature() const {
         git_signature *sig;
         int err = git_signature_default(&sig, repo.get());
         check_error(err);
         return *sig;
-    }
-
-    string Repository::path() const {
-        return string(git_repository_path(repo.get()));
     }
 
     Index Repository::index() const {

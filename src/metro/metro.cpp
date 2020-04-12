@@ -1,11 +1,5 @@
-#include "pch.h"
-
-using namespace git;
-
 namespace metro {
-    // Tests if the repo is currently merging.
-    // repo: The repo
-    // returns: true if the repo is currently in merging state
+
     bool merge_ongoing(const Repository& repo) {
         try {
             // Revision will only exist if merging
@@ -16,18 +10,12 @@ namespace metro {
         return true;
     }
 
-    // Asserts that there is not an ongoing merge
-    // repo: The repo
-    // throw: CurrentlyMergingException if merging
     void assert_not_merging(const Repository& repo) {
         if (merge_ongoing(repo)) {
             throw CurrentlyMergingException();
         }
     }
 
-    // Finds differences between head and working dir index (must git add first)
-    // repo: The repo
-    // return: The diff created between head and working dir
     Diff current_changes(const Repository& repo) {
         Tree current = get_commit(repo, "HEAD").tree();
         DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
@@ -36,11 +24,6 @@ namespace metro {
         return diff;
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
-    // repo: The repo
-    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
-    // message: The commit message
-    // parentCommits: The commit's parents
     void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
         Signature author = repo.default_signature();
 
@@ -56,11 +39,6 @@ namespace metro {
         repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to updateRef.
-    // updateRef: The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch
-    // repo: The repo
-    // message: The commit message
-    // parentRevs: The revisions corresponding to the commit's parents
     void commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
@@ -71,18 +49,10 @@ namespace metro {
         commit(repo, updateRef, message, parentCommits);
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
-    // repo: The repo
-    // message: The commit message
-    // parentCommits: The commit's parents
     void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
         commit(repo, "HEAD", message, parentCommits);
     }
 
-    // Commit all files in the repo directory (excluding those in .gitignore) to the head of the current branch.
-    // repo: The repo
-    // message: The commit message
-    // parentRevs: The revisions corresponding to the commit's parents
     void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
         commit(repo, "HEAD", message, parentRevs);
     }
@@ -93,8 +63,6 @@ namespace metro {
         return index;
     }
 
-    // Initialize an empty git repository in the specified directory,
-    // with an initial commit.
     Repository create(const string& path) {
         if (Repository::exists(path+"/.git")) {
             throw RepositoryExistsException();
@@ -126,11 +94,6 @@ namespace metro {
         commit(repo, message, parents);
     }
 
-    // Gets the commit corresponding to the given revision
-    // repo - Repo to find the commit in
-    // revision - Revision of the commit to find
-    //
-    // Returns the commit
     Commit get_commit(const Repository& repo, const string& revision) {
         Object object = repo.revparse_single(revision);
         Commit commit = (Commit) object;
@@ -146,8 +109,6 @@ namespace metro {
         }
     }
 
-    // Create a new branch from the current head with the specified name.
-    // Returns the branch
     void create_branch(const Repository &repo, const string& name) {
         Commit commit = get_commit(repo, "HEAD");
         repo.create_branch(name, commit, false);
@@ -160,19 +121,6 @@ namespace metro {
         } catch (GitException&) {
             return false;
         }
-    }
-
-    int transfer_progress_callback(const git_transfer_progress *stats, void *) {
-        int progress = 100 * (stats->received_objects + stats->indexed_objects) / (stats->total_objects);
-        printf("\rProgress: %d%%", progress);
-        if (progress == 100) {
-            cout << endl;
-        } else if (progress > 100) {
-            cout << "Progress Tracking Error: Please send debug report to developers" << endl;
-            printf("Recieved Objects: %d, Indexed Objects: %d, Total Objects: %d, Total Progress:%d\n",
-                    stats->received_objects, stats->indexed_objects, stats->total_objects, progress);
-        }
-        return GIT_OK;
     }
 
     string current_branch_name(const Repository& repo) {
@@ -220,9 +168,6 @@ namespace metro {
         }
     }
 
-    // Checks out the given commit without moving head,
-    // such that the working directory will match the commit contents.
-    // Doesn't change current branch ref.
     void checkout(const Repository& repo, const string& name) {
         Tree tree = get_commit(repo, name).tree();
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
@@ -248,8 +193,16 @@ namespace metro {
         return conflicts;
     }
 
-    // If the working directory has changes since the last commit, or a merge has been started,
-    // Save these changes in a WIP commit in a new #wip branch.
+    void fast_forward(const Repository &repo, string name) {
+        // Replaces all current work with origin
+        string branch = current_branch_name(repo);
+        checkout(repo, name);
+        Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
+        Branch refOrigin = repo.lookup_branch("origin/" + branch, GIT_BRANCH_REMOTE);
+        ref.set_target(refOrigin.target(), "message");
+        checkout_branch(repo, branch);
+    }
+
     void save_wip(const Repository& repo) {
         // If there are no changes since the last commit, don't bother with a WIP commit.
         if (!(has_uncommitted_changes(repo) || merge_ongoing(repo))) {
@@ -276,8 +229,6 @@ namespace metro {
         }
     }
 
-    // Deletes the WIP commit at head if any, restoring the contents to the working directory
-    // and resuming a merge if one was ongoing.
     void restore_wip(const Repository& repo) {
         string name = current_branch_name(repo);
         string wipName = to_wip(name);
@@ -343,28 +294,34 @@ namespace metro {
         repo.set_head(branch.reference_name());
     }
 
+    /**
+     * Gets the commit at the head of the branch.
+     *
+     * @param repo Repo to find commit in.
+     * @return Commit at head of branch.
+     */
     Commit get_last_commit(const Repository &repo) {
         return get_commit(repo, "HEAD");
     }
 
+    /**
+     * Hard reset to the current HEAD.
+     *
+     * @param repo Repo to reset within.
+     */
     void reset_head(const Repository &repo) {
         Commit head = get_last_commit(repo);
         repo.reset_to_commit(head, GIT_RESET_HARD, git_checkout_options{});
     }
 
-    // Replaces all current work with new branch, resetting the commit
-    // Does NOT check if safe - do that first
-    void fast_forward(const Repository &repo, string name) {
-        // Replaces all current work with origin
-        string branch = current_branch_name(repo);
-        checkout(repo, name);
-        Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
-        Branch refOrigin = repo.lookup_branch("origin/" + branch, GIT_BRANCH_REMOTE);
-        ref.set_target(refOrigin.target(), "message");
-        checkout_branch(repo, branch);
-    }
-
-    Remote add_remote(const Repository &repo, string url) {
+    /**
+     * Sets the url for the origin remote, creating it if it doesn't exist.
+     *
+     * @param repo Repo to set origin for.
+     * @param url Url reference to set as the remote origin.
+     * @return Returns the remote created/edited.
+     */
+    Remote add_remote(const Repository &repo, const string& url) {
         StrArray remotes = repo.remote_list();
 
         if (remotes.count() < 1) {
@@ -376,7 +333,14 @@ namespace metro {
         }
     }
 
-    MergeAnalysis merge_analysis(const Repository &repo, string name) {
+    /**
+     * Analyses the given branch against the HEAD for methods of merging.
+     *
+     * @param repo Repo with branch and HEAD to compare.
+     * @param name Name of branch reference to perform merge analysis on.
+     * @return The results of analysing the merge.
+     */
+    MergeAnalysis merge_analysis(const Repository &repo, const string& name) {
         Commit otherHead = get_commit(repo, name);
         AnnotatedCommit annOther = repo.lookup_annotated_commit(otherHead.id());
         vector<AnnotatedCommit> sources;
@@ -385,10 +349,7 @@ namespace metro {
         return repo.merge_analysis(sources);
     }
 
-    // Checks out the given branch by name
-    // name - Plain Text branch name (e.g. 'master')
-    // repo - Repo to Checkout from
-    void checkout_branch(Repository repo, string name) {
+    void checkout_branch(const Repository &repo, const string& name) {
         checkout(repo, name);
         move_head(repo, name);
     }
@@ -396,6 +357,7 @@ namespace metro {
     StrArray reference_list(const Repository& repo) {
         git_strarray refs;
         int error = git_reference_list(&refs, repo.ptr().get());
+        check_error(error);
         return StrArray(&refs);
     }
 }

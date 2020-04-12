@@ -1,3 +1,7 @@
+/*
+ * Contains wrapper for git_repository type.
+ */
+
 #pragma once
 
 namespace git {
@@ -15,6 +19,9 @@ namespace git {
         const void *payload;
     };
 
+    /**
+     * Representation of an existing git repository, including all its object contents.
+     */
     class Repository {
     private:
         explicit Repository(git_repository *repo) : repo(repo, git_repository_free) {}
@@ -28,16 +35,100 @@ namespace git {
             return repo;
         }
 
+        /**
+         * Creates a new Git repository in the given folder.
+         *
+         * @param path Folder to create repo in.
+         * @param isBare if true, a Git repository without a working directory is
+         * created at the pointed path. If false, provided path will be
+         * considered as the working directory into which the .git directory
+         * will be created.
+         * @return The created repository.
+         */
         static Repository init(const string& path, bool isBare);
+
+        /**
+         * Open a git repository.
+         *
+         * The 'path' argument must point to either a git repository
+         * folder, or an existing work dir.
+         *
+         * The method will automatically detect if 'path' is a normal
+         * or bare repository or fail is 'path' is neither.
+
+         * @param path The path to the repository.
+         * @return The opened repository object.
+         */
         static Repository open(const string& path);
+
+        /**
+         * Clone a remote repository.
+         *
+         * By default this creates its repository and initial remote to match
+         * git's defaults. You can use the options in the callback to
+         * customize how these are created.
+         *
+         * @param url The remote repository to clone.
+         * @param path Local directory to clone to.
+         * @param options Configuration options for the clone.  If NULL, the
+         *        function works as though GIT_OPTIONS_INIT were passed.
+         * @return Cloned repo.
+         */
         static Repository clone(const string& url, const string& path, git_clone_options *options);
+
+        /**
+         * Checks if a repo exists as the given path.
+         * @param path Path to check.
+         * @return True if repo exists at path.
+         */
         static bool exists(const string& path);
 
+        /**
+         * Gets the path of the repository.
+         *
+         * @return Repo path, ending with `/.git`
+         */
         [[nodiscard]] string path() const;
+
+        /**
+         * Create a new action signature with default user and now timestamp.
+         *
+         * This looks up the user.name and user.email from the configuration and
+         * uses the current time as the timestamp, and creates a new signature
+         * based on that information.
+         *
+         * @return New signature.
+         */
         [[nodiscard]] Signature &default_signature() const;
+
+        /**
+         * Get the Index file for this repository.
+         *
+         * If a custom index has not been set, the default
+         * index for the repository will be returned (the one
+         * located in `.git/index`).
+         *
+         * @return Loaded index object.
+         */
         [[nodiscard]] Index index() const;
 
+        /**
+         * Lookup a tree object from the repository.
+         *
+         * @param oid Identity of the tree to locate.
+         * @return Looked up tree object.
+         */
         [[nodiscard]] Tree lookup_tree(const OID &oid) const;
+
+        /**
+         * Lookup a reference by name in a repository.
+         *
+         * The name will be checked for validity.
+         * See `git_reference_symbolic_create()` for rules about valid names.
+         *
+         * @param name The long name for the reference (e.g. HEAD, refs/heads/master, refs/tags/v0.1.0, ...).
+         * @return Looked up reference.
+         */
         [[nodiscard]] Branch lookup_reference(const string& name) const;
         [[nodiscard]] Branch lookup_branch(const string& name, git_branch_t branchType) const;
         [[nodiscard]] Commit lookup_commit(const OID& oid) const;
