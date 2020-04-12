@@ -14,14 +14,14 @@ Command commit {
             }
             string message = args.positionals[0];
 
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::assert_not_merging(repo);
 
             try {
                 metro::add_all(repo);
 
                 if (metro::commit_exists(repo, "HEAD")) {
-                    Diff diff = metro::current_changes(repo);
+                    git::Diff diff = metro::current_changes(repo);
 
                     // If no changes, exit
                     if (diff.num_deltas() == 0) {

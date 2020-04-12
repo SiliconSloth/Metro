@@ -10,7 +10,7 @@ Command deleteCmd {
                 throw MissingPositionalException("type");
             }
 
-            Repository repo = Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::assert_not_merging(repo);
 
             if (args.positionals[0] == "commit") {

@@ -20,7 +20,7 @@ Command syncCmd {
                 direction = metro::DOWN;
             }
 
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::sync(repo, direction, false);
         },
 

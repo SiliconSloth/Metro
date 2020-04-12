@@ -6,7 +6,7 @@ Command resolve {
 
         // execute
         [](const Arguments &args) {
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::resolve(repo);
 
             string current = metro::current_branch_name(repo);

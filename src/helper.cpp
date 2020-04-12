@@ -272,24 +272,22 @@ void set_text_colour(const string colour, void* handle) {
  * Prints a progress bar of the given width.
  * @param progress A percentage between 0 and 1 of how far along the progress bar is.
  * @param width Width of the progress bar in characters.
- * @return The string representing the progress bar.
  */
-string print_progress_width(unsigned int progress, unsigned int width) {
+void print_progress_width(unsigned int progress, unsigned int width) {
+    if (width > 250) width = 250; // Set max possible size limit for progress bar if massive console.
+
     // TODO Width isn't actually the final length
-    string bar;
+    cout << "\r" << "Progress: [" << flush;
     int i;
     if (width > 0) {
         for (i = 0; i < (progress * width) / 100; i++) {
-            bar.append("=");
+            cout << "=" << flush;
         }
         for (; i < width; i++) {
-            bar.append("-");
+            cout << "-" << flush;
         }
-        stringstream s;
-        s << "\r" << "Progress: [" << bar << "] " << progress << "%";
-        return s.str();
+        cout << "] " << progress << "%" << flush;
     }
-    return "";
 }
 
 void print_progress(unsigned int progress) {
@@ -303,9 +301,11 @@ void print_progress(unsigned int progress) {
     int width = w.ws_col;
 #endif
 
-    cout << print_progress_width(progress, width - 17);
+    print_progress_width(progress, width - 17);
     progress_bar = true;
 }
+
+static unsigned int progress_count;
 
 void print_progress(unsigned int progress, size_t bytes) {
 #ifdef _WIN32
@@ -324,45 +324,45 @@ void print_progress(unsigned int progress, size_t bytes) {
     static chrono::system_clock::time_point last_time;
 #endif
 
-    string bar = print_progress_width(progress, width - 40);
-
     static size_t average_speed;
-    static unsigned int count;
     static size_t last_bytes;
     size_t total_speed;
+
+    if (last_bytes > bytes) progress_count = 0;
 
     // TODO Reset static variables at end of transfer.
     // Finds the total average speed over file transfer/
     // TODO Average speed should consider older speeds less strongly
-    if (count != 0) {
+    if (progress_count != 0) {
         float delta_time = std::chrono::duration_cast<std::chrono::microseconds>(time - last_time).count();
         // If time too small, assume minimum possible
         if (delta_time == 0) {
             delta_time = 1;
         }
         size_t current_speed = 1000000.f * (float) (bytes - last_bytes) / delta_time;
-        total_speed = (current_speed + (average_speed * count)) / (count + 1);
+        total_speed = (current_speed + (average_speed * progress_count)) / (progress_count + 1);
     } else {
         total_speed = 0;
     }
     last_time = time;
     average_speed = total_speed;
-    count++;
+    progress_count++;
     last_bytes = bytes;
 
     int max_width = 8; //xxx.xxYB
     string size = bytes_to_string(bytes);
     string speed = bytes_to_string(total_speed);
-    stringstream size_space;
-    stringstream speed_space;
-    for (int i = size.length(); i < max_width; i++) {
+    std::stringstream size_space;
+    std::stringstream speed_space;
+    for (long i = size.length(); i < max_width; i++) {
         size_space << " ";
     }
-    for (int i = speed.length(); i < max_width; i++) {
+    for (long i = speed.length(); i < max_width; i++) {
         speed_space << " ";
     }
 
-    cout << bar << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
+    print_progress_width(progress, width - 40);
+    cout << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
     progress_bar = true;
 }
 
@@ -372,6 +372,7 @@ void clear_progress_bar() {
         cout << "\033[1A";
         clear_line();
         progress_bar = false;
+        progress_count = 0;
     }
     disable_ansi();
 }

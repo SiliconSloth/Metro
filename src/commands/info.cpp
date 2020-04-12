@@ -6,11 +6,11 @@ Command info {
 
         // execute
         [](const Arguments &args) {
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             cout << "Current branch is " << metro::current_branch_name(repo) << endl;
             cout << (metro::merge_ongoing(repo) ? "Merge ongoing" : "Not merging") << endl;
             metro::add_all(repo);
-            Diff diff = metro::current_changes(repo);
+            git::Diff diff = metro::current_changes(repo);
 
             if (diff.num_deltas() == 0) {
                 cout << "Nothing to commit" << endl;

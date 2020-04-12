@@ -14,7 +14,7 @@ Command absorbCmd {
             }
             string name = args.positionals[0];
 
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             bool hasConflicts = metro::absorb(repo, name);
             if (hasConflicts) {
                 cout << "Conflicts occurred, please resolve." << endl;
