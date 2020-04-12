@@ -11,6 +11,10 @@ namespace metro {
 
         // Set the base or WIP target according to the above rules.
         void add_target(const OID& target, bool wip);
+
+        // Returns true if this DualTarget has no WIP branch or base is the first parent of head.
+        // If this is not the case, then the dual branch is invalid and cannot be correctly synced.
+        bool is_valid(const Repository& repo) const;
     };
 
     struct RefTargets {

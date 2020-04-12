@@ -15,6 +15,19 @@ namespace metro {
         }
     }
 
+    bool DualTarget::is_valid(const Repository& repo) const {
+        if (hasWip) {
+            // head should never be null if hasWip is true.
+            // base should not be null if hasWip is true, as that would imply there is a WIP branch with no base branch.
+            //
+            // The first parent should always be the head of the base branch,
+            // even if the WIP commit is a merge.
+            return (!base.isNull && ! head.isNull) && repo.lookup_commit(head).parent(0).id() == base;
+        } else {
+            return true;
+        }
+    }
+
     // Increment the version number of a branch name to the next unused one for that branch.
     string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
         BranchDescriptor nextDesc(name);
@@ -278,7 +291,7 @@ namespace metro {
                 if (branchName == current_branch_name(repo)) {
                     cout << "Branch " << branchName << " is already synced." << endl;
                 }
-            } else {
+            } else if (targets.local.is_valid(repo) && targets.remote.is_valid(repo)) {
                 // If the local and remote branches both have WIP branches, and the contents of the WIP commits
                 // are the same, the decision about which syncing action to perform should be delegated to the base
                 // branches instead of the heads as would usually be done. This ensures that if the WIP commits are
@@ -304,6 +317,11 @@ namespace metro {
                 // to keep them synced.
                 if (uniqueLocal == uniqueRemote) {
                     syncType = PULL;
+                } else if (!targets.synced.is_valid(repo)) {
+                    // If the local and remote dual branches are valid, but synced is not, then both have changed
+                    // since the last sync. This means there is a conflict if they are not already synced.
+                    // uniqueSynced cannot be trusted for the below checks if it is not valid.
+                    syncType = CONFLICT;
                 } else if (uniqueLocal == uniqueSynced) {
                     // Only remote has changed so pull.
                     syncType = PULL;
@@ -356,6 +374,19 @@ namespace metro {
                             cout << "Branch " << branchName << " conflicts with remote, not pushing." << endl;
                         }
                         break;
+                }
+            } else {
+                // Don't attempt to sync a broken WIP branch,
+                // as it is hard to tell what the user intended in such a situation.
+                bool localOK = targets.local.is_valid(repo);
+                string side = localOK ? "Remote" : "Local";
+                if ((localOK? targets.remote : targets.local).base.isNull) {
+                    cout << side << " branch " << to_wip(branchName) << " has no corresponding base branch "
+                         << branchName << ". Therefore it cannot be synced." << endl;
+                } else {
+                    cout << side << " branch " << to_wip(branchName) << " is not a valid work in progress branch for "
+                         << branchName << ", so neither branch can be synced. Delete " << to_wip(branchName)
+                         << " to resolve the issue." << endl;
                 }
             }
         }
