@@ -3,7 +3,13 @@
 
 namespace metro {
 
-    // Increment the version number of a branch name to the next unused one for that branch.
+    /**
+     * Increment the version number of a branch name to the next unused one for that branch.
+     *
+     * @param name Name of the branch.
+     * @param branchTargets List of targets for each branch.
+     * @return The next valid branch name derivitive.
+     */
     string next_conflict_branch_name(const string& name, const map<string, RefTargets>& branchTargets) {
         BranchDescriptor nextDesc(name);
         // Find the current greatest version number in use with this base name.
@@ -18,8 +24,15 @@ namespace metro {
         return nextDesc.full_name();
     }
 
-    // Returns true if both OIDs are non-null and point to commits with identical trees.
-    // The message and other metadata may be different.
+    /**
+     * Returns true if both OIDs are non-null and point to commits with identical trees.
+     * The message and other metadata may be different.
+     *
+     * @param repo Repo to test within.
+     * @param oid1 First OID to test.
+     * @param oid2 Second OID to test.
+     * @return True if both ID's have identical final trees.
+     */
     bool commit_contents_identical(const Repository& repo, const OID& oid1, const OID& oid2) {
         if (oid1.isNull || oid2.isNull) {
             return false;
@@ -33,6 +46,12 @@ namespace metro {
         return diff.num_deltas() == 0;
     }
 
+    /**
+     * Updates the sync cache to mark the passed branches as updated.
+     *
+     * @param repo Repo to save cache in.
+     * @param branches Branches which have been updated.
+     */
     void update_sync_cache(const Repository& repo, const vector<string>& branches) {
         for (const auto& name : branches) {
             if (branch_exists(repo, name)) {
@@ -45,8 +64,15 @@ namespace metro {
         }
     }
 
-    // Check if the given reference name starts with the specified prefix, and if so remove the prefix from the name
-    // and ensure that there is an entry for that name in branchTargets by creating a blank one if needed.
+    /**
+     * Check if the given reference name starts with the specified prefix, and if so remove the prefix from the name
+     * and ensure that there is an entry for that name in branchTargets by creating a blank one if needed.
+     *
+     * @param branchTargets List of targets for each branch.
+     * @param name The name reference to remove the prefix from.
+     * @param prefix Prefix to remove from name.
+     * @return True if the prefix existed and was removed.
+     */
     bool prepare_branch_targets(map<string, RefTargets>& branchTargets, string& name, const string& prefix) {
         if (has_prefix(name, prefix)) {
             name = name.substr(prefix.size(), name.size() - prefix.size());
@@ -59,7 +85,12 @@ namespace metro {
         return false;
     }
 
-    // Find the local, remote and sync-cached target OIDs of each local, remote and cached branch.
+    /**
+     * Find the local, remote and sync-cached target OIDs of each local, remote and cached branch.
+     *
+     * @param repo Repo to find targets in.
+     * @param out List of targets for each branch.
+     */
     void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
         repo.foreach_reference([](const Branch& ref, const void *payload) {
             string name = ref.reference_name();
@@ -76,7 +107,13 @@ namespace metro {
         }, out);
     }
 
-    // Refspec to push the specified branch, deleting the remote branch if requested.
+    /**
+     * Refspec to push the specified branch, deleting the remote branch if requested.
+     *
+     * @param branchName Name of the branch to make push.
+     * @param deleting Whether the remote branch should be deleted.
+     * @return The final created refspec.
+     */
     string make_push_refspec(const string& branchName, bool deleting) {
         if (deleting) {
             return ":refs/heads/" + branchName;
@@ -85,9 +122,15 @@ namespace metro {
         }
     }
 
-    // Move the specified branch to a new target.
-    // Effectively performs a force pull if the new target is a commit fetched from a remote.
-    // Can create and delete branches as needed.
+    /**
+     * Move the specified branch to a new target.
+     * Effectively performs a force pull if the new target is a commit fetched from a remote.
+     * Can create and delete branches as needed.
+     *
+     * @param repo The repo to change the branch target within.
+     * @param branchName The branch to move to a new target.
+     * @param newTarget The new target the branch is moved to.
+     */
     void change_branch_target(const Repository& repo, const string& branchName, const OID& newTarget) {
         if (newTarget.isNull) {
             // If this was a WIP branch it might already have been deleted when the base branch was deleted.
@@ -103,8 +146,21 @@ namespace metro {
         }
     }
 
-    // Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
-    // The new branch with the local changes is scheduled to be pushed to remote.
+    /**
+     * Move the local commits of a conflicting branch to a new branch, then pull the remote commits into the old branch.
+     * The new branch with the local changes is scheduled to be pushed to remote.
+     *
+     * @param repo The repo to create branches within.
+     * @param remote The remote to fetch from.
+     * @param name The name of the branch the conflict occurs within.
+     * @param localTarget The local branch OID.
+     * @param remoteTarget The remote branch OID.
+     * @param direction The direction syncing is occurring.
+     * @param branchTargets The list of targets for each branch.
+     * @param conflictBranchNames The list of existing conflict branch names.
+     * @param pushRefspecs List of refspects to push.
+     * @param syncedBranches List of branches which have been synced
+     */
     void create_conflict_branches(const Repository& repo, const Remote& remote, const string& name,
             const OID& localTarget, const OID& remoteTarget, const SyncDirection& direction,
             const map<string, RefTargets>& branchTargets, map<string, string>& conflictBranchNames,
@@ -143,6 +199,9 @@ namespace metro {
         cout << "Branch " << name << " had remote changes that conflicted with yours, your commits have been moved to " << newName << ".\n";
     }
 
+    /**
+     * Callback for push transfer.
+     */
     int push_transfer_progress(unsigned int current, unsigned int total, size_t bytes, void *payload) {
         unsigned int progress = (100 * current) / total;
         print_progress(progress, bytes);
@@ -150,6 +209,9 @@ namespace metro {
         return GIT_OK;
     }
 
+    /**
+     * Callback for fetch transfer.
+     */
     int transfer_progress(const git_transfer_progress* stats, void* payload) {
         unsigned int progress = (100 * (stats->received_objects + stats->indexed_objects)) / (2 * stats->total_objects);
         print_progress(progress, stats->received_bytes);
@@ -322,7 +384,6 @@ namespace metro {
         restore_wip(repo);
     }
 
-    // Pulls all the repo branches assuming the remote is correct
     void force_pull(const Repository& repo) {
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);

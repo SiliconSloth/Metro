@@ -4,7 +4,7 @@ namespace metro {
     // Returns true if the repo is currently in merging state.
     bool merge_ongoing(const Repository& repo);
 
-    void assert_merging(const Repository& repo);
+    void assert_not_merging(const Repository& repo);
 
     // Finds differences between head and working dir index (must git add first)
     // repo: The repo

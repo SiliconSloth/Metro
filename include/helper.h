@@ -2,6 +2,7 @@
  * This file should contain anything not relevant to git or any other specfic part of Metro
  */
 
+#pragma once
 #include "gitwrapper/types.h"
 
 using namespace std;

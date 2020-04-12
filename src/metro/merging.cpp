@@ -1,7 +1,6 @@
 #include "pch.h"
 
 namespace metro {
-    // The commit message Metro uses when absorbing a commit referenced by the given name.
     string default_merge_message(const string& mergedName) {
         return "Absorbed " + mergedName;
     }
@@ -14,13 +13,10 @@ namespace metro {
         write_all(message, repo.path() + "/MERGE_MSG");
     }
 
-    // Get the commit ID of the merge head. Assumes a merge is ongoing.
     string merge_head_id(const Repository& repo) {
         return get_commit(repo, "MERGE_HEAD").id().str();
     }
 
-    // Merge the specified commit into the current branch head.
-    // The repo will be left in a merging state, possibly with conflicts in the index.
     void start_merge(const Repository& repo, const string& name) {
         Commit otherHead = get_commit(repo, name);
         AnnotatedCommit annotatedOther = repo.lookup_annotated_commit(otherHead.id());
@@ -42,7 +38,6 @@ namespace metro {
         set_merge_message(repo, default_merge_message(name));
     }
 
-    // Create a commit of the ongoing merge and clear the merge state and conflicts from the repo.
     void resolve(const Repository& repo) {
         if (!merge_ongoing(repo)) {
             throw NotMergingException();
@@ -61,7 +56,7 @@ namespace metro {
         if (is_wip(mergeHead)) {
             throw UnsupportedOperationException("Can't absorb WIP branch.");
         }
-        assert_merging(repo);
+        assert_not_merging(repo);
 
         start_merge(repo, mergeHead);
         if (repo.index().has_conflicts()) {

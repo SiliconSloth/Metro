@@ -15,7 +15,7 @@ Command commit {
             string message = args.positionals[0];
 
             Repository repo = git::Repository::open(".");
-            metro::assert_merging(repo);
+            metro::assert_not_merging(repo);
 
             try {
                 metro::add_all(repo);

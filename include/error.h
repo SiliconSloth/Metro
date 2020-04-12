@@ -1,3 +1,7 @@
+/*
+ * This contains code regarding exceptions and error handling within Metro.
+ */
+
 #pragma once
 #include "pch.h"
 #include "git2.h"

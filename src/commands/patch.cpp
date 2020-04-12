@@ -7,7 +7,7 @@ Command patch {
         // execute
         [](const Arguments &args) {
             Repository repo = git::Repository::open(".");
-            metro::assert_merging(repo);
+            metro::assert_not_merging(repo);
 
             // Uses existing message as default
             Commit commit = static_cast<Commit>(repo.revparse_single("HEAD"));

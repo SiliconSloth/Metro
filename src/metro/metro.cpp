@@ -16,10 +16,10 @@ namespace metro {
         return true;
     }
 
-    // Asserts that there is an ongoing merge
+    // Asserts that there is not an ongoing merge
     // repo: The repo
     // throw: CurrentlyMergingException if merging
-    void assert_merging(const Repository& repo) {
+    void assert_not_merging(const Repository& repo) {
         if (merge_ongoing(repo)) {
             throw CurrentlyMergingException();
         }
@@ -120,7 +120,7 @@ namespace metro {
     }
 
     void patch(const Repository& repo, const string& message) {
-        assert_merging(repo);
+        assert_not_merging(repo);
         vector<Commit> parents = get_commit(repo, "HEAD").parents();
         delete_last_commit(repo, false);
         commit(repo, message, parents);

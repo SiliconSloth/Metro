@@ -2,6 +2,8 @@
  * This contains code regarding the way Metro exits.
  */
 
+#pragma once
+
 static struct {
     bool cloning = false;   // True if command used is clone
     string directory;       // Directory being cloned

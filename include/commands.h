@@ -1,4 +1,8 @@
-using namespace std;
+/*
+ * This code describes the format of argument and command passing
+ */
+
+#pragma once
 
 // An argument collection
 struct Arguments {

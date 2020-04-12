@@ -2,6 +2,7 @@
  * References to variables and types used in main.cpp
  */
 
+#pragma once
 #include "pch.h"
 
 // List of all commands

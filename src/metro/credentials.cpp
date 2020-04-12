@@ -1,7 +1,10 @@
 #include "pch.h"
 
 namespace metro {
-    // Overwrite the memory occupied by a string with zeros to prevent malicious access.
+    /**
+     * Overwrite the memory occupied by a string with zeros to prevent malicious access.
+     * @param str String reference which will be erased from memory.
+     */
     void erase_string(string& str) {
         memset_volatile(&str[0], 0, str.size());
     }

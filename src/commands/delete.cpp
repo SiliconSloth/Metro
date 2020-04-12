@@ -11,7 +11,7 @@ Command deleteCmd {
             }
 
             Repository repo = Repository::open(".");
-            metro::assert_merging(repo);
+            metro::assert_not_merging(repo);
 
             if (args.positionals[0] == "commit") {
                 if (args.positionals.size() > 1) {

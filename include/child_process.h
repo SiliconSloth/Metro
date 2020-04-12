@@ -1,3 +1,9 @@
+/*
+ * This code allows easy creation of sub-processes.
+ */
+
+#pragma once
+
 #ifdef _WIN32
 #define Handle HANDLE
 #define wait_for_terminate(procHandle) WaitForSingleObject(procHandle, INFINITE)
