@@ -1,3 +1,7 @@
+/*
+ * References to variables and types used in main.cpp
+ */
+
 #include "pch.h"
 
 // List of all commands

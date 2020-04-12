@@ -186,7 +186,7 @@ namespace metro {
         Repository repo = git::Repository::clone(url, repoPath, &options);
         // Pull all the other branches (which were fetched anyway).
         force_pull(repo);
-        attempt_clear_line();
+        clear_progress_bar();
         return repo;
     }
 
@@ -210,7 +210,7 @@ namespace metro {
         credentials->tried = false;
         cout << "Fetching all branches from origin..." << endl;
         origin.fetch(StrArray(), fetchOpts);
-        attempt_clear_line();
+        clear_progress_bar();
 
         map<string, RefTargets> branchTargets;
         get_branch_targets(repo, &branchTargets);
@@ -315,7 +315,7 @@ namespace metro {
 
             credentials->tried = false;
             origin.push(StrArray(pushRefspecs), options);
-            attempt_clear_line();
+            clear_progress_bar();
         }
 
         update_sync_cache(repo, syncedBranches);

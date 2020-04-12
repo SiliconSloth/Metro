@@ -1,11 +1,9 @@
 #include "pch.h"
 
-using namespace std;
-
+// Represents whether there is a progress bar to be cleared
 bool progress_bar = false;
 
-// Convert a string to a non-negative integer, returning -1 on failure.
-int parse_pos_int(const string& str) {
+unsigned int parse_pos_int(const string& str) {
     try {
         int val = stoi(str);
         return val >= 0? val : -1;
@@ -14,7 +12,7 @@ int parse_pos_int(const string& str) {
     return -1;
 }
 
-bool has_prefix(string const& str, string const& pre) {
+bool has_prefix(string const& str, string pre) {
     if (pre.size() <= str.size()) {
         return str.compare(0, pre.size(), pre) == 0;
     } else {
@@ -22,7 +20,7 @@ bool has_prefix(string const& str, string const& pre) {
     }
 }
 
-bool has_suffix(string const& str, string const& suff) {
+bool has_suffix(string const& str, string suff) {
     if (suff.size() <= str.size()) {
         return str.compare(str.size() - suff.size(), suff.size(), suff) == 0;
     } else {
@@ -30,19 +28,15 @@ bool has_suffix(string const& str, string const& suff) {
     }
 }
 
-// True if the string contains no non-whitespace characters.
 bool whitespace_only(const string& s) {
     return s.empty() || all_of(s.begin(), s.end(), [](char c){
         return isspace(static_cast<unsigned char>(c));
     });
 }
 
-// Split the given string around the fist occurrence of the given character.
-// If the character is not found, the input string is returned as the first string and "" as the second.
-// The outputs are stored in before and after.
 void split_at_first(string const& str, char const& c, string & before, string & after) {
     size_t index = str.find(c);
-    const string tempStr = str; // Can't assume str != before
+    const string tempStr((string(str))); // Can't assume str != before
     if (index == -1) {
         before = tempStr;
         after = "";
@@ -154,8 +148,9 @@ void write_all(const string& text, const string& path) {
 string time_to_string(Time time) {
     char buf[80];
     struct tm ts = *localtime(reinterpret_cast<const time_t *>(&time.time));
-    strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts);
+    strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts); // Format of time
 
+    // Set offset manually via minutes
     int hour_offset = 0;
     int minute_offset = time.offset;
     while (minute_offset >= 60) {
@@ -163,29 +158,27 @@ string time_to_string(Time time) {
         hour_offset++;
     }
 
+    // Insert offset into string
     char buf2[5];
     sprintf(buf2, "%02d%02d", hour_offset, minute_offset);
 
+    // Insert full time into string
     char buf3[100];
     sprintf(buf3, "%s%c%s", buf, '+', buf2);
 
     return string(buf3);
 }
 
+// Defines the original colour of the console being used before being changed.
 static int defaultColour = -1;
 
-// Should be in format like "rgbi-----" or "r--i-gb--"
-// rgb is colour, i is intensity. The first 4 are the
-// text, and the second 4 are the background. The last
-// one is the mode: - for all, f for foreground, b for
-// background and r for reset
-void set_text_colour(string colour, void* handle) {
+void set_text_colour(const string colour, void* handle) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO term;
     GetConsoleScreenBufferInfo(handle, &term);
     if (defaultColour == -1) defaultColour = term.wAttributes;
 
-    int current = 0;
+    unsigned int current = 0;
     if (colour[0] == 'r') current |= FOREGROUND_RED;
     if (colour[1] == 'g') current |= FOREGROUND_GREEN;
     if (colour[2] == 'b') current |= FOREGROUND_BLUE;
@@ -275,7 +268,14 @@ void set_text_colour(string colour, void* handle) {
 #endif //_WIN32
 }
 
+/**
+ * Prints a progress bar of the given width.
+ * @param progress A percentage between 0 and 1 of how far along the progress bar is.
+ * @param width Width of the progress bar in characters.
+ * @return The string representing the progress bar.
+ */
 string print_progress_width(unsigned int progress, unsigned int width) {
+    // TODO Width isn't actually the final length
     string bar;
     int i;
     if (width > 0) {
@@ -331,6 +331,9 @@ void print_progress(unsigned int progress, size_t bytes) {
     static size_t last_bytes;
     size_t total_speed;
 
+    // TODO Reset static variables at end of transfer.
+    // Finds the total average speed over file transfer/
+    // TODO Average speed should consider older speeds less strongly
     if (count != 0) {
         float delta_time = std::chrono::duration_cast<std::chrono::microseconds>(time - last_time).count();
         // If time too small, assume minimum possible
@@ -363,7 +366,7 @@ void print_progress(unsigned int progress, size_t bytes) {
     progress_bar = true;
 }
 
-void attempt_clear_line() {
+void clear_progress_bar() {
     enable_ansi();
     if (progress_bar) {
         cout << "\033[1A";
@@ -412,6 +415,7 @@ string bytes_to_string(size_t bytes) {
     }
 }
 
+// Saves initial console mode
 #ifdef _WIN32
 static HANDLE sout;
 static DWORD initial;
@@ -422,19 +426,19 @@ void enable_ansi() {
     DWORD mode = 0;
     sout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if(sout == INVALID_HANDLE_VALUE) exit(GetLastError());
-    if(!GetConsoleMode(sout, &mode)) exit(GetLastError());
+    if(sout == INVALID_HANDLE_VALUE) throw exception(&"Unable to enable ANSI, GetStdHandle returned error code " [ GetLastError()]);
+    if(!GetConsoleMode(sout, &mode)) throw exception(&"Unable to enable ANSI, GetConsoleMode returned error code " [ GetLastError()]);
     initial = mode;
 
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-    if(!SetConsoleMode(sout, mode)) exit(GetLastError());
+    if(!SetConsoleMode(sout, mode)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
 #endif //_WIN32
 }
 
 void disable_ansi() {
 #ifdef _WIN32
-    printf("\x1b[0m");
-    if(!SetConsoleMode(sout, initial)) exit(GetLastError());
+    printf("\x1b[0m"); // Reset all attributes
+    if(!SetConsoleMode(sout, initial)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
 #endif //_WIN32
 }
