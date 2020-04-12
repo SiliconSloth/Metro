@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace metro {
     /**
      * Overwrite the memory occupied by a string with zeros to prevent malicious access.

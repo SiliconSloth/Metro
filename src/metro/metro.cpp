@@ -18,14 +18,14 @@ namespace metro {
 
     Diff current_changes(const Repository& repo) {
         Tree current = get_commit(repo, "HEAD").tree();
-        DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
+        git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
         Diff diff = Diff::tree_to_workdir_with_index(repo, current, &opts);
 
         return diff;
     }
 
     void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
-        Signature author = repo.default_signature();
+        git_signature author = repo.default_signature();
 
         Index index = add_all(repo);
         // Write the files in the index into a tree that can be attached to the commit.
@@ -340,7 +340,7 @@ namespace metro {
      * @param name Name of branch reference to perform merge analysis on.
      * @return The results of analysing the merge.
      */
-    MergeAnalysis merge_analysis(const Repository &repo, const string& name) {
+    git_merge_analysis_t merge_analysis(const Repository &repo, const string& name) {
         Commit otherHead = get_commit(repo, name);
         AnnotatedCommit annOther = repo.lookup_annotated_commit(otherHead.id());
         vector<AnnotatedCommit> sources;

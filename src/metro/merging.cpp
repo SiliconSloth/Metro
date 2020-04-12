@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace metro {
     string default_merge_message(const string& mergedName) {
         return "Absorbed " + mergedName;

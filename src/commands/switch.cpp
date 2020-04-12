@@ -1,5 +1,11 @@
-#include "pch.h"
+/*
+ * Defines the Switch command.
+ */
 
+/**
+ * The switch command switches from the current repo to the target repo, saving work to WIP and loading new work from
+ * WIP if any.
+ */
 Command switchCmd {
         "switch",
         "Switch to a different branch",
@@ -21,7 +27,7 @@ Command switchCmd {
 
             // Finds differences between head and working dir
             git::Tree current = metro::get_commit(repo, "HEAD").tree();
-            git::DiffOptions opts = GIT_DIFF_OPTIONS_INIT;
+            git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
             git::Diff diff = git::Diff::tree_to_workdir(repo, current, &opts);
 
             if (diff.num_deltas() > 0) {

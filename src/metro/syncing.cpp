@@ -1,6 +1,3 @@
-#include <pch.h>
-#include "pch.h"
-
 namespace metro {
 
     /**
@@ -370,7 +367,7 @@ namespace metro {
         }
 
         if (!pushRefspecs.empty() && (direction == UP || direction == BOTH)) {
-            PushOptions options = GIT_PUSH_OPTIONS_INIT;
+            git_push_options options = GIT_PUSH_OPTIONS_INIT;
             options.callbacks.credentials = acquire_credentials;
             options.callbacks.payload = &payload;
             options.callbacks.push_transfer_progress = push_transfer_progress;

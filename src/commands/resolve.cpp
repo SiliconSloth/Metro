@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Resolve command.
+ */
 
+/**
+ * The resolve command is used to resolve conflicts after a merge.
+ */
 Command resolve {
         "resolve",
         "Commit resolved conflicts after absorb",

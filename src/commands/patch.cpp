@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Patch command.
+ */
 
+/**
+ * The patch command is used to patch the last commit.
+ */
 Command patch {
         "patch",
         "Update the last commit with the current work",

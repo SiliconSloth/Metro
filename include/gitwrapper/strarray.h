@@ -1,3 +1,7 @@
+/*
+ * Contains a wrapper for the git_strarray type.
+ */
+
 #pragma once
 
 #include <git2/strarray.h>
@@ -7,6 +11,9 @@
 #endif //__unix__
 
 namespace git {
+    /**
+     * Array of strings
+     */
     class StrArray {
     private:
         const shared_ptr<git_strarray> array;
@@ -16,6 +23,12 @@ namespace git {
             delete array;
         }
 
+        /**
+         * Converts a list of strings to a StrArray type.
+         *
+         * @param list Vector of strings.
+         * @return The `git_strarray` pointer associated to that list.
+         */
         static git_strarray* list_to_strarray(const vector<string>& list) {
             char **strings = new char*[list.size()];
             for (int i = 0; i < list.size(); i++) {

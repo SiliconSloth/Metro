@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Branch command.
+ */
 
+/**
+ * The branch command is used to create new branches.
+ */
 Command branch {
         "branch",
         "Create a new branch",

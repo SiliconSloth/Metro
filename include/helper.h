@@ -118,7 +118,7 @@ void write_all(const string& text, const string& path);
  * @param time The time as a git::Time object.
  * @return The time in a string format.
  */
-string time_to_string(git::Time time);
+string time_to_string(git_time time);
 
 /**
  * Sets the colour of the terminal cross-platform using a set of rules.

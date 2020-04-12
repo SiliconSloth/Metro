@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Create command.
+ */
 
+/**
+ * The create command is used to create a new repo in the current or provided directory.
+ */
 Command create {
         "create",
         "Create a repo",

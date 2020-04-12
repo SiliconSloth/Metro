@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Commit command.
+ */
 
+/**
+ * The commit command is used to make a commit to the repo.
+ */
 Command commit {
         "commit",
         "Make a commit",

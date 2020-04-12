@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Sink command.
+ */
 
+/**
+ * The sink command is an experimental advanced method of sinking the repository.
+ */
 Command sinkCmd{
         "sink",
         "Sinks Metro",

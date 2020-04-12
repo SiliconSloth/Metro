@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Clone command.
+ */
 
+/**
+ * The clone command is used to clone a repo from a remote to a local directory.
+ */
 Command clone_repo {
         "clone",
         "Clone a remote repo",

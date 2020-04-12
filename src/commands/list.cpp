@@ -1,16 +1,30 @@
-#include "pch.h"
+/*
+ * Defines the List command.
+ */
 
+/**
+ * Prints the details of a given commit to the console.
+ *
+ * @param nth_parent The commit to print out.
+ * @param hConsole The console to print using on Windows.
+ */
 void print_details(git::Commit nth_parent, void *hConsole) {
     set_text_colour("rg------f", hConsole);
     cout << "Commit " << nth_parent.id().str() << endl;
     set_text_colour("rgb-----r", hConsole);
 
-    git::Signature author = nth_parent.author();
+    git_signature author = nth_parent.author();
     cout << "Author: " << author.name << " (" << author.email << ")" << endl;
     cout << "Date: " << time_to_string(author.when) << endl;
     cout << "\n    " << nth_parent.message() << endl;
 }
 
+/**
+ * Prints the given commit followed by all parent commits with a prompt before each commit.
+ *
+ * @param commit Commit to begin printing from (Inclusive).
+ * @param hConsole The console to print using on Windows.
+ */
 void print_from_commit(git::Commit commit, void *hConsole) {
     unsigned int count = commit.parentcount();
     print_details(commit, hConsole);
@@ -33,6 +47,9 @@ void print_from_commit(git::Commit commit, void *hConsole) {
     }
 }
 
+/**
+ * The list command is used to print a list of commmits or branches.
+ */
 Command listCmd{
         "list",
         "Lists the commits or branches",

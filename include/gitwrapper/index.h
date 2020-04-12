@@ -69,7 +69,7 @@ namespace git {
          * (also gets index of matching pathspec entry); can be NULL; return 0 to add,
          * >0 to skip, 0 to abort scan.
          */
-        void add_all(const StrArray& pathspec, unsigned int flags, MatchedPathCallback callback);
+        void add_all(const StrArray& pathspec, unsigned int flags, git_index_matched_path_cb callback);
 
         /**
          * Write the index as a tree

@@ -84,6 +84,6 @@ namespace git {
          *
          * @return Commit author as a Signature.
          */
-        [[nodiscard]] Signature author() const;
+        [[nodiscard]] git_signature author() const;
     };
 }

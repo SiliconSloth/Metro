@@ -33,7 +33,7 @@ namespace git {
          * @param refspecs The refspecs to use for this fetch.
          * @param opts Options to use for this fetch.
          */
-        void fetch(const StrArray& refspecs, FetchOps opts);
+        void fetch(const StrArray& refspecs, git_fetch_options opts);
 
         /**
          * Perform a push
@@ -43,6 +43,6 @@ namespace git {
          * @param refspecs The refspecs to use for pushing.
          * @param opts Options to use for this push.
          */
-        void push(StrArray refspecs, PushOptions opts) const;
+        void push(StrArray refspecs, git_push_options opts) const;
     };
 }

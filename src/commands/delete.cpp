@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Delete command.
+ */
 
+/**
+ * The delete command is used to delete a commit or branch by name.
+ */
 Command deleteCmd {
         "delete",
         "Deletes a commit or branch",

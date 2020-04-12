@@ -1,5 +1,3 @@
-#include "pch.h"
-
 void run_command(const string& cmd, const string& input, string& output, string& error) {
     Pipe childIn(false);
     Pipe childOut(true);

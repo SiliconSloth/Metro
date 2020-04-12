@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Absorb command.
+ */
 
+/**
+ * The absorb command is used to merge one branch into another, similar to `git merge`
+ */
 Command absorbCmd {
         "absorb",
         "Merge the changes in another branch into this one",

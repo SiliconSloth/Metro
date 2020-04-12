@@ -1,6 +1,3 @@
-#include <gitwrapper/strarray.h>
-#include "pch.h"
-
 namespace git {
     Repository Repository::init(const string& path, bool isBare) {
         git_repository *gitRepo = nullptr;
@@ -45,7 +42,7 @@ namespace git {
         return string(git_repository_path(repo.get()));
     }
 
-    Signature &Repository::default_signature() const {
+    git_signature &Repository::default_signature() const {
         git_signature *sig;
         int err = git_signature_default(&sig, repo.get());
         check_error(err);
@@ -94,7 +91,7 @@ namespace git {
         return AnnotatedCommit(commit);
     }
 
-    OID Repository::create_commit(const string& updateRef, const Signature &author, const Signature &committer,
+    OID Repository::create_commit(const string& updateRef, const git_signature &author, const git_signature &committer,
                                   const string& messageEncoding, const string& message, const Tree& tree,
                                   vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
@@ -117,7 +114,7 @@ namespace git {
         return Object(obj);
     }
 
-    void Repository::reset_to_commit(const Commit &commit, ResetType type, const CheckoutOptions ops) const {
+    void Repository::reset_to_commit(const Commit &commit, git_reset_t type, const git_checkout_options ops) const {
         int err = git_reset(repo.get(), (git_object*) commit.ptr().get(), type, &ops);
         check_error(err);
     }
@@ -129,10 +126,11 @@ namespace git {
         return Branch(ref);
     }
 
-    void Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
+    Branch Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
         check_error(err);
+        return Branch(ref);
     }
 
     void Repository::remove_reference(const string& name) const {

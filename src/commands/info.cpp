@@ -1,5 +1,11 @@
-#include "pch.h"
+/*
+ * Defines the Info command.
+ */
 
+/**
+ * The info command is used to get the current status of the repo in regards to merging, current branch and
+ * the number of changes that have been made.
+ */
 Command info {
         "info",
         "Show the state of the repo",
