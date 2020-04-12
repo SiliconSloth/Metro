@@ -24,7 +24,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <filesystem>
 #elif __unix__ || __APPLE__ || __MACH__
 #include <termios.h>
 #include <unistd.h>
@@ -36,10 +35,15 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <ctime>
-#include <experimental/filesystem>
 #include <signal.h>
-using namespace std::experimental;
 #endif //_WIN32
+#if _WIN32 || __APPLE__ || __MACH__
+#include <filesystem>
+namespace std_filesystem = std::filesystem;
+#elif __unix__
+#include <experimental/filesystem>
+namespace std_filesystem = std::experimental::filesystem;
+#endif
 
 #include "git2.h"
 #if (LIBGIT2_VER_MINOR < 28)

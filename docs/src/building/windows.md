@@ -20,47 +20,22 @@ Developer Command Prompt, or the x64 Native Tools Command Prompt on 64-bit syste
 7. Set the `OPENSSL_ROOT_DIR` environment variable to the path of the OpenSSL directory,
    which contains the `.lib` files.
    
-### 2. Build libssh2
-1. Download and extract the [libssh2](https://www.libssh2.org/) source code. Metro has been tested with version 1.9.0.
-2. Open Command Prompt and switch to the libssh2 directory.
-3. Run the following commands:
-   ```batch
-   mkdir build
-   cd build
-   cmake -DCRYPTO_BACKEND=OpenSSL ..
-   cmake --build .
-   ```
-   By this point the file `build/src/Debug/libssh2.lib` should exist.
+### 2. Clone Metro
+Clone using the command `git clone --recursive https://github.com/SiliconSloth/Metro`
    
-### 3. Build libgit2
-1. Download and extract the [libgit2](https://libgit2.org/) source code. Metro has been tested with version 1.0.0.
-3. Open Command Prompt and switch to the libgit2 directory.
-4. Run the following commands, where `C:/.../libssh2-1.9.0` is the path of your libssh2 directory.
-   Note that all backslashes in the path must be replaced with forward slashes to appease CMake.
-   ```batch
-   mkdir build
-   cd build
-   cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=C:/.../libssh2-1.9.0/include -DLIBSSH2_LIBRARIES=C:/.../libssh2-1.9.0/build/src/Debug/libssh2.lib -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
-   cmake --build .
-   ```
-   By this point the file `build/Debug/git2.lib` should exist.
+Alternatively you can clone normally and use `git submodule update --init --recursive` to get dependancies
    
-### 4. Build Metro
-1. Set the following environment variables, replacing `C:\...\ ` with the absolute path of each directory:
-   * `LIBGIT_INCLUDE_DIR` to `C:\...\libgit2-1.0.0\include`
-   * `LIBGIT_BUILD_DIR` to `C:\...\libgit2-1.0.0\build\Debug`
-   * `LIBSSH_BUILD_DIR` to `C:\...\libssh2-1.9.0\build\src\Debug`
-   
-   `OPENSSL_ROOT_DIR` should still be set from building OpenSSL.
-2. Clone the Metro repository by running: \
-   `git clone https://github.com/SiliconSloth/Metro`
-3. Switch into the `Metro` directory and run the following commands:
-   ```batch
-   mkdir build
-   cd build
-   cmake ..
-   cmake --build .
-   ```
-   This should create the `metro.exe` file in `build\Debug`.
-4. If you want to be able to run Metro from any directory on your computer,
-   add the directory containing `metro.exe` to your PATH variable.
+### 3. Build Metro
+Switch into the `Metro` directory and run the following commands:
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+This should create the `metro.exe` file in `build`.
+
+### 4. Add to PATH
+If you want to be able to run Metro from any directory on your computer, add the directory containing `metro.exe` to your path.
+
+You can do this by going to Windows Explorer, right clicking This PC, choosing properties, choosing Advanced System Settings, choosing Environmental Variables, clicking on PATH in either User or System, choosing Edit and adding an entry with `C:/path-to-metro/build`

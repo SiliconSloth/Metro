@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: ubuntu-latest-build
+name: latest-build
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -21,48 +21,11 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-      
-    - name: Download and Extract LibSSH
-      run: |
-        mkdir deps
-        mkdir deps/libssh
-        cd deps/libssh
-        wget https://github.com/libssh2/libssh2/archive/libssh2-1.9.0.zip
-        unzip libssh2-1.9.0.zip
-        mv libssh2-libssh2-1.9.0/* .
-        mkdir build
-        cd build
-        
-    # Runs cmake on the libssh
-    - name: Build LibSSH
-      run: |
-        cd deps/libssh/build
-        cmake ..
-        cmake --build .
-        
-    - name: Download and Extract LibGit2
-      run: |
-        mkdir deps/libgit2
-        cd deps/libgit2
-        wget https://github.com/libgit2/libgit2/releases/download/v1.0.0/libgit2-1.0.0.zip
-        unzip libgit2-1.0.0.zip
-        mv libgit2-1.0.0/* .
-        mkdir build
-        cd build
-    
-    # Runs cmake on the libgit2
-    - name: Build LibGit2
-      run: |
-        cd deps/libgit2/build
-        cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_CLAR=OFF -DUSE_SSH=OFF -DLIBSSH2_FOUND=1 -DLIBSSH2_INCLUDE_DIRS=$GITHUB_WORKSPACE/deps/libssh/include -DLIBSSH2_LIBRARIES=$GITHUB_WORKSPACE/deps/libssh/build/src/libssh2.a -DLIBSSH2_LDFLAGS="" -DUSE_BUNDLED_ZLIB=ON ..
-        cmake --build .
 
     # Runs cmake on the project
     - name: Build Metro
       run: |
-        export LIBGIT_INCLUDE_DIR=$GITHUB_WORKSPACE/deps/libgit2/include
-        export LIBGIT_BUILD_DIR=$GITHUB_WORKSPACE/deps/libgit2/build
-        export LIBSSH_BUILD_DIR=$GITHUB_WORKSPACE/deps/libssh/build/src
+        git submodule update --init --recursive
         mkdir build
         cd build
         cmake ..
