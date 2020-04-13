@@ -80,8 +80,12 @@ namespace metro {
                 Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
                 repo.create_reference("refs/synced/" + name, branch.target(), true);
             } else {
-                Branch ref = repo.lookup_reference("refs/synced/" + name);
-                ref.delete_reference();
+                try {
+                    Branch ref = repo.lookup_reference("refs/synced/" + name);
+                    ref.delete_reference();
+                } catch (GitException&) {
+                    // Don't care if the branch didn't exist in the first place.
+                }
             }
         }
     }
