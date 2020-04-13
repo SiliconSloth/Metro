@@ -91,7 +91,7 @@ void print_options(const vector<string>& options);
 
 /**
  * Print string right-padded to given length.
- * @param str String to print our.
+ * @param str String to print out.
  * @param len Number of characters the entire printed word should be, with spaces padding the end.
  *
  * Note that if the word is longer than the pad length, the word will be printed normally.
