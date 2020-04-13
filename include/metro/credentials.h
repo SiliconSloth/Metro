@@ -3,7 +3,6 @@
  */
 
 #pragma once
-#include <utility>
 
 // A version of memset that won't be optimized away by the compiler.
 // Used for overwriting sensitive memory for security reasons.

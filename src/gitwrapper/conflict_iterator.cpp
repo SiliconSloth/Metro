@@ -1,4 +1,4 @@
-    namespace git {
+namespace git {
     bool ConflictIterator::next(Conflict &out) const {
         const git_index_entry *ancestor;
         const git_index_entry *ours;

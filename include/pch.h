@@ -60,7 +60,6 @@ using std::function;
 #include "exit.h"
 #include "child_process.h"
 
-#include "gitwrapper/types.h"
 #include "gitwrapper/oid.h"
 #include "gitwrapper/branch.h"
 #include "gitwrapper/conflict_iterator.h"

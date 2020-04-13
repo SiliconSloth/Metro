@@ -3,9 +3,6 @@
  */
 
 #pragma once
-#include "pch.h"
-#include "git2.h"
-#include <exception>
 
 /**
  * Checks the return value of a git function for an error.
