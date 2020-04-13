@@ -276,8 +276,10 @@ namespace metro {
      * Callback for push transfer.
      */
     int push_transfer_progress(unsigned int current, unsigned int total, size_t bytes, void *payload) {
-        unsigned int progress = (100 * current) / total;
-        print_progress(progress, bytes);
+        if (total > 0) {
+            unsigned int progress = (100 * current) / total;
+            print_progress(progress, bytes);
+        }
 
         return GIT_OK;
     }
