@@ -154,8 +154,14 @@ namespace metro {
         }
     }
 
-    // Add refspecs for pushing the specified base branch and its WIP branch.
-    // Only pushes each branch if the local and remote targets differ.
+    /**
+     * Add refspecs for pushing the specified base branch and its WIP branch.
+     * Only pushes each branch if the local and remote targets differ.
+     *
+     * @param branchName Branch to queue up for push.
+     * @param targets Targets to compare to branch.
+     * @param refspecs Refspecs reference to add created refspec to
+     */
     void queue_push(const string& branchName, const RefTargets& targets, vector<string>& refspecs) {
         if (targets.local.base != targets.remote.base) {
             refspecs.push_back(make_push_refspec(branchName, targets.local.base.isNull));
@@ -193,7 +199,13 @@ namespace metro {
         }
     }
 
-    // Pull a fetched branch and its WIP counterpart by setting their targets to the fetched commits.
+    /**
+     * Pull a fetched branch and its WIP counterpart by setting their targets to the fetched commits.
+     *
+     * @param repo Repo to fetch branch from.
+     * @param branchName Branch to pull.
+     * @param targets Targets to use use during pull.
+     */
     void pull(const Repository& repo, const string& branchName, const RefTargets& targets) {
         if (targets.local.base != targets.remote.base) {
             change_branch_target(repo, branchName, targets.remote.base);
