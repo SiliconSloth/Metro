@@ -1,5 +1,5 @@
 /*
- * This file should contain anything not relevant to git or any other specfic part of Metro
+ * This file should contain anything not relevant to Git or any other specfic part of Metro
  */
 
 #pragma once
