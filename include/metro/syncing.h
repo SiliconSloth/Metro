@@ -15,11 +15,20 @@ namespace metro {
         OID base;
         bool hasWip = false;
 
-        // Set the base or WIP target according to the above rules.
+        /**
+         * Set the base or WIP target according to the above rules.
+         *
+         * @param target Target to set the base to.
+         * @param wip True to set WIP target instead.
+         */
         void add_target(const OID& target, bool wip);
 
-        // Returns true if this DualTarget has no WIP branch or base is the first parent of head.
-        // If this is not the case, then the dual branch is invalid and cannot be correctly synced.
+        /**
+         * Finds whether the target is valid for sync.
+         * 
+         * @returns True if this DualTarget has no WIP branch or base is the first parent of head.
+         * If this is not the case, then the dual branch is invalid and cannot be correctly synced.
+         */
         bool is_valid(const Repository& repo) const;
     };
 
