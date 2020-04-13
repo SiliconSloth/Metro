@@ -416,20 +416,33 @@ namespace metro {
                     // Only local has changed so push.
                     syncType = PUSH;
                 } else {
+                    // Both sides have changed since last sync.
+                    syncType = CONFLICT;
+                }
+
+                // If the local and remote branches are found to be in conflict, check whether the head of one
+                // is an ancestor of the other. In this case, rather than making a new conflict branch that contains
+                // no commits since the divergence point, just retain all the commits on both sides.
+                if (syncType == CONFLICT) {
+                    // Find the most recent common ancestor. Will default to null if they have none in common,
+                    // or one of the branches does not exist.
                     OID base;
                     if (!(uniqueLocal.isNull || uniqueRemote.isNull)) {
                         base = repo.merge_base(uniqueLocal, uniqueRemote);
                     }
 
                     if (uniqueLocal == base) {
+                        // Remote has more commits so pull.
                         cout << "Branch " << branchName << " has been modified both locally and remotely, "
                              << "but in different ways. The local branch has been updated." << endl;
                         syncType = PULL;
                     } else if (uniqueRemote == base) {
+                        // Local has more commits so push.
                         cout << "Branch " << branchName << " has been modified both locally and remotely, "
                              << "but in different ways. The remote branch has been updated." << endl;
                         syncType = PUSH;
                     } else {
+                        // Neither side is an ancestor of the other so a new conflict branch must be made.
                         syncType = CONFLICT;
                     }
                 }
