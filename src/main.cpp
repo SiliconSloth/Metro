@@ -128,7 +128,7 @@ Arguments parse_args(int argc, char *argv[]) {
 }
 
 /**
- * Prints a generic help command with all commands listed
+ * Prints a generic help message with all commands listed
  */
 void printHelp() {
     cout << "Usage: metro <command> <args> [options]\n";
