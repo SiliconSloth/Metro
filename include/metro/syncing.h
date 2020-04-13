@@ -5,11 +5,38 @@
 #pragma once
 
 namespace metro {
+    /*
+     * Represents a base branch and it's corresponding WIP branch.
+     * base is the target of the base branch. If there is no WIP branch for that base branch, head == base.
+     * If there is a WIP branch, then head is the target of the WIP branch.
+     */
+    struct DualTarget {
+        OID head;
+        OID base;
+        bool hasWip = false;
+
+        /**
+         * Set the base or WIP target according to the above rules.
+         *
+         * @param target Target to set the base to.
+         * @param wip True to set WIP target instead.
+         */
+        void add_target(const OID& target, bool wip);
+
+        /**
+         * Finds whether the target is valid for sync.
+         * 
+         * @returns True if this DualTarget has no WIP branch or base is the first parent of head.
+         * If this is not the case, then the dual branch is invalid and cannot be correctly synced.
+         */
+        bool is_valid(const Repository& repo) const;
+    };
+
     // Collection of targets
     struct RefTargets {
-        OID local;
-        OID remote;
-        OID synced;
+        DualTarget local;
+        DualTarget remote;
+        DualTarget synced;
     };
 
     /**
