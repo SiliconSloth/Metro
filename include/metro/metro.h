@@ -37,7 +37,7 @@ namespace metro {
      * @param repo The repo to commit files to.
      * @param updateRef The reference to update to point to the new commit, e.g. "HEAD" to commit to the head of the current branch.
      * @param message Message to leave on the commit.
-     * @param parentCommits The commits parents.
+     * @param parentCommits The commit's parents.
      */
     void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits);
 
@@ -56,7 +56,7 @@ namespace metro {
      *
      * @param repo The repo to commit giles to the HEAD of the branch of.
      * @param message Message to leave on the commit.
-     * @param parentCommits The commits parents.
+     * @param parentCommits The commit's parents.
      */
     void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits);
 
