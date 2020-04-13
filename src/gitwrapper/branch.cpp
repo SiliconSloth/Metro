@@ -23,6 +23,10 @@ namespace git {
         return oid == nullptr ? OID() : OID(*oid);
     }
 
+    git_reference_t Branch::type() const {
+        return git_reference_type(ref.get());
+    }
+
     void Branch::set_target(OID oid, const char *log_message) {
         git_reference *out;
         git_reference_set_target(&out, ref.get(), &oid.oid, log_message);

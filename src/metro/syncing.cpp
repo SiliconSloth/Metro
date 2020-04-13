@@ -119,25 +119,28 @@ namespace metro {
      */
     void get_branch_targets(const Repository& repo, const map<string, RefTargets> *out) {
         repo.foreach_reference([](const Branch& ref, const void *payload) {
-            auto branchTargets = (map<string, RefTargets>*) payload;
+            // Only try to sync direct references.
+            if (ref.type() == GIT_REFERENCE_DIRECT) {
+                auto branchTargets = (map<string, RefTargets> *) payload;
 
-            // Base and WIP branches will be paired together in a DualTarget.
-            string name = ref.reference_name();
-            bool isWip = is_wip(name);
-            name = un_wip(name);
+                // Base and WIP branches will be paired together in a DualTarget.
+                string name = ref.reference_name();
+                bool isWip = is_wip(name);
+                name = un_wip(name);
 
-            // Create an empty RefTargets if none is present and get the corresponding DualTarget from it.
-            DualTarget *dualTarget = nullptr;
-            if (prepare_branch_targets(*branchTargets, name, "refs/heads/")) {
-                dualTarget = &(*branchTargets)[name].local;
-            } else if (prepare_branch_targets(*branchTargets, name, "refs/remotes/origin/")) {
-                dualTarget = &(*branchTargets)[name].remote;
-            } else if (prepare_branch_targets(*branchTargets, name, "refs/synced/")) {
-                dualTarget = &(*branchTargets)[name].synced;
-            }
+                // Create an empty RefTargets if none is present and get the corresponding DualTarget from it.
+                DualTarget *dualTarget = nullptr;
+                if (prepare_branch_targets(*branchTargets, name, "refs/heads/")) {
+                    dualTarget = &(*branchTargets)[name].local;
+                } else if (prepare_branch_targets(*branchTargets, name, "refs/remotes/origin/")) {
+                    dualTarget = &(*branchTargets)[name].remote;
+                } else if (prepare_branch_targets(*branchTargets, name, "refs/synced/")) {
+                    dualTarget = &(*branchTargets)[name].synced;
+                }
 
-            if (dualTarget != nullptr) {
-                dualTarget->add_target(ref.target(), isWip);
+                if (dualTarget != nullptr) {
+                    dualTarget->add_target(ref.target(), isWip);
+                }
             }
             return 0;
         }, out);

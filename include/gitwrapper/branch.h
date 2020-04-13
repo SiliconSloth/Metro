@@ -54,6 +54,14 @@ namespace git {
         [[nodiscard]] OID target() const;
 
         /**
+         * Get the type of a reference.
+         * Either direct (GIT_REFERENCE_DIRECT) or symbolic (GIT_REFERENCE_SYMBOLIC).
+         *
+         * @return The reference type.
+         */
+        [[nodiscard]] git_reference_t type() const;
+
+        /**
          * Conditionally create a new reference with the same name as the given reference but a different OID target.
          * The reference must be a direct reference, otherwise this will fail.
          *
