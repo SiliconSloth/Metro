@@ -4,7 +4,7 @@ followed in any additional changes or pull requests.
 
  - Each new command should be placed in the `commands` directory
  - Any wrapping of libgit2 functions should be done in the `gitwrapper` directory
- - Any exceptions should be placed in `error.cpp`
+ - Any exceptions should be placed in `error.h`
  - Includes should be put in `pch.cpp` and `pch.h` whenever possible
  - Functions should be declared in snake_case
  - Classes should be declared in CamelCase
