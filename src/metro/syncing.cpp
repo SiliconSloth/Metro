@@ -459,10 +459,10 @@ namespace metro {
                 bool localOK = targets.local.is_valid(repo);
                 string side = localOK ? "Remote" : "Local";
                 if ((localOK? targets.remote : targets.local).base.isNull) {
-                    cout << side << " branch " << to_wip(branchName) << " has no corresponding base branch "
+                    cout << side << " wip branch for " << branchName << " has no corresponding base branch "
                          << branchName << ". Therefore it cannot be synced." << endl;
                 } else {
-                    cout << side << " branch " << to_wip(branchName) << " is not a valid work in progress branch for "
+                    cout << side << " wip branch for " << branchName << " is not a valid work in progress branch for "
                          << branchName << ", so neither branch can be synced. Delete " << to_wip(branchName)
                          << " to resolve the issue." << endl;
                 }
