@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace git {
     string Commit::message() const {
         return string(git_commit_message(commit.get()));
@@ -41,8 +39,8 @@ namespace git {
         return OID(*oid);
     }
 
-    Signature Commit::author() const {
-        const Signature* sig = git_commit_author(commit.get());
+    git_signature Commit::author() const {
+        const git_signature* sig = git_commit_author(commit.get());
         return *sig;
     }
 }

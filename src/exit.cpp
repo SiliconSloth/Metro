@@ -1,6 +1,3 @@
-#pragma once
-#include "pch.h"
-
 #ifdef _WIN32
 #define EXIT_FUNC return FALSE
 BOOL WINAPI on_application_exit(DWORD signal) {

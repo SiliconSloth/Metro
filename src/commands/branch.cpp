@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Branch command.
+ */
 
+/**
+ * The branch command is used to create new branches.
+ */
 Command branch {
         "branch",
         "Create a new branch",
@@ -18,7 +23,7 @@ Command branch {
                 throw MetroException("Branch name can't end in " + string(WIP_SUFFIX));
             }
 
-            Repository repo = Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             if (metro::branch_exists(repo, name)) {
                 throw MetroException("Branch " + name + " already exists.");
             }

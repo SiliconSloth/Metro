@@ -1,22 +1,36 @@
-#include "pch.h"
+/*
+ * Defines the List command.
+ */
 
-void print_details(Commit nth_parent, void *hConsole) {
+/**
+ * Prints the details of a given commit to the console.
+ *
+ * @param nth_parent The commit to print out.
+ * @param hConsole The console to print using on Windows.
+ */
+void print_details(git::Commit nth_parent, void *hConsole) {
     set_text_colour("rg------f", hConsole);
     cout << "Commit " << nth_parent.id().str() << endl;
     set_text_colour("rgb-----r", hConsole);
 
-    Signature author = nth_parent.author();
+    git_signature author = nth_parent.author();
     cout << "Author: " << author.name << " (" << author.email << ")" << endl;
     cout << "Date: " << time_to_string(author.when) << endl;
     cout << "\n    " << nth_parent.message() << endl;
 }
 
-void print_from_commit(Commit commit, void *hConsole) {
+/**
+ * Prints the given commit followed by all parent commits with a prompt before each commit.
+ *
+ * @param commit Commit to begin printing from (Inclusive).
+ * @param hConsole The console to print using on Windows.
+ */
+void print_from_commit(git::Commit commit, void *hConsole) {
     unsigned int count = commit.parentcount();
     print_details(commit, hConsole);
     cout << endl;
     for (unsigned int i = 0; i < count; i++) {
-        Commit nth_parent = commit.parent(i);
+        git::Commit nth_parent = commit.parent(i);
 
         while (true) {
             cout << ":" << flush;
@@ -33,6 +47,9 @@ void print_from_commit(Commit commit, void *hConsole) {
     }
 }
 
+/**
+ * The list command is used to print a list of commmits or branches.
+ */
 Command listCmd{
         "list",
         "Lists the commits or branches",
@@ -43,8 +60,8 @@ Command listCmd{
                 throw MissingPositionalException("type");
             }
 
-            Repository repo = Repository::open(".");
-            metro::assert_merging(repo);
+            git::Repository repo = git::Repository::open(".");
+            metro::assert_not_merging(repo);
 
             void* hConsole;
 #ifdef _WIN32
@@ -56,16 +73,16 @@ Command listCmd{
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
-                Commit commit = metro::get_commit(repo, "HEAD");
+                git::Commit commit = metro::get_commit(repo, "HEAD");
                 print_from_commit(commit, hConsole);
             } else if (args.positionals[0] == "branches") {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
-                BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                git::BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 std::string current = metro::current_branch_name(repo);
-                for (Branch branch; iter.next(&branch);) {
+                for (git::Branch branch; iter.next(&branch);) {
                     std::string name = branch.name();
                     if (current == name){
                         cout << " * ";
@@ -81,8 +98,8 @@ Command listCmd{
                         set_text_colour("rgb-----r", hConsole);
                     } else {
                         bool isWip = false;
-                        BranchIterator iter2 = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-                        for (Branch branch2; iter2.next(&branch2);) {
+                        git::BranchIterator iter2 = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+                        for (git::Branch branch2; iter2.next(&branch2);) {
                             if (branch2.name() == metro::to_wip(name)) {
                                 isWip = true;
                                 break;

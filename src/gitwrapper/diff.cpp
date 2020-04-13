@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace git {
     size_t Diff::num_deltas() {
         return git_diff_num_deltas(diff.get());

@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Delete command.
+ */
 
+/**
+ * The delete command is used to delete a commit or branch by name.
+ */
 Command deleteCmd {
         "delete",
         "Deletes a commit or branch",
@@ -10,8 +15,8 @@ Command deleteCmd {
                 throw MissingPositionalException("type");
             }
 
-            Repository repo = Repository::open(".");
-            metro::assert_merging(repo);
+            git::Repository repo = git::Repository::open(".");
+            metro::assert_not_merging(repo);
 
             if (args.positionals[0] == "commit") {
                 if (args.positionals.size() > 1) {
