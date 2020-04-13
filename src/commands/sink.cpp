@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Sink command.
+ */
 
+/**
+ * The sink command is an experimental advanced method of sinking the repository.
+ */
 Command sinkCmd{
         "sink",
         "Sinks Metro",
@@ -10,7 +15,7 @@ Command sinkCmd{
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
             int height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
             struct winsize w;
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
             int height = w.ws_row;

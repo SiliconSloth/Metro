@@ -1,7 +1,3 @@
-#include <utility>
-
-#include "pch.h"
-
 namespace metro {
     BranchDescriptor::BranchDescriptor(string  name) : baseName(std::move(name)) {
         wip = is_wip(baseName);

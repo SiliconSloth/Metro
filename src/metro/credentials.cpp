@@ -1,7 +1,8 @@
-#include "pch.h"
-
 namespace metro {
-    // Overwrite the memory occupied by a string with zeros to prevent malicious access.
+    /**
+     * Overwrite the memory occupied by a string with zeros to prevent malicious access.
+     * @param str String reference which will be erased from memory.
+     */
     void erase_string(string& str) {
         memset_volatile(&str[0], 0, str.size());
     }
@@ -134,7 +135,7 @@ namespace metro {
             string helperCmd;
             if (has_prefix(helper, "!")) {
                 helperCmd = helper.substr(1, helper.size() - 1);
-            } else if (filesystem::path(helper).is_absolute()) {
+            } else if (std_filesystem::path(helper).is_absolute()) {
                 helperCmd = helper;
             } else {
                 helperCmd = "git credential-" + helper;

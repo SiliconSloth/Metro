@@ -1,32 +1,34 @@
-using namespace std;
+/*
+ * This code describes the format of argument and command passing
+ */
 
+#pragma once
+
+// An argument collection
 struct Arguments {
-    vector<string> positionals;
-    map<string, string> options;
-    bool hasHelpFlag = false;
+    vector<string> positionals;     // The positionals of the command (the ones before flags or options).
+    map<string, string> options;    // A map of found options and associated values if any.
+    bool hasHelpFlag = false;       // Whether the help flag wss enabled in the arguments.
 };
 
 // An option on the command line.
-// name: The long-form name of the option, e.g. --help
-// contraction: The short name of the option, e.g. -h
-// needsValue: Whether this option needs and allows a value associated with it
-// description: Description of option listed in command help
 struct Option {
-    string name;
-    string contraction;
-    bool needsValue = false;
-    string description;
+    string name;                    // The long-form name of the option, e.g. --help
+    string contraction;             // The short name of the option, e.g. -h
+    bool needsValue = false;        // Whether this option needs and allows a value associated with it
+    string description;             // Description of option listed in command help
 };
 
+// Command which can be run.
 struct Command {
-    string name;
-    string description;
-    function<void(const Arguments&)> execute;
-    function<void(const Arguments&)> printHelp;
+    string name;                                    // Command name
+    string description;                             // Description of what the command does
+    function<void(const Arguments&)> execute;       // Function to execute when function is called
+    function<void(const Arguments&)> printHelp;     // Function to execute when function help is called
 };
 
 // List of all valid options
-// Keep them in alphabetical order to make help messages easier to read
+// Keep them in alphabetical order (by name) to make help messages easier to read
 const Option ALL_OPTIONS[] = {
         {"force", "f", false, "Not yet implemented"},
         {"help", "h", false, "Explain how to use command"},

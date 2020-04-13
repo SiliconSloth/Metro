@@ -1,5 +1,3 @@
-#include "pch.h"
-
 namespace git {
     Config Config::open_default() {
         git_config *config;

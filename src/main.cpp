@@ -7,10 +7,11 @@
 
 using namespace std;
 
-/*
+/**
  * Retrieve the Option corresponding to a flag passed by the user.
- * flag: Flag passed to metro via commandline
- * return: Option corresponding with flag passed
+ * @param flag Flag passed to metro via commandline.
+ * @return Option corresponding with flag passed.
+ * @throws UnknownOptionException if the option doesn't exist.
  *
  * If the flag starts with "--" the full option name is expected,
  * if it starts with only "-" the contraction is expected.
@@ -29,11 +30,14 @@ Option lookup_option(string const& flag) {
     throw UnknownOptionException(flag);
 }
 
-/*
+/**
  * Parse the arguments given to Metro on the command line.
- * argc: Number of arguments.
- * argv: The arguments to parse.
- * return: Formal arguments format
+ * @param argc Number of arguments.
+ * @param argv The arguments to parse.
+ * @return Formal arguments format.
+ * @throws MissingValueException If the option requires a value but does not have one.
+ * @throws UnexpectedValueException If the option doesn't require a value but one was found.
+ * @throws MissingFlagException A value was found without a flag attached to it
  *
  * All positional arguments must come before all Option arguments.
  * Options may have a value associated with them, in the form "--key=value" or "--key value".
@@ -45,11 +49,13 @@ Option lookup_option(string const& flag) {
  * The returned option map maps the long name of each option to its value,
  * even if a contraction is used. Prefix -'s are excluded.
  *
+ * <ul>
  * Will throw an exception if:
- * - An unknown option is given
- * - An option that requires a value isn't given one
- * - An option that doesn't require a value is given one
- * - A positional argument is found after an option (interpreted as a value with no corresponding option flag)
+ *     <li>An unknown option is given
+ *     <li>An option that requires a value isn't given one</li>
+ *     <li>An option that doesn't require a value is given one</li>
+ *     <li>A positional argument is found after an option (interpreted as a value with no corresponding option flag)</li>
+ * <ul>
  */
 Arguments parse_args(int argc, char *argv[]) {
     Arguments args {};
@@ -114,26 +120,37 @@ Arguments parse_args(int argc, char *argv[]) {
     }
 
     // Make sure the last option had a value.
-    if (optionOpen)
+    if (optionOpen) {
         throw MissingValueException(string(argv[argc - 1]));
+    }
 
     return args;
 }
 
-// Prints a generic help command with all commands listed
+/**
+ * Prints a generic help message with all commands listed
+ */
 void printHelp() {
     cout << "Usage: metro <command> <args> [options]\n";
     for (const Command *cmd : allCommands) {
-        if (cmd->name == "sink") continue;
+        if (cmd->name == "sink") continue; // Don't list sink in help message
         cout << cmd->name << " - " << cmd->description << "\n";
     }
     cout << "Use --help for help.\n";
 }
 
-/*
+
+/**
  * Entry point of the program, passing off parsing to above functions
  */
 int main(int argc, char *argv[]) {
+    // Setup signal handling to cancel syncing on Ctrl+C pressed
+#ifdef _WIN32
+    SetConsoleCtrlHandler(on_application_exit, TRUE); // Ignore failure to set exit activity
+#elif __unix__ || __APPLE__ || __MACH__
+    signal(SIGINT, on_application_exit);
+#endif //_WIN32
+
     git_libgit2_init();
 
     try {
@@ -165,6 +182,8 @@ int main(int argc, char *argv[]) {
                         cout << e.what() << "\n";
                         return -1;
                     } catch (GitException& e) {
+                        // If Ctrl~C was issued, Git errpr is expected and should be ignored
+                        if (exit_config.received) return 0;
                         cout << "Git Error: " << e.what() << "\n";
                         return -1;
                     } catch (exception& e) {
@@ -178,7 +197,7 @@ int main(int argc, char *argv[]) {
         cout << "Invalid command: " << argCmd << "\n";
         printHelp();
         return -1;
-    } catch (const exception& e) {
+    } catch (const CommandArgumentException& e) {
         cout << e.what() << "\n";
         printHelp();
         return -1;

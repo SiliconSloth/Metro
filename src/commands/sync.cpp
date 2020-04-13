@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Sync command.
+ */
 
+/**
+ * The sync command is used to synchronise the local repository with the remote repository.
+ */
 Command syncCmd {
         "sync",
         "Sync repo with remote",
@@ -20,7 +25,7 @@ Command syncCmd {
                 direction = metro::DOWN;
             }
 
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::sync(repo, direction, false);
         },
 

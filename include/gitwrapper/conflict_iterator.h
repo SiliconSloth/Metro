@@ -1,3 +1,7 @@
+/*
+ * Data structures for iterating over merge conflicts.
+ */
+
 #pragma once
 
 #define DEREF_ENTRY(ptr) ptr == NULL? git_index_entry{} : *ptr
@@ -5,6 +9,9 @@
 #define REPLACE_PTR(old, rep) old == NULL? NULL : rep
 
 namespace git {
+    /**
+     * Data structure representing a conflict path between two branches.
+     */
     struct Conflict {
         const git_index_entry *ancestor;
         const git_index_entry *ours;
@@ -17,7 +24,9 @@ namespace git {
         {}
     };
 
-    // Conflict that contains the backing data within itself, rather than referencing memory controlled by a git index.
+    /**
+     * Conflict that contains the backing data within itself, rather than referencing memory controlled by a git index.
+     */
     class StandaloneConflict : public Conflict {
         git_index_entry ancestor_val;
         git_index_entry ours_val;
@@ -43,6 +52,9 @@ namespace git {
         {}
     };
 
+    /**
+     * An iterator for conflicts in the index.
+     */
     class ConflictIterator {
     private:
         shared_ptr<git_index_conflict_iterator> iter;
@@ -58,6 +70,12 @@ namespace git {
             return iter;
         }
 
+        /**
+         * Gets the current conflict (ancestor, ours and theirs entry) and advance the iterator internally to the
+         * next value.
+         * @param out The next conflict found.
+         * @return True if there was another conflict found.
+         */
         bool next(Conflict &out) const;
     };
 

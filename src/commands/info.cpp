@@ -1,16 +1,22 @@
-#include "pch.h"
+/*
+ * Defines the Info command.
+ */
 
+/**
+ * The info command is used to get the current status of the repo in regards to merging, current branch and
+ * the number of changes that have been made.
+ */
 Command info {
         "info",
         "Show the state of the repo",
 
         // execute
         [](const Arguments &args) {
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             cout << "Current branch is " << metro::current_branch_name(repo) << endl;
             cout << (metro::merge_ongoing(repo) ? "Merge ongoing" : "Not merging") << endl;
             metro::add_all(repo);
-            Diff diff = metro::current_changes(repo);
+            git::Diff diff = metro::current_changes(repo);
 
             if (diff.num_deltas() == 0) {
                 cout << "Nothing to commit" << endl;

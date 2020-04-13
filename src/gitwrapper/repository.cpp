@@ -1,6 +1,3 @@
-#include <gitwrapper/strarray.h>
-#include "pch.h"
-
 namespace git {
     Repository Repository::init(const string& path, bool isBare) {
         git_repository *gitRepo = nullptr;
@@ -11,11 +8,21 @@ namespace git {
     }
 
     Repository Repository::open(const string& path) {
-        git_repository *gitRepo = nullptr;
-        int err = git_repository_open(&gitRepo, path.c_str());
-        check_error(err);
+        std_filesystem::path original(path);
+        std_filesystem::path git_path(path + "/.git");
 
-        return Repository(gitRepo);
+        if (std_filesystem::exists(git_path)) {
+            git_repository *gitRepo = nullptr;
+            int err = git_repository_open(&gitRepo, path.c_str());
+            check_error(err);
+
+            return Repository(gitRepo);
+        } else if (std_filesystem::exists(original)) {
+            return Repository::open(path + "/..");
+        } else {
+            // In this case, it is not a git repository
+            throw RepositoryNotExistsException();
+        }
     }
 
     Repository Repository::clone(const string& url, const string& path, git_clone_options *options) {
@@ -31,15 +38,15 @@ namespace git {
         return err >= 0;
     }
 
-    Signature &Repository::default_signature() const {
+    string Repository::path() const {
+        return string(git_repository_path(repo.get()));
+    }
+
+    git_signature &Repository::default_signature() const {
         git_signature *sig;
         int err = git_signature_default(&sig, repo.get());
         check_error(err);
         return *sig;
-    }
-
-    string Repository::path() const {
-        return string(git_repository_path(repo.get()));
     }
 
     Index Repository::index() const {
@@ -84,7 +91,7 @@ namespace git {
         return AnnotatedCommit(commit);
     }
 
-    OID Repository::create_commit(const string& updateRef, const Signature &author, const Signature &committer,
+    OID Repository::create_commit(const string& updateRef, const git_signature &author, const git_signature &committer,
                                   const string& messageEncoding, const string& message, const Tree& tree,
                                   vector<Commit> parents) const {
         auto parents_array = new const git_commit *[parents.size()];
@@ -107,7 +114,7 @@ namespace git {
         return Object(obj);
     }
 
-    void Repository::reset_to_commit(const Commit &commit, ResetType type, const CheckoutOptions ops) const {
+    void Repository::reset_to_commit(const Commit &commit, git_reset_t type, const git_checkout_options ops) const {
         int err = git_reset(repo.get(), (git_object*) commit.ptr().get(), type, &ops);
         check_error(err);
     }
@@ -119,10 +126,11 @@ namespace git {
         return Branch(ref);
     }
 
-    void Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
+    Branch Repository::create_branch(const string& branch_name, const Commit &target, bool force) const {
         git_reference *ref;
         int err = git_branch_create(&ref, repo.get(), branch_name.c_str(), target.ptr().get(), force);
         check_error(err);
+        return Branch(ref);
     }
 
     void Repository::remove_reference(const string& name) const {

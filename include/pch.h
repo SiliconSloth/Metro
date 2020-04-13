@@ -20,10 +20,10 @@
 #include <iomanip>
 #include <sstream>
 #include <thread>
+#include <csignal>
 
 #ifdef _WIN32
 #include <windows.h>
-#include <filesystem>
 #elif __unix__ || __APPLE__ || __MACH__
 #include <termios.h>
 #include <unistd.h>
@@ -35,22 +35,35 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <ctime>
-#include <experimental/filesystem>
-using namespace std::experimental;
+#include <signal.h>
 #endif //_WIN32
+#if _WIN32 || __APPLE__ || __MACH__
+#include <filesystem>
+namespace std_filesystem = std::filesystem;
+#elif __unix__
+#include <experimental/filesystem>
+namespace std_filesystem = std::experimental::filesystem;
+#endif
 
 #include "git2.h"
 #if (LIBGIT2_VER_MINOR < 28)
 #define git_error_last giterr_last
 #endif
 
+using std::cout;
+using std::endl;
+using std::flush;
+using std::vector;
+using std::map;
+using std::string;
+using std::function;
 
 #include "commands.h"
 #include "helper.h"
 #include "error.h"
+#include "exit.h"
 #include "child_process.h"
 
-#include "gitwrapper/types.h"
 #include "gitwrapper/oid.h"
 #include "gitwrapper/branch.h"
 #include "gitwrapper/conflict_iterator.h"

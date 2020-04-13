@@ -1,0 +1,7 @@
+[submodule "deps/libssh2"]
+	path = deps/libssh2
+	url = https://github.com/libssh2/libssh2.git
+[submodule "deps/libgit2"]
+	path = deps/libgit2
+	url = https://github.com/libgit2/libgit2
+	branch = maint/v1.0

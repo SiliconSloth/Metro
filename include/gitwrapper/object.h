@@ -1,6 +1,13 @@
+/*
+ * Contains wrapper for git_object.
+ */
+
 #pragma once
 
 namespace git {
+    /**
+     * Representation of a generic object in a repository
+     */
     class Object {
     private:
         shared_ptr<git_object> object;

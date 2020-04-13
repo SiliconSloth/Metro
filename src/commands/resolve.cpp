@@ -1,12 +1,17 @@
-#include "pch.h"
+/*
+ * Defines the Resolve command.
+ */
 
+/**
+ * The resolve command is used to resolve conflicts after a merge.
+ */
 Command resolve {
         "resolve",
         "Commit resolved conflicts after absorb",
 
         // execute
         [](const Arguments &args) {
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             metro::resolve(repo);
 
             string current = metro::current_branch_name(repo);

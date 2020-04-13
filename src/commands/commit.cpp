@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Commit command.
+ */
 
+/**
+ * The commit command is used to make a commit to the repo.
+ */
 Command commit {
         "commit",
         "Make a commit",
@@ -14,14 +19,14 @@ Command commit {
             }
             string message = args.positionals[0];
 
-            Repository repo = git::Repository::open(".");
-            metro::assert_merging(repo);
+            git::Repository repo = git::Repository::open(".");
+            metro::assert_not_merging(repo);
 
             try {
                 metro::add_all(repo);
 
                 if (metro::commit_exists(repo, "HEAD")) {
-                    Diff diff = metro::current_changes(repo);
+                    git::Diff diff = metro::current_changes(repo);
 
                     // If no changes, exit
                     if (diff.num_deltas() == 0) {

@@ -1,11 +1,7 @@
-#include "pch.h"
-
-using namespace std;
-
+// Represents whether there is a progress bar to be cleared
 bool progress_bar = false;
 
-// Convert a string to a non-negative integer, returning -1 on failure.
-int parse_pos_int(const string& str) {
+unsigned int parse_pos_int(const string& str) {
     try {
         int val = stoi(str);
         return val >= 0? val : -1;
@@ -14,7 +10,7 @@ int parse_pos_int(const string& str) {
     return -1;
 }
 
-bool has_prefix(string const& str, string const& pre) {
+bool has_prefix(string const& str, string pre) {
     if (pre.size() <= str.size()) {
         return str.compare(0, pre.size(), pre) == 0;
     } else {
@@ -22,7 +18,7 @@ bool has_prefix(string const& str, string const& pre) {
     }
 }
 
-bool has_suffix(string const& str, string const& suff) {
+bool has_suffix(string const& str, string suff) {
     if (suff.size() <= str.size()) {
         return str.compare(str.size() - suff.size(), suff.size(), suff) == 0;
     } else {
@@ -30,19 +26,15 @@ bool has_suffix(string const& str, string const& suff) {
     }
 }
 
-// True if the string contains no non-whitespace characters.
 bool whitespace_only(const string& s) {
     return s.empty() || all_of(s.begin(), s.end(), [](char c){
         return isspace(static_cast<unsigned char>(c));
     });
 }
 
-// Split the given string around the fist occurrence of the given character.
-// If the character is not found, the input string is returned as the first string and "" as the second.
-// The outputs are stored in before and after.
 void split_at_first(string const& str, char const& c, string & before, string & after) {
     size_t index = str.find(c);
-    const string tempStr = str; // Can't assume str != before
+    const string tempStr((string(str))); // Can't assume str != before
     if (index == -1) {
         before = tempStr;
         after = "";
@@ -151,11 +143,12 @@ void write_all(const string& text, const string& path) {
     file.close();
 }
 
-string time_to_string(Time time) {
+string time_to_string(git_time time) {
     char buf[80];
     struct tm ts = *localtime(reinterpret_cast<const time_t *>(&time.time));
-    strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts);
+    strftime(buf, sizeof(buf), "%a %b %d %H:%M:%S %Y ", &ts); // Format of time
 
+    // Set offset manually via minutes
     int hour_offset = 0;
     int minute_offset = time.offset;
     while (minute_offset >= 60) {
@@ -163,29 +156,27 @@ string time_to_string(Time time) {
         hour_offset++;
     }
 
+    // Insert offset into string
     char buf2[5];
     sprintf(buf2, "%02d%02d", hour_offset, minute_offset);
 
+    // Insert full time into string
     char buf3[100];
     sprintf(buf3, "%s%c%s", buf, '+', buf2);
 
     return string(buf3);
 }
 
+// Defines the original colour of the console being used before being changed.
 static int defaultColour = -1;
 
-// Should be in format like "rgbi-----" or "r--i-gb--"
-// rgb is colour, i is intensity. The first 4 are the
-// text, and the second 4 are the background. The last
-// one is the mode: - for all, f for foreground, b for
-// background and r for reset
-void set_text_colour(string colour, void* handle) {
+void set_text_colour(const string colour, void* handle) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO term;
     GetConsoleScreenBufferInfo(handle, &term);
     if (defaultColour == -1) defaultColour = term.wAttributes;
 
-    int current = 0;
+    unsigned int current = 0;
     if (colour[0] == 'r') current |= FOREGROUND_RED;
     if (colour[1] == 'g') current |= FOREGROUND_GREEN;
     if (colour[2] == 'b') current |= FOREGROUND_BLUE;
@@ -275,21 +266,26 @@ void set_text_colour(string colour, void* handle) {
 #endif //_WIN32
 }
 
-string print_progress_width(unsigned int progress, unsigned int width) {
-    string bar;
+/**
+ * Prints a progress bar of the given width.
+ * @param progress A percentage between 0 and 1 of how far along the progress bar is.
+ * @param width Width of the progress bar in characters.
+ */
+void print_progress_width(unsigned int progress, unsigned int width) {
+    if (width > 250) width = 250; // Set max possible size limit for progress bar if massive console.
+
+    // TODO Width isn't actually the final length
+    cout << "\r" << "Progress: [" << flush;
     int i;
     if (width > 0) {
         for (i = 0; i < (progress * width) / 100; i++) {
-            bar.append("=");
+            cout << "=" << flush;
         }
         for (; i < width; i++) {
-            bar.append("-");
+            cout << "-" << flush;
         }
-        stringstream s;
-        s << "\r" << "Progress: [" << bar << "] " << progress << "%";
-        return s.str();
+        cout << "] " << progress << "%" << flush;
     }
-    return "";
 }
 
 void print_progress(unsigned int progress) {
@@ -303,9 +299,11 @@ void print_progress(unsigned int progress) {
     int width = w.ws_col;
 #endif
 
-    cout << print_progress_width(progress, width - 17);
+    print_progress_width(progress, width - 17);
     progress_bar = true;
 }
+
+static unsigned int progress_count;
 
 void print_progress(unsigned int progress, size_t bytes) {
 #ifdef _WIN32
@@ -315,60 +313,71 @@ void print_progress(unsigned int progress, size_t bytes) {
 
     chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
     static chrono::time_point<chrono::steady_clock> last_time;
-#elif __unix__  || __APPLE__ || __MACH__
+#elif __unix__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col;
 
     chrono::system_clock::time_point time = std::chrono::high_resolution_clock::now();
     static chrono::system_clock::time_point last_time;
+#elif __APPLE__ || __MACH__
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    int width = w.ws_col;
+
+    chrono::time_point<chrono::steady_clock> time = std::chrono::high_resolution_clock::now();
+    static chrono::time_point<chrono::steady_clock> last_time;
 #endif
 
-    string bar = print_progress_width(progress, width - 40);
-
     static size_t average_speed;
-    static unsigned int count;
     static size_t last_bytes;
     size_t total_speed;
 
-    if (count != 0) {
+    if (last_bytes > bytes) progress_count = 0;
+
+    // TODO Reset static variables at end of transfer.
+    // Finds the total average speed over file transfer/
+    // TODO Average speed should consider older speeds less strongly
+    if (progress_count != 0) {
         float delta_time = std::chrono::duration_cast<std::chrono::microseconds>(time - last_time).count();
         // If time too small, assume minimum possible
         if (delta_time == 0) {
             delta_time = 1;
         }
         size_t current_speed = 1000000.f * (float) (bytes - last_bytes) / delta_time;
-        total_speed = (current_speed + (average_speed * count)) / (count + 1);
+        total_speed = (current_speed + (average_speed * progress_count)) / (progress_count + 1);
     } else {
         total_speed = 0;
     }
     last_time = time;
     average_speed = total_speed;
-    count++;
+    progress_count++;
     last_bytes = bytes;
 
     int max_width = 8; //xxx.xxYB
     string size = bytes_to_string(bytes);
     string speed = bytes_to_string(total_speed);
-    stringstream size_space;
-    stringstream speed_space;
-    for (int i = size.length(); i < max_width; i++) {
+    std::stringstream size_space;
+    std::stringstream speed_space;
+    for (long i = size.length(); i < max_width; i++) {
         size_space << " ";
     }
-    for (int i = speed.length(); i < max_width; i++) {
+    for (long i = speed.length(); i < max_width; i++) {
         speed_space << " ";
     }
 
-    cout << bar << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
+    print_progress_width(progress, width - 40);
+    cout << " | " << size << " | " << speed << "/s" << size_space.str() << speed_space.str() << flush;
     progress_bar = true;
 }
 
-void attempt_clear_line() {
+void clear_progress_bar() {
     enable_ansi();
     if (progress_bar) {
         cout << "\033[1A";
         clear_line();
         progress_bar = false;
+        progress_count = 0;
     }
     disable_ansi();
 }
@@ -378,7 +387,7 @@ void clear_line() {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
     int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-#elif __unix__
+#elif __unix__ || __APPLE__ || __MACH__
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     int width = w.ws_col;
@@ -412,6 +421,7 @@ string bytes_to_string(size_t bytes) {
     }
 }
 
+// Saves initial console mode
 #ifdef _WIN32
 static HANDLE sout;
 static DWORD initial;
@@ -422,19 +432,19 @@ void enable_ansi() {
     DWORD mode = 0;
     sout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if(sout == INVALID_HANDLE_VALUE) exit(GetLastError());
-    if(!GetConsoleMode(sout, &mode)) exit(GetLastError());
+    if(sout == INVALID_HANDLE_VALUE) throw exception(&"Unable to enable ANSI, GetStdHandle returned error code " [ GetLastError()]);
+    if(!GetConsoleMode(sout, &mode)) throw exception(&"Unable to enable ANSI, GetConsoleMode returned error code " [ GetLastError()]);
     initial = mode;
 
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-    if(!SetConsoleMode(sout, mode)) exit(GetLastError());
+    if(!SetConsoleMode(sout, mode)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
 #endif //_WIN32
 }
 
 void disable_ansi() {
 #ifdef _WIN32
-    printf("\x1b[0m");
-    if(!SetConsoleMode(sout, initial)) exit(GetLastError());
+    printf("\x1b[0m"); // Reset all attributes
+    if(!SetConsoleMode(sout, initial)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
 #endif //_WIN32
 }

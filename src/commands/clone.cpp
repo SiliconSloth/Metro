@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Clone command.
+ */
 
+/**
+ * The clone command is used to clone a repo from a remote to a local directory.
+ */
 Command clone_repo {
         "clone",
         "Clone a remote repo",
@@ -20,6 +25,9 @@ Command clone_repo {
             if (name.empty()) {
                 throw UnsupportedOperationException("Couldn't find repository name in URL.");
             }
+
+            exit_config.cloning = true;
+            exit_config.directory = name;
 
             cout << "Cloning " << url << " into " << name << endl;
             metro::clone(url, name);

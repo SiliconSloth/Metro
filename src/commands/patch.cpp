@@ -1,16 +1,21 @@
-#include "pch.h"
+/*
+ * Defines the Patch command.
+ */
 
+/**
+ * The patch command is used to patch the last commit.
+ */
 Command patch {
         "patch",
         "Update the last commit with the current work",
 
         // execute
         [](const Arguments &args) {
-            Repository repo = git::Repository::open(".");
-            metro::assert_merging(repo);
+            git::Repository repo = git::Repository::open(".");
+            metro::assert_not_merging(repo);
 
             // Uses existing message as default
-            Commit commit = static_cast<Commit>(repo.revparse_single("HEAD"));
+            git::Commit commit = static_cast<git::Commit>(repo.revparse_single("HEAD"));
             string message = commit.message();
 
             if (args.positionals.size() == 1) {

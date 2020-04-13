@@ -1,5 +1,10 @@
-#include "pch.h"
+/*
+ * Defines the Absorb command.
+ */
 
+/**
+ * The absorb command is used to merge one branch into another, similar to `git merge`
+ */
 Command absorbCmd {
         "absorb",
         "Merge the changes in another branch into this one",
@@ -14,7 +19,7 @@ Command absorbCmd {
             }
             string name = args.positionals[0];
 
-            Repository repo = git::Repository::open(".");
+            git::Repository repo = git::Repository::open(".");
             bool hasConflicts = metro::absorb(repo, name);
             if (hasConflicts) {
                 cout << "Conflicts occurred, please resolve." << endl;
