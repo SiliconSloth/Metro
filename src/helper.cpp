@@ -466,9 +466,8 @@ void disable_ansi() {
 #endif //_WIN32
 }
 
-string get_env(string name) {
+string get_env(string name, const int BUFFER_S) {
 #ifdef _WIN32
-    const int BUFFER_S = 100;
     char temp[BUFFER_S];
     temp[0] = '\0';
     GetEnvironmentVariable(name.c_str(), temp, BUFFER_S+1);
