@@ -184,6 +184,6 @@ struct UnsupportedOperationException : public MetroException {
  */
 struct ANSIException : public MetroException {
     explicit ANSIException():
-            MetroException("This terminal is incompatible with special character features: These features have been disabled.")
+            MetroException("This terminal is incompatible with special character features.")
     {}
 };
