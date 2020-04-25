@@ -158,6 +158,8 @@ namespace metro {
             }
         }
 
+        if (!branch_exists(repo, name)) throw BranchNotFoundException(name);
+
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
         

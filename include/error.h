@@ -159,6 +159,10 @@ struct BranchNotFoundException : public MetroException {
     explicit BranchNotFoundException():
             MetroException("Branch not found.")
     {}
+
+    explicit BranchNotFoundException(const string& branch):
+            MetroException("Branch \"" + string(branch) + "\" not found.")
+    {}
 };
 
 /**
