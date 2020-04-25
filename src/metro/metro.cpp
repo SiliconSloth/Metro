@@ -216,7 +216,7 @@ namespace metro {
 
         try {
             delete_branch(repo, wipName);
-        } catch (GitException&) {
+        } catch (BranchNotFoundException&) {
             // We don't mind if the delete fails, we tried it just in case.
         }
         create_branch(repo, wipName);
