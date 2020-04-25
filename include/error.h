@@ -178,3 +178,12 @@ struct UnsupportedOperationException : public MetroException {
         MetroException(message)
     {}
 };
+
+/**
+ * ANSIException should be thrown when a command requiring ANSI to be enabled is issued, but fails
+ */
+struct ANSIException : public MetroException {
+    explicit ANSIException():
+            MetroException("This terminal is incompatible with special character features: These features have been disabled.")
+    {}
+};

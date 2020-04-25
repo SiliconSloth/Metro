@@ -1,6 +1,13 @@
 // Represents whether there is a progress bar to be cleared
 bool progress_bar = false;
 
+struct terminal_options {
+    string term;                        // The terminal type, if any
+    bool ansi_enabled = true;           // Whether to enable ANSI manually
+    bool progress_enabled = true;       // Whether to enable progress bars
+    bool colour_change = true;          // Whether to enable colour switching
+} t_ops;
+
 unsigned int parse_pos_int(const string& str) {
     try {
         int val = stoi(str);
@@ -171,6 +178,7 @@ string time_to_string(git_time time) {
 static int defaultColour = -1;
 
 void set_text_colour(const string colour, void* handle) {
+    if (!t_ops.colour_change) return;
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO term;
     GetConsoleScreenBufferInfo(handle, &term);
@@ -289,6 +297,7 @@ void print_progress_width(unsigned int progress, unsigned int width) {
 }
 
 void print_progress(unsigned int progress) {
+    if (!t_ops.progress_enabled) return;
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -306,6 +315,7 @@ void print_progress(unsigned int progress) {
 static unsigned int progress_count;
 
 void print_progress(unsigned int progress, size_t bytes) {
+    if (!t_ops.progress_enabled) return;
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -372,6 +382,7 @@ void print_progress(unsigned int progress, size_t bytes) {
 }
 
 void clear_progress_bar() {
+    if (!t_ops.progress_enabled) return;
     enable_ansi();
     if (progress_bar) {
         cout << "\033[1A";
@@ -428,23 +439,37 @@ static DWORD initial;
 #endif //_WIN32
 
 void enable_ansi() {
+    if (!t_ops.ansi_enabled) return;
 #ifdef _WIN32
     DWORD mode = 0;
     sout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if(sout == INVALID_HANDLE_VALUE) throw exception(&"Unable to enable ANSI, GetStdHandle returned error code " [ GetLastError()]);
-    if(!GetConsoleMode(sout, &mode)) throw exception(&"Unable to enable ANSI, GetConsoleMode returned error code " [ GetLastError()]);
+    if(sout == INVALID_HANDLE_VALUE) throw ANSIException();
+    if(!GetConsoleMode(sout, &mode)) throw ANSIException();
     initial = mode;
 
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-    if(!SetConsoleMode(sout, mode)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
+    if(!SetConsoleMode(sout, mode)) throw ANSIException();
 #endif //_WIN32
 }
 
 void disable_ansi() {
+    if (!t_ops.ansi_enabled) return;
 #ifdef _WIN32
     printf("\x1b[0m"); // Reset all attributes
-    if(!SetConsoleMode(sout, initial)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
+    if(!SetConsoleMode(sout, initial)) throw ANSIException();
 #endif //_WIN32
+}
+
+string get_env(string name) {
+#ifdef _WIN32
+    const int BUFFER_S = 100;
+    char temp[BUFFER_S];
+    temp[0] = '\0';
+    GetEnvironmentVariable(name.c_str(), temp, BUFFER_S+1);
+    return string(temp);
+#elif __unix__ || __APPLE__ || __MACH__
+    return string(getenv(name.c_str()));
+#endif
 }

@@ -153,6 +153,35 @@ int main(int argc, char *argv[]) {
 
     git_libgit2_init();
 
+    // Windows terminals don't all work out the box
+#ifdef _WIN32
+    // If terminal is xterm, we know colours work normally
+    t_ops.term = get_env("TERM");
+    if (t_ops.term == "") {
+        // Disable ANSI if it would error normally.
+        try {
+            enable_ansi();
+            disable_ansi();
+
+            // If success, assume correct Windows terminal with all features
+        } catch (ANSIException &e) {
+            t_ops.ansi_enabled = false;
+            t_ops.progress_enabled = false;
+            t_ops.colour_change = false;
+        }
+    } else if (t_ops.term == "xterm") {
+        // xterm is known to work with ANSI colour-codes
+        t_ops.ansi_enabled = false;
+        t_ops.progress_enabled = false;
+        t_ops.colour_change = true;
+    } else {
+        // If term is unknown, assume the worst
+        t_ops.ansi_enabled = false;
+        t_ops.progress_enabled = false;
+        t_ops.colour_change = false;
+    }
+#endif //_WIN32
+
     try {
         Arguments args = parse_args(argc, argv);
         // If there is no command specified, just print help and quit.

@@ -179,3 +179,11 @@ void enable_ansi();
  * Does nothing on other OSs.
  */
 void disable_ansi();
+
+/**
+ * Cross-platform environment variable getter
+ *
+ * @param name Name of variable to get
+ * @return The contents of the variable
+ */
+string get_env(string name);
