@@ -167,18 +167,18 @@ int main(int argc, char *argv[]) {
         } catch (ANSIException &e) {
             t_ops.ansi_enabled = false;
             t_ops.progress_enabled = false;
-            t_ops.colour_change = false;
+            t_ops.ansi_colour_change = false;
         }
     } else if (t_ops.term == "xterm") {
         // xterm is known to work with ANSI colour-codes
         t_ops.ansi_enabled = false;
         t_ops.progress_enabled = false;
-        t_ops.colour_change = true;
+        t_ops.ansi_colour_change = true;
     } else {
         // If term is unknown, assume the worst
         t_ops.ansi_enabled = false;
         t_ops.progress_enabled = false;
-        t_ops.colour_change = false;
+        t_ops.ansi_colour_change = false;
     }
 #endif //_WIN32
 

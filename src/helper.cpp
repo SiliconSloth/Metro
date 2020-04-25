@@ -5,7 +5,7 @@ struct terminal_options {
     string term;                        // The terminal type, if any
     bool ansi_enabled = true;           // Whether to enable ANSI manually
     bool progress_enabled = true;       // Whether to enable progress bars
-    bool colour_change = true;          // Whether to enable colour switching
+    bool ansi_colour_change = false;    // Whether to do colour switching via ANSI
 } t_ops;
 
 unsigned int parse_pos_int(const string& str) {
@@ -178,27 +178,32 @@ string time_to_string(git_time time) {
 static int defaultColour = -1;
 
 void set_text_colour(const string colour, void* handle) {
-    if (!t_ops.colour_change) return;
 #ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO term;
-    GetConsoleScreenBufferInfo(handle, &term);
-    if (defaultColour == -1) defaultColour = term.wAttributes;
+    // WINDOWS COLOUR SELECTION
+    if (!t_ops.ansi_colour_change) {
+        CONSOLE_SCREEN_BUFFER_INFO term;
+        GetConsoleScreenBufferInfo(handle, &term);
+        if (defaultColour == -1) defaultColour = term.wAttributes;
 
-    unsigned int current = 0;
-    if (colour[0] == 'r') current |= FOREGROUND_RED;
-    if (colour[1] == 'g') current |= FOREGROUND_GREEN;
-    if (colour[2] == 'b') current |= FOREGROUND_BLUE;
-    if (colour[3] == 'i') current |= FOREGROUND_INTENSITY;
-    if (colour[4] == 'r') current |= BACKGROUND_RED;
-    if (colour[5] == 'g') current |= BACKGROUND_GREEN;
-    if (colour[6] == 'b') current |= BACKGROUND_BLUE;
-    if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
-    if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
-    if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
-    if (colour[8] == 'r') current = defaultColour;
+        unsigned int current = 0;
+        if (colour[0] == 'r') current |= FOREGROUND_RED;
+        if (colour[1] == 'g') current |= FOREGROUND_GREEN;
+        if (colour[2] == 'b') current |= FOREGROUND_BLUE;
+        if (colour[3] == 'i') current |= FOREGROUND_INTENSITY;
+        if (colour[4] == 'r') current |= BACKGROUND_RED;
+        if (colour[5] == 'g') current |= BACKGROUND_GREEN;
+        if (colour[6] == 'b') current |= BACKGROUND_BLUE;
+        if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
+        if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
+        if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
+        if (colour[8] == 'r') current = defaultColour;
 
-    SetConsoleTextAttribute(handle, current);
-#elif __unix__
+        SetConsoleTextAttribute(handle, current);
+        return;
+    }
+#endif //_WIN32
+
+    // ANSI COLOUR SELECTION
     if (colour[8] == 'r') {
         printf("\033[0m");
         return;
@@ -271,7 +276,6 @@ void set_text_colour(const string colour, void* handle) {
     else b_bri = "0";
     if (colour[8] == '-' || colour[8] == 'f') printf("\033[%s;%sm", bri.c_str(), col.c_str());
     if (colour[8] == '-' || colour[8] == 'b') printf("\033[%s;%sm", b_bri.c_str(), b_col.c_str());
-#endif //_WIN32
 }
 
 /**
