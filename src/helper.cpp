@@ -476,6 +476,7 @@ string get_env(string name) {
     temp1[0] = '\0';
     GetEnvironmentVariable(name.c_str(), temp, actual+1);
     string final(temp1);
+    delete[] temp1;
     return final;
 #elif __unix__ || __APPLE__ || __MACH__
     return string(getenv(name.c_str()));
