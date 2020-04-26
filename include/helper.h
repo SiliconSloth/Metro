@@ -184,7 +184,6 @@ void disable_ansi();
  * Cross-platform environment variable getter.
  *
  * @param name Name of variable to get
- * @param buffer Max length of output string
  * @return The contents of the variable
  */
-string get_env(string name, int buffer);
+string get_env(string name);

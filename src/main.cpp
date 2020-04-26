@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
     // Windows terminals don't all work out the box
 #ifdef _WIN32
     // If terminal is xterm, we know colours work normally
-    t_ops.term = get_env("TERM", 20);
+    t_ops.term = get_env("TERM");
     if (t_ops.term.empty()) {
         // Disable ANSI if it would error normally.
         try {
