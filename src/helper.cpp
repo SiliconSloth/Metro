@@ -468,24 +468,25 @@ void disable_ansi() {
 
 string get_env(const string& name) {
 #ifdef _WIN32
-    // Create 50 char long string (Inc. Null-terminator)
+    // Create 50 char long string (inc. null-terminator)
     // Default to empty string if no contents are set.
     char temp[50];
     temp[0] = '\0';
     const int actual = GetEnvironmentVariable(name.c_str(), temp, 50);
     
-    // If return is < 50, the string (w/o Null-terminator) was inputted correctly
+    // If return is < 50, the string was inputted correctly
+    // and actual is the length of the string w/o null-terminator.
     if (actual < 50) return string(temp);
     
     // Should never occur
     assert(actual != 50);
     
-    // Otherwise if > 50, the string length (w/t Null-terminator) is given to create a new string
+    // Otherwise if > 50, the string length (with null-terminator) is given to create a new string
     char *temp1 = new char[actual];
     temp1[0] = '\0';
     const int check = GetEnvironmentVariable(name.c_str(), temp, actual);
     
-    // String must be at least 50 chars (w/o Null-terminator), or the last call should have succeeded
+    // String must be at least 50 chars (w/o null-terminator), or the last call should have succeeded
     assert(check >= 50);
     // String should fit within the new allocated string
     assert(check < actual);
