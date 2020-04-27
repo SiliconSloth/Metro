@@ -159,6 +159,10 @@ struct BranchNotFoundException : public MetroException {
     explicit BranchNotFoundException():
             MetroException("Branch not found.")
     {}
+
+    explicit BranchNotFoundException(const string& branch):
+            MetroException("Branch \"" + string(branch) + "\" not found.")
+    {}
 };
 
 /**
@@ -176,5 +180,14 @@ struct UnnecessaryMergeException : public MetroException {
 struct UnsupportedOperationException : public MetroException {
     explicit UnsupportedOperationException(const char* message):
         MetroException(message)
+    {}
+};
+
+/**
+ * ANSIException should be thrown when a command requiring ANSI to be enabled is issued, but fails
+ */
+struct ANSIException : public MetroException {
+    explicit ANSIException():
+            MetroException("This terminal is incompatible with special character features.")
     {}
 };

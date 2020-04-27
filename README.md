@@ -16,4 +16,7 @@ We are currently working on fixing bugs and generally improving the user experie
 See the [wiki](https://siliconsloth.github.io/Metro/) for details and info.
 
 ## Download
-Not yet released.
+### Alpha Builds
+The latest and greatest! Keep in mind these builds are highly experimental. Use with EXTREME CAUTION at own risk.
+
+ - [Version 1.0.0 Alpha](https://github.com/SiliconSloth/Metro/releases/tag/v1.0.0-alpha)

@@ -58,9 +58,11 @@ Be careful to make sure the feature you are suggesting doesn't already exist, an
 ## Editing the Code
 Did you find a problem, or have an idea and know how to implement it? You can edit the code yourself and submit a pull request for us to review.
 
+While writing the code, be sure to follow the style guidelines in STYLE.md - they help the project stay consistant.
+
 Be aware that in Github, you can make pull requests for other projects by forking the project, making your changes as normal to the forked version, and submitting a pull request from the fork to the initial project.
 
-In addition, the team will have the final say over when and if the pull request will be merged in, depending on its usefulness, implementation and code quality. pull requests need not be perfect however - we'll look over the code and comment on anything we think is lacking as long as the idea behind the pull request is useful.
+In addition, the team will have the final say over when and if the pull request will be merged in, depending on its usefulness, implementation and code quality. Pull requests need not be perfect however - we'll look over the code and comment on anything we think is lacking as long as the idea behind the pull request is useful.
 
 ### Getting Started with Metro
 To get started using Metro, you're first going to want to get the project set up and built on your machine. You can follow the build process [here](https://siliconsloth.github.io/Metro/building/building.html) to do this. If it builds successfully, you're all set.

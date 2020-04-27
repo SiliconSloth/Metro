@@ -30,4 +30,4 @@ eg. Windows 10
 ## Release Version
 What version of Metro the issue was found on:
 
-eg. Alpha Release v1.0.2, `master` branch commit 42
+eg. Alpha Release v1.0.2, `master` branch commit 27ccec4
