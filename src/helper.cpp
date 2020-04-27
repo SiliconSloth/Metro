@@ -466,7 +466,7 @@ void disable_ansi() {
 #endif //_WIN32
 }
 
-string get_env(string name) {
+string get_env(const string& name) {
 #ifdef _WIN32
     // Create 50 char long string (Inc. Null-terminator)
     // Default to empty string if no contents are set.

@@ -186,4 +186,4 @@ void disable_ansi();
  * @param name Name of variable to get
  * @return The contents of the variable
  */
-string get_env(string name);
+string get_env(const string& name);
