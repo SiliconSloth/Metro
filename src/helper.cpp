@@ -470,7 +470,7 @@ string get_env(string name) {
 #ifdef _WIN32
     char temp[50];
     temp[0] = '\0';
-    const int actual = GetEnvironmentVariable(name.c_str(), temp, 51);
+    const int actual = GetEnvironmentVariable(name.c_str(), temp, 50);
     if (actual <= 50) return string(temp);
     char *temp1 = new char[actual];
     temp1[0] = '\0';
