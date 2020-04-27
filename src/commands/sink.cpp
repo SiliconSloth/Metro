@@ -11,6 +11,11 @@ Command sinkCmd{
 
         // execute
         [](const Arguments& args) {
+            if (!t_ops.progress_enabled) {
+                cout << "Metro will not be sunk so easily!" << endl;
+                cout << "Did you mean \"metro sync\"?" << endl;
+                return;
+            }
 #ifdef _WIN32
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);

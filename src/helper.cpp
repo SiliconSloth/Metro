@@ -1,6 +1,13 @@
 // Represents whether there is a progress bar to be cleared
 bool progress_bar = false;
 
+struct terminal_options {
+    string term;                        // The terminal type, if any
+    bool ansi_enabled = true;           // Whether to enable ANSI manually
+    bool progress_enabled = true;       // Whether to enable progress bars
+    bool ansi_colour_change = false;    // Whether to do colour switching via ANSI
+} t_ops;
+
 unsigned int parse_pos_int(const string& str) {
     try {
         int val = stoi(str);
@@ -172,25 +179,31 @@ static int defaultColour = -1;
 
 void set_text_colour(const string colour, void* handle) {
 #ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO term;
-    GetConsoleScreenBufferInfo(handle, &term);
-    if (defaultColour == -1) defaultColour = term.wAttributes;
+    // WINDOWS COLOUR SELECTION
+    if (!t_ops.ansi_colour_change) {
+        CONSOLE_SCREEN_BUFFER_INFO term;
+        GetConsoleScreenBufferInfo(handle, &term);
+        if (defaultColour == -1) defaultColour = term.wAttributes;
 
-    unsigned int current = 0;
-    if (colour[0] == 'r') current |= FOREGROUND_RED;
-    if (colour[1] == 'g') current |= FOREGROUND_GREEN;
-    if (colour[2] == 'b') current |= FOREGROUND_BLUE;
-    if (colour[3] == 'i') current |= FOREGROUND_INTENSITY;
-    if (colour[4] == 'r') current |= BACKGROUND_RED;
-    if (colour[5] == 'g') current |= BACKGROUND_GREEN;
-    if (colour[6] == 'b') current |= BACKGROUND_BLUE;
-    if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
-    if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
-    if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
-    if (colour[8] == 'r') current = defaultColour;
+        unsigned int current = 0;
+        if (colour[0] == 'r') current |= FOREGROUND_RED;
+        if (colour[1] == 'g') current |= FOREGROUND_GREEN;
+        if (colour[2] == 'b') current |= FOREGROUND_BLUE;
+        if (colour[3] == 'i') current |= FOREGROUND_INTENSITY;
+        if (colour[4] == 'r') current |= BACKGROUND_RED;
+        if (colour[5] == 'g') current |= BACKGROUND_GREEN;
+        if (colour[6] == 'b') current |= BACKGROUND_BLUE;
+        if (colour[7] == 'i') current |= BACKGROUND_INTENSITY;
+        if (colour[8] == 'f') current = (term.wAttributes & 0xF0) | (current & 0x0F);
+        if (colour[8] == 'b') current = (current & 0xF0) | (term.wAttributes & 0x0F);
+        if (colour[8] == 'r') current = defaultColour;
 
-    SetConsoleTextAttribute(handle, current);
-#elif __unix__
+        SetConsoleTextAttribute(handle, current);
+        return;
+    }
+#endif //_WIN32
+
+    // ANSI COLOUR SELECTION
     if (colour[8] == 'r') {
         printf("\033[0m");
         return;
@@ -263,7 +276,6 @@ void set_text_colour(const string colour, void* handle) {
     else b_bri = "0";
     if (colour[8] == '-' || colour[8] == 'f') printf("\033[%s;%sm", bri.c_str(), col.c_str());
     if (colour[8] == '-' || colour[8] == 'b') printf("\033[%s;%sm", b_bri.c_str(), b_col.c_str());
-#endif //_WIN32
 }
 
 /**
@@ -289,6 +301,7 @@ void print_progress_width(unsigned int progress, unsigned int width) {
 }
 
 void print_progress(unsigned int progress) {
+    if (!t_ops.progress_enabled) return;
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -306,6 +319,7 @@ void print_progress(unsigned int progress) {
 static unsigned int progress_count;
 
 void print_progress(unsigned int progress, size_t bytes) {
+    if (!t_ops.progress_enabled) return;
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
@@ -372,6 +386,7 @@ void print_progress(unsigned int progress, size_t bytes) {
 }
 
 void clear_progress_bar() {
+    if (!t_ops.progress_enabled) return;
     enable_ansi();
     if (progress_bar) {
         cout << "\033[1A";
@@ -428,23 +443,58 @@ static DWORD initial;
 #endif //_WIN32
 
 void enable_ansi() {
+    if (!t_ops.ansi_enabled) return;
 #ifdef _WIN32
     DWORD mode = 0;
     sout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if(sout == INVALID_HANDLE_VALUE) throw exception(&"Unable to enable ANSI, GetStdHandle returned error code " [ GetLastError()]);
-    if(!GetConsoleMode(sout, &mode)) throw exception(&"Unable to enable ANSI, GetConsoleMode returned error code " [ GetLastError()]);
+    if(sout == INVALID_HANDLE_VALUE) throw ANSIException();
+    if(!GetConsoleMode(sout, &mode)) throw ANSIException();
     initial = mode;
 
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-    if(!SetConsoleMode(sout, mode)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
+    if(!SetConsoleMode(sout, mode)) throw ANSIException();
 #endif //_WIN32
 }
 
 void disable_ansi() {
+    if (!t_ops.ansi_enabled) return;
 #ifdef _WIN32
     printf("\x1b[0m"); // Reset all attributes
-    if(!SetConsoleMode(sout, initial)) throw exception(&"Unable to enable ANSI, SetConsoleMode returned error code " [ GetLastError()]);
+    if(!SetConsoleMode(sout, initial)) throw ANSIException();
 #endif //_WIN32
+}
+
+string get_env(const string& name) {
+#ifdef _WIN32
+    // Create 50 char long string (inc. null-terminator)
+    // Default to empty string if no contents are set.
+    char temp[50];
+    temp[0] = '\0';
+    const int actual = GetEnvironmentVariable(name.c_str(), temp, 50);
+    
+    // If return is < 50, the string was inputted correctly
+    // and actual is the length of the string w/o null-terminator.
+    if (actual < 50) return string(temp);
+    
+    // Should never occur
+    assert(actual != 50);
+    
+    // Otherwise if > 50, the string length (with null-terminator) is given to create a new string
+    char *temp1 = new char[actual];
+    temp1[0] = '\0';
+    const int check = GetEnvironmentVariable(name.c_str(), temp, actual);
+    
+    // String must be at least 50 chars (w/o null-terminator), or the last call should have succeeded
+    assert(check >= 50);
+    // String should fit within the new allocated string
+    assert(check < actual);
+    
+    string final(temp1);
+    delete[] temp1;
+    return final;
+#elif __unix__ || __APPLE__ || __MACH__
+    return string(getenv(name.c_str()));
+#endif
 }
