@@ -33,14 +33,14 @@ struct Mistype {
 // the command will become impossible to run.
 const Mistype ALL_MISTYPES[] = {
         {"commit -m", "Metro doesn't require the -m option for a commit message.\nDid you mean metro commit <message>?"},
-        {"add", "Metro automatically adds the working directory to the staging area."},
+        {"add", "Metro automatically adds all files in the repository to the staging area."},
         {"push", "Did you mean metro sync --push?"},
         {"pull", "Did you mean metro sync --pull?"},
         {"merge", "Did you mean metro absorb <branch>?"},
         {"checkout", "Did you mean metro switch <branch>?"},
         {"log", "Did you mean metro list commits?"},
         {"init", "Did you mean metro create?"},
-        {"rm", "Metro automatically adds the working directory to the staging area.\nTo exclude files from sync you must use a .gitignore"},
+        {"rm", "Metro automatically adds all files in the repository to the staging area.\nTo exclude files from a commit use git commit."},
         {"status", "Did you mean metro info?"},
         {"rebase", "Metro currently has no support for rebasing."},
         {"reset", "Metro currently has no support for resetting."}
