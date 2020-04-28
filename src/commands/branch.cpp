@@ -30,6 +30,18 @@ Command branch {
 
             metro::create_branch(repo, name);
             cout << "Created branch " + name + "." << endl;
+
+            // Finds differences between head and working dir
+            git::Tree current = metro::get_commit(repo, "HEAD").tree();
+            git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
+            git::Diff diff = git::Diff::tree_to_workdir(repo, current, &opts);
+
+            if (diff.num_deltas() > 0) {
+                cout << "Saved changes to WIP" << endl;
+            }
+
+            metro::switch_branch(repo, name);
+            cout << "Switched to branch " << name << ".\n";
             cout << "Currently on branch " + metro::current_branch_name(repo) << endl;
         },
 
