@@ -139,6 +139,29 @@ void printHelp() {
     cout << "Use --help for help.\n";
 }
 
+/**
+ * Checks the input for any matches in ALL_MISTYPES (main.h)
+ * at the start of the arguments. If a match is found, the message
+ * will be printed and return true.
+ *
+ * @param argc Number of arguments.
+ * @param argv The arguments to parse.
+ * @return True if a match was found.
+ */
+bool mistype_check(int argc, char *argv[]) {
+    stringstream s;
+    for (int i = 1; i < argc; i++) {
+        s << argv[i] << " ";
+    }
+    string input = s.str();
+    for (Mistype m : ALL_MISTYPES) {
+        if (input.find(m.input) == 0) {
+            cout << m.message << endl;
+            return true;
+        }
+    }
+    return false;
+}
 
 /**
  * Entry point of the program, passing off parsing to above functions
@@ -181,6 +204,8 @@ int main(int argc, char *argv[]) {
         t_ops.ansi_colour_change = false;
     }
 #endif //_WIN32
+
+    if (mistype_check(argc, argv)) return -1;
 
     try {
         Arguments args = parse_args(argc, argv);
