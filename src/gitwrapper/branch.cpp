@@ -42,4 +42,13 @@ namespace git {
     void Branch::delete_reference() const {
         git_reference_delete(ref.get());
     }
+
+    void Branch::rename(string new_branch_name, bool force) {
+        int force_i = (int) force;
+        git_reference *out;
+        git_reference *branch = ref.get();
+        int err = git_branch_move(&out, branch, new_branch_name.c_str(), force_i);
+        check_error(err);
+        ref.reset(out);
+    }
 }
