@@ -25,6 +25,20 @@ Command patch {
                 throw UnexpectedPositionalException(args.positionals[1]);
             }
 
+            // Check owner if force not passed
+            if (args.options.find("force") == args.options.end()) {
+                string commit_auth((const char *) commit.author().name);
+                string current_auth((const char *) repo.default_signature().name);
+                string commit_auth_e((const char *) commit.author().email);
+                string current_auth_e((const char *) repo.default_signature().email);
+                if (commit_auth != current_auth && commit_auth_e != current_auth_e) {
+                    cout << "Your credentials are different to the author of the commit you are trying to patch." << endl;
+                    cout << "Patching the commit will override their credentials with your own." << endl;
+                    cout << "If you would still like to patch, use metro patch --force." << endl;
+                    return;
+                }
+            }
+
             metro::patch(repo, message);
             cout << "Patched commit.\n";
         },
