@@ -49,6 +49,6 @@ namespace git {
         git_reference *branch = ref.get();
         int err = git_branch_move(&out, branch, new_branch_name.c_str(), force_i);
         check_error(err);
-        ref.reset(out);
+        ref.reset(out, git_reference_free);
     }
 }
