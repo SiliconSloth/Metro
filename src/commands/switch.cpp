@@ -25,6 +25,17 @@ Command switchCmd {
             string wip = metro::to_wip(name);
             bool exists = metro::branch_exists(repo, wip);
 
+            // If branch is current branch
+            if (name == metro::current_branch_name(repo)) {
+                if (exists) {
+                    metro::restore_wip(repo);
+                    cout << "Loaded changes from WIP" << endl;
+                } else {
+                    cout << "You are already on branch " << name << endl;
+                }
+                return;
+            }
+
             // Finds differences between head and working dir
             git::Tree current = metro::get_commit(repo, "HEAD").tree();
             git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
