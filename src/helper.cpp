@@ -498,3 +498,14 @@ string get_env(const string& name) {
     return string(getenv(name.c_str()));
 #endif
 }
+
+string replace_all(string in, string find, string replace) {
+    if (find.empty()) return in;
+
+    size_t start = in.find(find, 0);
+    while (start != string::npos) {
+        in.replace(start, find.length(), replace);
+        start = in.find(find, start + replace.length());
+    }
+    return in;
+}
