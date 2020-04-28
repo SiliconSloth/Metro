@@ -30,7 +30,7 @@ struct Command {
 // List of all valid options
 // Keep them in alphabetical order (by name) to make help messages easier to read
 const Option ALL_OPTIONS[] = {
-        {"force", "f", false, "Not yet implemented"},
+        {"force", "f", false, "Forces execution of the command ignoring warnings"}, // Current applies onto to metro patch
         {"help", "h", false, "Explain how to use command"},
         {"pull", "d", false, "Only pull changes, without pushing changes to remote"},
         {"push", "u", false, "Only push changes, without pulling changes from remote. Requires no conflicts"},
