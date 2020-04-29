@@ -86,5 +86,17 @@ namespace git {
          * Delete an existing branch.
          */
         void delete_branch() const;
+
+        /**
+         * Move/rename an existing local branch reference.
+         *
+         * The new branch name will be checked for validity.
+         * See `git_tag_create()` for rules about valid names.
+         *
+         * @param new_branch_name Target name of the branch once the move
+         * is performed; this name is validated for consistency.
+         * @param force True to overwrite existing branch.
+         */
+        void rename(string new_branch_name, bool force);
     };
 }

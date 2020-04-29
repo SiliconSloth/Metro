@@ -36,3 +36,4 @@
 #include "commands/sync.cpp"
 #include "commands/list.cpp"
 #include "commands/sink.cpp"
+#include "commands/rename.cpp"
