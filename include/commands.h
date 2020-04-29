@@ -30,11 +30,11 @@ struct Command {
 // List of all valid options
 // Keep them in alphabetical order (by name) to make help messages easier to read
 const Option ALL_OPTIONS[] = {
-        {"force", "f", false, "Forces execution of the command ignoring warnings"},
+        {"force", "f", false, "Force execution of command ignoring warnings"},
         {"help", "h", false, "Explain how to use command"},
         {"pull", "d", false, "Only pull changes, without pushing changes to remote"},
         {"push", "u", false, "Only push changes, without pulling changes from remote. Requires no conflicts"},
         {"soft", "s", false, "Delete the last commit without reverting changes in the working directory"},
-        {"version", "v", false, "Finds the version of Metro being used"}
+        {"version", "v", false, "Print the version of Metro being used"}
 };
 
