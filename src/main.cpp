@@ -137,6 +137,7 @@ void printHelp() {
         cout << cmd->name << " - " << cmd->description << "\n";
     }
     cout << "Use --help for help.\n";
+    cout << "Use --version to print Metro version.\n";
 }
 
 /**
