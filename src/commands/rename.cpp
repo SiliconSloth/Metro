@@ -36,8 +36,8 @@ Command renameCmd {
             bool force = args.options.find("force") != args.options.end();
 
             // Ensure target branch + wip doesn't exist
-            if (metro::branch_exists(repo, to) && !force) throw MetroException("There is already a branch with that name.\nTo override it, use 'metro rename --force'.");
-            if (metro::branch_exists(repo, metro::to_wip(to)) && !force) throw MetroException("There is a wip for the target branch name.\nTo override it, use 'metro rename --force'.");
+            if (metro::branch_exists(repo, to) && !force) throw UnsupportedOperationException("There is already a branch with that name.\nTo overwrite it, use 'metro rename --force'.");
+            if (metro::branch_exists(repo, metro::to_wip(to)) && !force) throw UnsupportedOperationException("There is a WIP branch for the target branch name.\nTo overwrite it, use 'metro rename --force'.");
 
             git::Branch current = repo.lookup_branch(from, GIT_BRANCH_LOCAL);
             current.rename(to, force);
