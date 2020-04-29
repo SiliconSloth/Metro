@@ -137,6 +137,7 @@ void printHelp() {
         cout << cmd->name << " - " << cmd->description << "\n";
     }
     cout << "Use --help for help.\n";
+    cout << "Use --version to print Metro version.\n";
 }
 
 /**
@@ -209,6 +210,13 @@ int main(int argc, char *argv[]) {
 
     try {
         Arguments args = parse_args(argc, argv);
+
+        // If -v is specified, ignore all other contents of the command, printing version and exiting.
+        if (args.options.find("version") != args.options.end()) {
+            cout << "Metro version " << METRO_RELEASE << "-" << METRO_MAJOR << "." << METRO_MINOR << "." << METRO_REVISION << endl;
+            return 0;
+        }
+
         // If there is no command specified, just print help and quit.
         if (args.positionals.empty()) {
             printHelp();
