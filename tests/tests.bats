@@ -419,11 +419,82 @@ setup() {
   echo "$ metro sync"
   metro sync
 
+  echo "$ git branch --list"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* master#1" ]]
+
+  echo "$ git log master"
+  git log master
+  run git log master
+  [[ "${lines[3]}" == *"Local2 commit message"* ]]
   echo "$ git log"
   git log
   run git log
-  [[ "${lines[3]}" == *"Local2 commit message"* ]]
-  [[ "${lines[7]}" == *"Local1 commit message 2"* ]]
+  [[ "${lines[3]}" == *"Local1 commit message 2"* ]]
+}
+
+@test "Sync updated WIP" {
+  echo "$ git init remote"
+  git init remote/repo --bare
+  cd remote/repo
+
+  cd ../..
+  mkdir local1
+  cd local1
+  echo "$ cd ~/local1"
+  echo "$ git clone git@remote & echo \"local1 file content 1\" > local1-1.txt & git commit -am \"Local1 commit message\""
+  git clone ../remote/repo
+  cd repo
+  echo "local1 file content 1" > local1-1.txt
+  git add -A
+  git commit -m "Local1 commit message 1"
+
+  cd ../..
+  mkdir local2
+  cd local2
+  echo "$ cd ~/local2"
+  echo "$ git clone git@remote"
+  git clone ../remote/repo
+
+  echo "$ cd ~/local1"
+  cd ../local1/repo
+  echo "$ metro sync"
+  metro sync
+  echo "$ cd ~/local2"
+  cd ../../local2/repo
+  echo "$ metro sync"
+  metro sync
+
+  cd ../../local1/repo
+  echo "$ cd ~/local1"
+  echo "$ echo \"local1 file content 2\" > local1-2.txt"
+  echo "local1 file content 2" > local1-2.txt
+  git add -A
+  echo "$ metro sync"
+  metro sync
+  cd ../../local2/repo
+  echo "$ cd ~/local2"
+  echo "$ echo \"local2 file content\" > local2.txt"
+  echo "local2 file content" > local2.txt
+  git add -A
+  echo "$ metro sync"
+  metro sync
+
+  echo "$ git branch --list"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* master#1" ]]
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* master#1" ]]
+
+  [[ ! -f "local2.txt" ]]
+
+  metro switch master
+
+  [[ ! -f "local1-2.txt" ]]
 }
 
 # ~~~ Test Branch ~~~
