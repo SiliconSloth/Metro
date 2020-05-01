@@ -21,3 +21,12 @@ jobs:
           cd build
           cmake ..
           cmake --build .
+
+      - name: Install BATS
+        run: npm install -g bats
+
+      # Runs the tests
+      - name: Tests
+        run: |
+          cd tests
+          ./tests.bats
