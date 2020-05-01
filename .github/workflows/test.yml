@@ -1,4 +1,4 @@
-name: latest-build
+name: all-tests
 
 on:
   push:
@@ -22,8 +22,11 @@ jobs:
           cmake ..
           cmake --build .
 
-      - name: Install BATS
-        run: npm install -g bats
+      - name: Setup BATS testing framework
+        uses: mig4/setup-bats@v1.0.1
+        with:
+          # The BATS version to setup. Example: 1.0.0 or master, default: 1.1.0
+          bats-version: 1.2.0
 
       # Runs the tests
       - name: Tests
