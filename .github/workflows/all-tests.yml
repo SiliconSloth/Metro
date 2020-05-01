@@ -32,7 +32,6 @@ jobs:
       - name: Tests
         run: |
           export PATH=$PATH:$GITHUB_WORKSPACE/build
-          ls $GITHUB_WORKSPACE/build
           git config --global user.email "test@example.com"
           git config --global user.name "Test Name"
           cd tests
