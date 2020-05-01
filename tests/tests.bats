@@ -425,13 +425,13 @@ setup() {
   [[ "${lines[0]}" == "  master" ]]
   [[ "${lines[1]}" == "* master#1" ]]
 
-  echo "$ git log master"
-  git log master
-  run git log master
-  [[ "${lines[3]}" == *"Local2 commit message"* ]]
   echo "$ git log"
   git log
   run git log
+  [[ "${lines[3]}" == *"Local2 commit message"* ]]
+  echo "$ git log master"
+  git log master
+  run git log master
   [[ "${lines[3]}" == *"Local1 commit message 2"* ]]
 }
 
@@ -487,14 +487,13 @@ setup() {
   run git branch --list
   [[ "${lines[0]}" == "  master" ]]
   [[ "${lines[1]}" == "* master#1" ]]
-  [[ "${lines[0]}" == "  master" ]]
-  [[ "${lines[1]}" == "* master#1" ]]
+  [[ "${lines[2]}" == "  master#wip" ]]
 
-  [[ ! -f "local2.txt" ]]
+  [[ -f "local2.txt" ]]
 
   metro switch master
 
-  [[ ! -f "local1-2.txt" ]]
+  [[ -f "local1-2.txt" ]]
 }
 
 # ~~~ Test Branch ~~~
