@@ -32,5 +32,5 @@ jobs:
       - name: Tests
         run: |
           cd tests
-          chmod +x tests.bat
+          chmod +x tests.bats
           ./tests.bats
