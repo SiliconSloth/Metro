@@ -33,4 +33,5 @@ jobs:
         run: |
           cd tests
           chmod +x tests.bats
+          sed -i 's/\r//g' tests.bats
           ./tests.bats
