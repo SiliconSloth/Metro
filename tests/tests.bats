@@ -10,11 +10,23 @@ setup_file() {
 setup() {
   mkdir -p $BATS_TEST_NAME
   cd $BATS_TEST_NAME
+
+  SKIP_CREATE=FALSE
+  SKIP_COMMIT=FALSE
+  SKIP_CLONE=FALSE
+  SKIP_SYNC=FALSE
+  SKIP_BRANCH=FALSE
+  SKIP_SWITCH=FALSE
+  SKIP_DELETE=FALSE
+  SKIP_PATCH=FALSE
+  SKIP_ABSORB=FALSE
 }
 
 # ~~~ Test Create ~~~
 
 @test "Create repo in current dir" {
+  if [[ "$SKIP_CREATE" == "TRUE" ]]; then skip "Skipping Create Tests"; fi
+
   echo "$ metro create"
   metro create
   cd .git
@@ -26,6 +38,7 @@ setup() {
 }
 
 @test "Create repo in subdir" {
+  if [[ "$SKIP_CREATE" == "TRUE" ]]; then skip "Skipping Create Tests"; fi
   echo "$ metro create repo/test"
   metro create repo/test
   cd repo/test/.git
@@ -39,6 +52,7 @@ setup() {
 # ~~~ Test Commit ~~~
 
 @test "Commit file" {
+  if [[ "$SKIP_COMMIT" == "TRUE" ]]; then skip "Skipping Commit Tests"; fi
   echo "$ git init & echo \"Test file\" > test.txt & metro commit \"Test commit message\""
   git init
   echo "Test file" > test.txt
@@ -51,6 +65,7 @@ setup() {
 }
 
 @test "Commit file in empty repo" {
+  if [[ "$SKIP_COMMIT" == "TRUE" ]]; then skip "Skipping Commit Tests"; fi
   echo "$ git init & echo \"Test file\" > test.txt & metro commit \"Test commit message\""
   git init
   echo "Test file" > test.txt
@@ -65,6 +80,7 @@ setup() {
 # ~~~ Test Clone ~~~
 
 @test "Clone empty repo" {
+  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   mkdir -p create remote/repo
   cd remote/repo
   echo "$ git init"
@@ -84,6 +100,7 @@ setup() {
 }
 
 @test "Clone repo with initial commit only" {
+  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   echo "$ git init remote & git commit --allow-empty -m \"Initial Commit\""
   git init remote/repo
   cd remote/repo
@@ -103,6 +120,7 @@ setup() {
 }
 
 @test "Clone repo with one commit" {
+  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   echo "$ git init remote & echo \"Remote file content\" > remote.txt & git commit -am \"Test commit message\""
   git init remote/repo
   cd remote/repo
@@ -126,6 +144,7 @@ setup() {
 # ~~~ Test Sync ~~~
 
 @test "Sync commit" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -164,6 +183,7 @@ setup() {
 }
 
 @test "Sync WIP commit" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -204,6 +224,7 @@ setup() {
 }
 
 @test "Sync deleted commit" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -257,6 +278,7 @@ setup() {
 }
 
 @test "Sync patched commit" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -312,6 +334,7 @@ setup() {
 }
 
 @test "Sync committed WIP" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -371,6 +394,7 @@ setup() {
 }
 
 @test "Sync different merge-able commits" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -436,6 +460,7 @@ setup() {
 }
 
 @test "Sync updated WIP" {
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -499,6 +524,7 @@ setup() {
 # ~~~ Test Branch ~~~
 
 @test "Create branch" {
+  if [[ "$SKIP_BRANCH" == "TRUE" ]]; then skip "Skipping Branch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -515,6 +541,7 @@ setup() {
 # ~~~ Test Switch ~~~
 
 @test "Create WIP branch after switch branch" {
+  if [[ "$SKIP_SWITCH" == "TRUE" ]]; then skip "Skipping Switch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\" & echo \"Test file content\" > test.txt"
@@ -541,6 +568,7 @@ setup() {
 # ~~~ Test Delete Branch ~~~
 
 @test "Delete only branch" {
+  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -551,6 +579,7 @@ setup() {
 }
 
 @test "Delete other branch" {
+  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -575,6 +604,7 @@ setup() {
 # ~~~ Test Delete Commit ~~~
 
 @test "Delete last commit" {
+  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -599,6 +629,7 @@ setup() {
 }
 
 @test "Delete last commit soft" {
+  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -625,6 +656,7 @@ setup() {
 # ~~~ Test Patch ~~~
 
 @test "Patch commit contents" {
+  if [[ "$SKIP_PATCH" == "TRUE" ]]; then skip "Skipping Patch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -652,6 +684,7 @@ setup() {
 }
 
 @test "Patch commit message" {
+  if [[ "$SKIP_PATCH" == "TRUE" ]]; then skip "Skipping Patch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -668,4 +701,104 @@ setup() {
   git log
   run git log
   [[ "${lines[3]}" == *"Test Commit 1"* ]]
+}
+
+# ~~~ Test Absorb ~~~
+
+@test "Absorb branch with commit" {
+  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "$ git checkout -b other"
+  git checkout -b other
+  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
+  echo "Test file content" > test.txt
+  git add -A
+  git commit -m "Test Commit"
+  echo "$ git checkout master"
+  git checkout master
+
+  echo "$ metro absorb other"
+  metro absorb other
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[4]}" == *"Absorbed other"* ]]
+  [[ "${lines[8]}" == *"Test Commit"* || "${lines[12]}" == *"Test Commit"* ]]
+}
+
+@test "Absorb branch with conflict" {
+  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "$ git checkout -b other"
+  git checkout -b other
+  echo "$ echo \"Test file content\" > test-1.txt & git commit -am \"Test Commit 1\""
+  echo "Test file content" > test-1.txt
+  git add -A
+  git commit -m "Test Commit 1"
+
+  echo "$ git checkout master"
+  git checkout master
+  echo "$ echo \"Test file content\" > test-2.txt & git commit -am \"Test Commit 2\""
+  echo "Test file content" > test-2.txt
+  git add -A
+  git commit -m "Test Commit 2"
+
+  echo "$ metro absorb other"
+  metro absorb other
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[4]}" == *"Absorbed other"* ]]
+  [[ "${lines[8]}" == *"Test Commit 2"* ]]
+  [[ "${lines[12]}" == *"Test Commit 1"* ]]
+}
+
+@test "Absorb branch with content conflict" {
+  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "$ git checkout -b other"
+  git checkout -b other
+  echo "$ echo \"Test file content 1\" > test.txt & git commit -am \"Test Commit 1\""
+  echo "Test file content 1" > test.txt
+  git add -A
+  git commit -m "Test Commit 1"
+
+  echo "$ git checkout master"
+  git checkout master
+  echo "$ echo \"Test file content 2\" > test.txt & git commit -am \"Test Commit 2\""
+  echo "Test file content 2" > test.txt
+  git add -A
+  git commit -m "Test Commit 2"
+
+  echo "$ metro absorb other"
+  metro absorb other
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[3]}" == *"Test Commit 2"* ]]
+
+  echo "$ metro resolve"
+  metro resolve
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[4]}" == *"Absorbed other"* ]]
+  [[ "${lines[8]}" == *"Test Commit 2"* ]]
+  [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
