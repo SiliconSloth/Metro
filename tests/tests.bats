@@ -94,7 +94,6 @@ setup() {
   cd repo
 
   echo "$ git log"
-  git log
   run git log
   [[ "${lines[0]}" == "fatal: your current branch 'master' does not have any commits yet" ]]
 }
