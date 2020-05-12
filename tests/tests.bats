@@ -534,7 +534,7 @@ setup() {
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[1]}" == "  other" ]]
+  [[ "${lines[1]}" == "* other" ]]
 }
 
 # ~~~ Test Switch ~~~
