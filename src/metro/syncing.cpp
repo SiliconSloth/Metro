@@ -428,7 +428,11 @@ namespace metro {
                     // or one of the branches does not exist.
                     OID base;
                     if (!(uniqueLocal.isNull || uniqueRemote.isNull)) {
-                        base = repo.merge_base(uniqueLocal, uniqueRemote);
+                        try {
+                            base = repo.merge_base(uniqueLocal, uniqueRemote);
+                        } catch (GitException& ex) {
+                            // If there is no base at all, keep it as null.
+                        }
                     }
 
                     if (uniqueLocal == base) {
