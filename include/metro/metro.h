@@ -24,6 +24,15 @@ namespace metro {
     void assert_not_merging(const Repository& repo);
 
     /**
+     * Add all files in the repo directory into the index (excluding those in .gitignore)
+     * and return the index tree.
+     *
+     * @param repo The repository.
+     * @return The index tree.
+     */
+    Tree working_tree(const Repository& repo);
+
+    /**
      * Finds differences between head and working dir index (must git add first).
      *
      * @param repo The repo to use for the HEAD.
@@ -97,7 +106,7 @@ namespace metro {
     void delete_last_commit(const Repository& repo, bool reset);
 
     /**
-     * Deletes the last commit, recreating it with your changes.
+     * Amends the last commit with your changes.
      * Note: THIS WILL REPLACE PREVIOUS COMMIT METADATA WITH YOUR OWN
      *
      * @param repo The repo to replace previous commit within.

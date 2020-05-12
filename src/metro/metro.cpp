@@ -16,6 +16,18 @@ namespace metro {
         }
     }
 
+    Tree working_tree(const Repository& repo) {
+        Index index = add_all(repo);
+        // Write the files in the index into a tree that can be attached to the commit.
+        OID oid = index.write_tree();
+        Tree tree = repo.lookup_tree(oid);
+        // Save the index to disk so that it stays in sync with the contents of the working directory.
+        // If we don't do this removals of every file are left staged.
+        index.write();
+
+        return tree;
+    }
+
     Diff current_changes(const Repository& repo) {
         Tree current = get_commit(repo, "HEAD").tree();
         git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
@@ -26,14 +38,7 @@ namespace metro {
 
     void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
         git_signature author = repo.default_signature();
-
-        Index index = add_all(repo);
-        // Write the files in the index into a tree that can be attached to the commit.
-        OID oid = index.write_tree();
-        Tree tree = repo.lookup_tree(oid);
-        // Save the index to disk so that it stays in sync with the contents of the working directory.
-        // If we don't do this removals of every file are left staged.
-        index.write();
+        Tree tree = working_tree(repo);
 
         // Commit the files to the head of the current branch.
         repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
@@ -89,9 +94,12 @@ namespace metro {
 
     void patch(const Repository& repo, const string& message) {
         assert_not_merging(repo);
-        vector<Commit> parents = get_commit(repo, "HEAD").parents();
-        delete_last_commit(repo, false);
-        commit(repo, message, parents);
+
+        git_signature author = repo.default_signature();
+        Tree tree = working_tree(repo);
+        Commit commit = get_commit(repo, "HEAD");
+
+        commit.amend("HEAD", author, author, "UTF-8", message, tree);
     }
 
     Commit get_commit(const Repository& repo, const string& revision) {
