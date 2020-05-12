@@ -1,0 +1,40 @@
+name: all-tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Runs cmake on the project to build
+      - name: Build Metro
+        run: |
+          git submodule update --init --recursive
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build .
+
+      - name: Setup BATS testing framework
+        uses: mig4/setup-bats@v1.0.1
+        with:
+          # The BATS version to setup. Example: 1.0.0 or master, default: 1.1.0
+          bats-version: 1.2.0
+
+      # Runs the tests
+      - name: Tests
+        run: |
+          export PATH=$PATH:$GITHUB_WORKSPACE/build
+          git config --global user.email "test@example.com"
+          git config --global user.name "Test Name"
+          cd tests
+          chmod +x tests.bats
+          sed -i 's/\r//g' tests.bats
+          ./tests.bats
