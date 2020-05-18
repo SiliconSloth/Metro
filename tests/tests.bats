@@ -277,7 +277,7 @@ setup() {
 }
 
 @test "Sync patched commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -462,9 +462,7 @@ setup() {
   if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
-  cd remote/repo
 
-  cd ../..
   mkdir local1
   cd local1
   echo "$ cd ~/local1"
