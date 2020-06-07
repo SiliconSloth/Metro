@@ -5,7 +5,6 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <direct.h>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -26,6 +25,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <direct.h>
 #elif __unix__ || __APPLE__ || __MACH__
 #include <termios.h>
 #include <unistd.h>
