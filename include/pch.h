@@ -38,6 +38,13 @@
 #include <sys/ioctl.h>
 #include <ctime>
 #include <signal.h>
+#include <cerrno>
+
+#define _mkdir(path) mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+
+void _set_errno(int value) {
+    errno = value;
+}
 #endif //_WIN32
 #if _WIN32 || __APPLE__ || __MACH__
 #include <filesystem>

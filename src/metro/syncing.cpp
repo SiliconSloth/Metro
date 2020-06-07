@@ -136,18 +136,18 @@ namespace metro {
      * @param name The branch to remove from the sync cache.
      */
     void delete_cache_entry(const Repository& repo, const string& name) {
-        filesystem::remove((repo.path() + "synced/" + name).c_str());
+        error_code ec;
+        std_filesystem::remove((repo.path() + "synced/" + name).c_str(), ec);
 
         // Delete empty parent directories.
-        error_code ec;
         size_t pos = name.find_last_of('/');
         while (pos != string::npos) {
             string directory = repo.path() + "synced/" + name.substr(0, pos);
             // Don't delete parent directories if they are not empty or do not exist.
-            if (!filesystem::is_empty(directory, ec)) {
+            if (!std_filesystem::is_empty(directory, ec)) {
                 break;
             }
-            filesystem::remove_all(directory.c_str());
+            std_filesystem::remove_all(directory.c_str());
 
             pos = name.find_last_of('/', pos-1);
         }
@@ -198,14 +198,14 @@ namespace metro {
         }
 
         if (info.st_mode & S_IFDIR) {
-            filesystem::recursive_directory_iterator end;
-            filesystem::recursive_directory_iterator iter(cacheRoot);
+            std_filesystem::recursive_directory_iterator end;
+            std_filesystem::recursive_directory_iterator iter(cacheRoot);
 
             while (iter != end) {
                 string path = iter->path().string();
 
                 // Only try to read regular files; skip over directories returned by the iterator.
-                if (iter->is_regular_file()) {
+                if (std_filesystem::is_regular_file(iter->path())) {
                     // Remove the path prefix and following slash.
                     string name = path.substr(cacheRoot.size() + 1);
                     std::replace(name.begin(), name.end(), '\\', '/');
