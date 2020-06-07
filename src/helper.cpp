@@ -136,18 +136,24 @@ void print_padded(const string& str, size_t len) {
 }
 
 string read_all(const string& path) {
-    //TODO: Exception if the file is not found/read fails
     ifstream file(path);
     string message((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     file.close();
+
+    if (file.fail()) {
+        throw MetroException("Error reading from file: " + path);
+    }
     return message;
 }
 
 void write_all(const string& text, const string& path) {
-    //TODO: Exception if the file is not found/write fails
     ofstream file(path);
     file << text;
     file.close();
+
+    if (file.fail()) {
+        throw MetroException("Error writing to file: " + path);
+    }
 }
 
 string time_to_string(git_time time) {
