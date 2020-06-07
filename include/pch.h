@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <direct.h>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -21,6 +22,7 @@
 #include <sstream>
 #include <thread>
 #include <csignal>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <windows.h>
