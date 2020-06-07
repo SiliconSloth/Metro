@@ -382,8 +382,7 @@ setup() {
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[0]}" == "  master" ]]
-  [[ "${lines[1]}" == "* master#1" ]]
+  [[ "$output" == "* master" ]]
 
   echo "$ git log master"
   git log master
