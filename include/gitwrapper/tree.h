@@ -24,5 +24,12 @@ namespace git {
         [[nodiscard]] shared_ptr<git_tree> ptr() const {
             return tree;
         }
+
+        /**
+         * Get the id of a tree.
+         *
+         * @return OID of the tree.
+         */
+        [[nodiscard]] OID id() const;
     };
 }
