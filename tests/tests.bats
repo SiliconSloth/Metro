@@ -94,7 +94,6 @@ setup() {
   cd repo
 
   echo "$ git log"
-  git log
   run git log
   [[ "${lines[0]}" == "fatal: your current branch 'master' does not have any commits yet" ]]
 }
@@ -278,7 +277,7 @@ setup() {
 }
 
 @test "Sync patched commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
+  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -383,8 +382,7 @@ setup() {
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[0]}" == "  master" ]]
-  [[ "${lines[1]}" == "* master#1" ]]
+  [[ "$output" == "* master" ]]
 
   echo "$ git log master"
   git log master
@@ -463,9 +461,7 @@ setup() {
   if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
-  cd remote/repo
 
-  cd ../..
   mkdir local1
   cd local1
   echo "$ cd ~/local1"
@@ -521,6 +517,123 @@ setup() {
   [[ -f "local1-2.txt" ]]
 }
 
+@test "Sync WIP with no branches" {
+  git init remote/repo --bare
+
+  echo "Mark 1"
+  mkdir local1
+  cd local1
+  echo "Mark 2"
+  git clone ../remote/repo
+  cd repo
+  echo "Mark 3"
+  echo "local1 file content" > local1.txt
+  metro sync
+
+  echo "Mark 4"
+  cd ../..
+  mkdir local2
+  cd local2
+  echo "Mark 5"
+  metro clone ../remote/repo
+  cd repo
+  echo "Mark 6"
+
+  run git branch --list
+  [[ "$output" == "master#wip" ]]
+
+  run git log
+  [[ "$output" == "fatal: your current branch 'master' does not have any commits yet" ]]
+}
+
+@test "Sync down changes with unchanged local WIP" {
+  git init remote/repo --bare
+
+  echo "Mark 1"
+  mkdir local1
+  cd local1
+  echo "Mark 2"
+  git clone ../remote/repo
+  cd repo
+  echo "Mark 3"
+  echo "local1 file content" > local1.txt
+  metro commit "local1 commit"
+  echo "local1 file content 2" > local1-2.txt
+  metro sync
+
+  echo "Mark 4"
+  cd ../..
+  mkdir local2
+  cd local2
+  echo "Mark 5"
+  metro clone ../remote/repo
+  cd repo
+  echo "Mark 6"
+  metro commit "local2 commit"
+  echo "Mark 7"
+  metro sync
+
+  echo "Mark 8"
+  cd ../../local1/repo
+  metro sync
+  echo "Mark 9"
+
+  run git branch --list
+  [[ "$output" == "* master" ]]
+
+  run git log master
+  [[ "${lines[3]}" == *"local2 commit"* ]]
+}
+
+@test "Sync down changes with unchanged local WIP but changed base" {
+  git init remote/repo --bare
+
+  echo "Mark 1"
+  mkdir local1
+  cd local1
+  echo "Mark 2"
+  git clone ../remote/repo
+  cd repo
+  echo "Mark 3"
+  echo "local1 file content" > local1.txt
+  metro commit "local1 commit"
+  echo "local1 file content 2" > local1-2.txt
+  echo "local1 file content 3" > local1-3.txt
+  metro sync
+
+  echo "Mark 4"
+  cd ../..
+  mkdir local2
+  cd local2
+  echo "Mark 5"
+  metro clone ../remote/repo
+  cd repo
+  echo "Mark 6"
+  metro commit "local2 commit"
+  echo "Mark 7"
+  metro sync
+
+  echo "Mark 8"
+  cd ../../local1/repo
+  rm local1-3.txt
+  metro commit "local1 commit 2"
+  echo "Mark 9"
+  echo "local1 file content 3" > local1-3.txt
+  metro sync
+  echo "Mark 10"
+
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* master#1" ]]
+  [[ "${#lines[@]}" == 2 ]]
+
+  run git log master
+  [[ "${lines[3]}" == *"local2 commit"* ]]
+
+  run git log master#1
+  [[ "${lines[3]}" == *"local1 commit 2"* ]]
+}
+
 # ~~~ Test Branch ~~~
 
 @test "Create branch" {
@@ -535,7 +648,7 @@ setup() {
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[1]}" == "  other" ]]
+  [[ "${lines[1]}" == "* other" ]]
 }
 
 # ~~~ Test Switch ~~~

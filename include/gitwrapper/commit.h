@@ -85,5 +85,13 @@ namespace git {
          * @return Commit author as a Signature.
          */
         [[nodiscard]] git_signature author() const;
+
+        /**
+         * Amend an existing commit by replacing only non-NULL values.
+         *
+         * @return The new commit OID.
+         */
+        OID amend(const string& updateRef, const git_signature& author, const git_signature& committer,
+                  const string& messageEncoding, const string& message, const Tree& tree) const;
     };
 }

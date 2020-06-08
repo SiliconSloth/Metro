@@ -43,4 +43,13 @@ namespace git {
         const git_signature* sig = git_commit_author(commit.get());
         return *sig;
     }
+
+    OID Commit::amend(const string& updateRef, const git_signature& author, const git_signature& committer,
+              const string& messageEncoding, const string& message, const Tree& tree) const {
+        git_oid oid;
+        int err = git_commit_amend(&oid, commit.get(), updateRef.c_str(), &author, &committer,
+                messageEncoding.c_str(), message.c_str(), tree.ptr().get());
+        check_error(err);
+        return OID(oid);
+    }
 }
