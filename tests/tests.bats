@@ -10,16 +10,6 @@ setup_file() {
 setup() {
   mkdir -p $BATS_TEST_NAME
   cd $BATS_TEST_NAME
-
-  SKIP_CREATE=FALSE
-  SKIP_COMMIT=FALSE
-  SKIP_CLONE=FALSE
-  SKIP_SYNC=FALSE
-  SKIP_BRANCH=FALSE
-  SKIP_SWITCH=FALSE
-  SKIP_DELETE=FALSE
-  SKIP_PATCH=FALSE
-  SKIP_ABSORB=FALSE
 }
 
 # ~~~ Test Create ~~~
@@ -1296,7 +1286,7 @@ setup() {
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
 
-@test "Absorb branch with content conflict" {
+@test "Absorb branch with content conflict and resolve" {
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -1335,7 +1325,27 @@ setup() {
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
 
-# ~~~ Test Absorb ~~~
+@test "Absorb branch while detached" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  git commit --allow-empty -m "Initial Commit"
+  git branch branch-2
+  git checkout branch-2
+  touch "Test"
+  git commit -m "Test commit"
+
+  echo "Mark 3"
+  git checkout master
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 4"
+  run metro absorb
+  [[ "${lines[0]}" == "You must be on a branch to absorb" ]]
+}
+
+# ~~~ Test Info ~~~
 
 @test "Info with no commits" {
   echo "Mark 1"
@@ -1367,8 +1377,141 @@ setup() {
   git checkout "$(git rev-parse HEAD)"
 
   echo "Mark 2"
-  metro info
+  run metro info
   [[ "${lines[0]}" == "Head is detached, at commit "* ]]
   [[ "${lines[1]}" == "Not merging"* ]]
   [[ "${lines[2]}" == "Nothing to commit"* ]]
+}
+
+# ~~~ Test Resolve ~~~
+
+@test "Resolve while not absorbing" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro resolve
+  [[ "${lines[0]}" == "You can only resolve conflicts while absorbing." ]]
+}
+
+# See "Absorb branch with content conflict and resolve"
+
+# ~~~ Test List ~~~
+
+@test "List branches" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+  git branch y
+  git branch z
+
+  echo "Mark 2"
+  metro list branches
+  run metro list branches
+  [[ "${lines[0]}" == *"master"* ]]
+  [[ "${lines[1]}" == *"x"* ]]
+  [[ "${lines[2]}" == *"y"* ]]
+  [[ "${lines[3]}" == *"z"* ]]
+}
+
+@test "Empty repo list no branches" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro list branches
+  [[ "${#lines[@]}" == 0 ]]
+}
+
+@test "List branches while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro list branches
+  [[ "${lines[0]}" == *"master"* ]]
+}
+
+@test "List commits" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${lines[4]}" == *"Initial Commit"* ]]
+}
+
+@test "Empty repo list commits" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${#lines[@]}" == 0 ]]
+}
+
+@test "List commits while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${lines[4]}" == *"Initial Commit"* ]]
+}
+
+# ~~~ Test Rename ~~~
+
+@test "Rename branch (1 argument)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  metro rename master-1
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == "* master-1" ]]
+}
+
+@test "Rename branch (2 arguments)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+
+  echo "Mark 2"
+  metro rename x y
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == "* master" ]]
+  [[ "${lines[1]}" == "  y" ]]
+}
+
+@test "Rename on empty repo" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro rename master-1
+  [[ "${lines[0]}" == "Cannot rename branch in an empty repo." ]]
+}
+
+@test "Rename while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro rename master-1
+  [[ "${lines[0]}" == "The HEAD is not pointing at any branch, so cannot rename." ]]
+  [[ "${lines[1]}" == "Try using 'metro rename <branch> master-1'." ]]
 }
