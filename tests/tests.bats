@@ -1325,6 +1325,45 @@ setup() {
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
 
+@test "Absorb branch with content conflict and switch before resolve" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch separate
+
+  echo "Mark 2"
+  git checkout -b other
+  echo "Test file content 1" > test.txt
+  git add -A
+  git commit -m "Test Commit 1"
+
+  echo "Mark 3"
+  git checkout master
+  echo "Test file content 2" > test.txt
+  git add -A
+  git commit -m "Test Commit 2"
+
+  echo "Mark 4"
+  metro absorb other
+
+  echo "Mark 5"
+  git log
+  run git log
+  [[ "${lines[3]}" == *"Test Commit 2"* ]]
+
+  echo "Mark 6"
+  metro switch separate
+  metro switch master
+  metro resolve
+
+  echo "Mark 7"
+  git log
+  run git log
+  [[ "${lines[4]}" == *"Absorbed other"* ]]
+  [[ "${lines[8]}" == *"Test Commit 2"* ]]
+  [[ "${lines[12]}" == *"Test Commit 1"* ]]
+}
+
 @test "Absorb branch while detached" {
   echo "Mark 1"
   git init
