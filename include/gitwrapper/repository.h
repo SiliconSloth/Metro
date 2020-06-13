@@ -333,6 +333,11 @@ namespace git {
         void set_head(const string& name) const;
 
         /**
+         * Check if a repository's HEAD is detached.
+         */
+        boolean head_detached() const;
+
+        /**
          * Updates files in the index and working tree to match the content of the
          * tree pointed at by the tree.
          *

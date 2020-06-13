@@ -80,13 +80,13 @@ setup() {
   echo "Mark 4"
 
   echo "Test file 3" > test.txt
-  metro commit "Test commit message 3"
+  run metro commit "Test commit message 3"
+  [[ "$status" != 0 ]]
   echo "Mark 5"
 
   git log
   run git log
-  [[ "${lines[3]}" == *"Test commit message 3"* ]]
-  [[ "${lines[7]}" == *"Test commit message 1"* ]]
+  [[ "${lines[3]}" == *"Test commit message 1"* ]]
 }
 
 # ~~~ Test Clone ~~~

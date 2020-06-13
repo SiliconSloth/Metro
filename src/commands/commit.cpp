@@ -21,6 +21,10 @@ Command commit {
 
             git::Repository repo = git::Repository::open(".");
             metro::assert_not_merging(repo);
+            if (repo.head_detached()) {
+                throw UnsupportedOperationException("Cannot commit while head is detached. "
+                                                    "Try switching to an existing branch, or creating a new one.");
+            }
 
             try {
                 metro::add_all(repo);

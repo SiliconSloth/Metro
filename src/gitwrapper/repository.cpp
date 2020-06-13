@@ -175,6 +175,12 @@ namespace git {
         check_error(err);
     }
 
+    boolean Repository::head_detached() const {
+        int val = git_repository_head_detached(repo.get());
+        check_error(val);
+        return val;
+    }
+
     void Repository::checkout_tree(const Tree& tree, const git_checkout_options& options) const {
         int err = git_checkout_tree(repo.get(), reinterpret_cast<git_object*>(tree.ptr().get()), &options);
         check_error(err);
