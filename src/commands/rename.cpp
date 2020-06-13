@@ -57,6 +57,6 @@ Command renameCmd {
 
         // printHelp
         [](const Arguments &args) {
-            cout << "Usage: metro rename <branch-1> <branch-2>" << endl;
+            cout << "Usage: metro rename <branch-1> [<branch-2>]" << endl;
         }
 };
