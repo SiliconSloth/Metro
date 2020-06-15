@@ -110,8 +110,12 @@ Command listCmd{
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
-                git::Commit commit = metro::get_commit(repo, "HEAD");
-                print_from_commit(repo, commit, hConsole);
+                if (metro::commit_exists(repo, "HEAD")) {
+                    git::Commit commit = metro::get_commit(repo, "HEAD");
+                    print_from_commit(repo, commit, hConsole);
+                } else {
+                    cout << "No commits at this location" << endl;
+                }
             } else if (args.positionals[0] == "branches") {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);

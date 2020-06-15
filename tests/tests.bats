@@ -1559,7 +1559,7 @@ setup() {
   echo "Mark 2"
   metro list commits
   run metro list commits
-  [[ "${#lines[@]}" == 0 ]]
+  [[ "$output" == "No commits at this location" ]]
 }
 
 @test "List commits while detached" {
