@@ -29,7 +29,12 @@ namespace metro {
     }
 
     Diff current_changes(const Repository& repo) {
-        Tree current = get_commit(repo, "HEAD").tree();
+        Tree current = Tree();
+        try {
+            current = get_commit(repo, "HEAD").tree();
+        } catch (GitException& ex) {
+            // The current branch might have no commits, which is ok.
+        }
         git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
         Diff diff = Diff::tree_to_workdir_with_index(repo, current, &opts);
 
