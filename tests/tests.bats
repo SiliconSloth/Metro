@@ -1563,3 +1563,20 @@ setup() {
   [[ "${lines[0]}" == *"* (HEAD detached at"* ]]
   [[ "${lines[1]}" ==  "  master" ]]
 }
+
+@test "Rename branch while detached (2 arguments)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  metro rename x y
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == *"* (HEAD detached at"* ]]
+  [[ "${lines[1]}" ==  "  master" ]]
+  [[ "${lines[2]}" ==  "  y" ]]
+}
