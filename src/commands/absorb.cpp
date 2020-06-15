@@ -20,6 +20,10 @@ Command absorbCmd {
             string name = args.positionals[0];
 
             git::Repository repo = git::Repository::open(".");
+            if (repo.head_detached()) {
+                throw UnsupportedOperationException("You must be on a branch to absorb.");
+            }
+
             bool hasConflicts = metro::absorb(repo, name);
             if (hasConflicts) {
                 cout << "Conflicts occurred, please resolve." << endl;

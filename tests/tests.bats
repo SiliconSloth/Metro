@@ -1384,8 +1384,8 @@ setup() {
   git checkout "$(git rev-parse HEAD)"
 
   echo "Mark 4"
-  run metro absorb
-  [[ "${lines[0]}" == "You must be on a branch to absorb" ]]
+  run metro absorb branch-2
+  [[ "$output" == "You must be on a branch to absorb." ]]
 }
 
 # ~~~ Test Info ~~~
