@@ -10,23 +10,11 @@ setup_file() {
 setup() {
   mkdir -p $BATS_TEST_NAME
   cd $BATS_TEST_NAME
-
-  SKIP_CREATE=FALSE
-  SKIP_COMMIT=FALSE
-  SKIP_CLONE=FALSE
-  SKIP_SYNC=FALSE
-  SKIP_BRANCH=FALSE
-  SKIP_SWITCH=FALSE
-  SKIP_DELETE=FALSE
-  SKIP_PATCH=FALSE
-  SKIP_ABSORB=FALSE
 }
 
 # ~~~ Test Create ~~~
 
 @test "Create repo in current dir" {
-  if [[ "$SKIP_CREATE" == "TRUE" ]]; then skip "Skipping Create Tests"; fi
-
   echo "$ metro create"
   metro create
   cd .git
@@ -38,7 +26,6 @@ setup() {
 }
 
 @test "Create repo in subdir" {
-  if [[ "$SKIP_CREATE" == "TRUE" ]]; then skip "Skipping Create Tests"; fi
   echo "$ metro create repo/test"
   metro create repo/test
   cd repo/test/.git
@@ -51,8 +38,21 @@ setup() {
 
 # ~~~ Test Commit ~~~
 
-@test "Commit file" {
-  if [[ "$SKIP_COMMIT" == "TRUE" ]]; then skip "Skipping Commit Tests"; fi
+@test "Commit after initial commit" {
+  echo "Mark 1"
+  metro create
+  echo "Mark 2"
+  echo "Test file" > test.txt
+  metro commit "Test commit message"
+  echo "Mark 3"
+
+  git log
+  run git log
+  [[ "${lines[3]}" == *"Test commit message"* ]]
+  [[ "${lines[7]}" == *"Create repository"* ]]
+}
+
+@test "Commit file in empty repo" {
   echo "$ git init & echo \"Test file\" > test.txt & metro commit \"Test commit message\""
   git init
   echo "Test file" > test.txt
@@ -64,23 +64,34 @@ setup() {
   [[ "${lines[3]}" == *"Test commit message"* ]]
 }
 
-@test "Commit file in empty repo" {
-  if [[ "$SKIP_COMMIT" == "TRUE" ]]; then skip "Skipping Commit Tests"; fi
-  echo "$ git init & echo \"Test file\" > test.txt & metro commit \"Test commit message\""
+@test "Commit file with detached head" {
+  echo "Mark 1"
   git init
-  echo "Test file" > test.txt
-  metro commit "Test commit message"
 
-  echo "$ git log"
+  echo "Test file 1" > test.txt
+  metro commit "Test commit message 1"
+  echo "Mark 2"
+
+  echo "Test file 2" > test.txt
+  metro commit "Test commit message 2"
+  echo "Mark 3"
+
+  git checkout HEAD~
+  echo "Mark 4"
+
+  echo "Test file 3" > test.txt
+  metro commit "Test commit message 3"
+  echo "Mark 5"
+
   git log
   run git log
-  [[ "${lines[3]}" == *"Test commit message"* ]]
+  [[ "${lines[3]}" == *"Test commit message 3"* ]]
+  [[ "${lines[7]}" == *"Test commit message 1"* ]]
 }
 
 # ~~~ Test Clone ~~~
 
 @test "Clone empty repo" {
-  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   mkdir -p create remote/repo
   cd remote/repo
   echo "$ git init"
@@ -99,7 +110,6 @@ setup() {
 }
 
 @test "Clone repo with initial commit only" {
-  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   echo "$ git init remote & git commit --allow-empty -m \"Initial Commit\""
   git init remote/repo
   cd remote/repo
@@ -119,7 +129,6 @@ setup() {
 }
 
 @test "Clone repo with one commit" {
-  if [[ "$SKIP_CLONE" == "TRUE" ]]; then skip "Skipping Clone Tests"; fi
   echo "$ git init remote & echo \"Remote file content\" > remote.txt & git commit -am \"Test commit message\""
   git init remote/repo
   cd remote/repo
@@ -143,7 +152,6 @@ setup() {
 # ~~~ Test Sync ~~~
 
 @test "Sync commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -182,7 +190,6 @@ setup() {
 }
 
 @test "Sync WIP commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -223,7 +230,6 @@ setup() {
 }
 
 @test "Sync deleted commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -277,7 +283,6 @@ setup() {
 }
 
 @test "Sync patched commit" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -333,7 +338,6 @@ setup() {
 }
 
 @test "Sync committed WIP" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -392,7 +396,6 @@ setup() {
 }
 
 @test "Sync different merge-able commits" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
   cd remote/repo
@@ -458,7 +461,6 @@ setup() {
 }
 
 @test "Sync updated WIP" {
-  if [[ "$SKIP_SYNC" == "TRUE" ]]; then skip "Skipping Sync Tests"; fi
   echo "$ git init remote"
   git init remote/repo --bare
 
@@ -637,7 +639,6 @@ setup() {
 # ~~~ Test Branch ~~~
 
 @test "Create branch" {
-  if [[ "$SKIP_BRANCH" == "TRUE" ]]; then skip "Skipping Branch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -651,10 +652,119 @@ setup() {
   [[ "${lines[1]}" == "* other" ]]
 }
 
+@test "Create branch with uncommitted changes" {
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "test content" > test.txt
+  echo "$ metro branch other"
+  metro branch other
+
+  echo "$ git branch --list"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "  master#wip" ]]
+  [[ "${lines[2]}" == "* other" ]]
+}
+
+@test "Create branch with no commits" {
+  echo "$ git init"
+  git init
+  echo "$ metro branch other"
+  metro branch other
+
+  echo "$ git branch --list"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+}
+
+@test "Create branch while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  metro branch other
+
+  echo "Mark 4"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+
+  echo "Mark 5"
+  git checkout master
+
+  echo "Mark 6"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* master" ]]
+  [[ "${lines[1]}" == "  other" ]]
+}
+
+@test "Create branch while detached with uncommitted changes" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  echo "test content" > test.txt
+
+  echo "Mark 4"
+  metro branch other
+
+  echo "Mark 5"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+  [[ "${#lines[@]}" == 2 ]]
+}
+
+@test "Create branch with children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 4"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 5"
+  git checkout HEAD~
+
+  echo "Mark 6"
+  metro branch other
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
+
+  echo "Mark 8"
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+}
+
 # ~~~ Test Switch ~~~
 
 @test "Create WIP branch after switch branch" {
-  if [[ "$SKIP_SWITCH" == "TRUE" ]]; then skip "Skipping Switch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\" & echo \"Test file content\" > test.txt"
@@ -678,10 +788,93 @@ setup() {
   [[ "${lines[3]}" == *"WIP" ]]
 }
 
+@test "Switch branch while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch other
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  metro switch other
+
+  echo "Mark 4"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+
+  echo "Mark 5"
+  git checkout master
+
+  echo "Mark 6"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* master" ]]
+  [[ "${lines[1]}" == "  other" ]]
+}
+
+@test "Switch branch while detached with uncommitted changes" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch other
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  echo "test content" > test.txt
+
+  echo "Mark 4"
+  metro switch other
+
+  echo "Mark 5"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+  [[ "${lines[2]}" == "  other" ]]
+  [[ "${#lines[@]}" == 3 ]]
+}
+
+@test "Switch branch with children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+  git branch other
+
+  echo "Mark 4"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 5"
+  git checkout other
+
+  echo "Mark 6"
+  metro switch master
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+
+  echo "Mark 8"
+  run git branch --list
+  [[ "${lines[0]}" == "* master" ]]
+  [[ "${lines[1]}" == "  other" ]]
+}
+
 # ~~~ Test Delete Branch ~~~
 
 @test "Delete only branch" {
-  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -692,7 +885,6 @@ setup() {
 }
 
 @test "Delete other branch" {
-  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -714,10 +906,37 @@ setup() {
   [[ "$output" != *"other"* ]]
 }
 
+@test "Delete branch while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  git branch other
+
+  echo "Mark 3"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 4"
+  metro delete branch other
+
+  echo "Mark 5"
+  git branch --list
+  run git branch --list
+  [[ "$output" == "  master" ]]
+
+  echo "Mark 6"
+  git checkout master
+
+  echo "Mark 7"
+  git branch --list
+  run git branch --list
+  [[ "$output" == "* master" ]]
+}
+
 # ~~~ Test Delete Commit ~~~
 
 @test "Delete last commit" {
-  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -742,7 +961,6 @@ setup() {
 }
 
 @test "Delete last commit soft" {
-  if [[ "$SKIP_DELETE" == "TRUE" ]]; then skip "Skipping Delete Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -766,10 +984,119 @@ setup() {
   [[ "$output" == "test.txt" ]]
 }
 
+@test "Delete with children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  git branch other
+
+  echo "Mark 4"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 5"
+  git checkout other
+
+  echo "Mark 6"
+  run metro delete commit
+  [[ "$output" == "Cannot delete because commit has children" ]]
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
+}
+
+@test "Delete initial commit" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  run metro delete commit
+  [[ "$output" == "Can't delete initial commit." ]]
+
+  echo "Mark 4"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
+}
+
+@test "Delete with no commits" {
+  echo "Mark 1"
+  git init
+  echo "Mark 2"
+
+  run metro delete commit
+  echo "Mark 3"
+  [[ "$output" == "No commit to delete." ]]
+}
+
+@test "Delete with detached head" {
+  echo "Mark 1"
+  metro create
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 4"
+  metro delete commit
+
+  echo "Mark 5"
+  run git log
+  [[ "${lines[3]}" == *"Create repository"* ]]
+
+  echo "Mark 6"
+  git checkout master
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Create repository"* ]]
+}
+
+@test "Delete with detached head and children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 4"
+  git checkout HEAD~
+
+  echo "Mark 5"
+  run metro delete commit
+  [[ "$output" == "Cannot delete because commit has children" ]]
+
+  echo "Mark 6"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
+}
+
 # ~~~ Test Patch ~~~
 
 @test "Patch commit contents" {
-  if [[ "$SKIP_PATCH" == "TRUE" ]]; then skip "Skipping Patch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -797,7 +1124,6 @@ setup() {
 }
 
 @test "Patch commit message" {
-  if [[ "$SKIP_PATCH" == "TRUE" ]]; then skip "Skipping Patch Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -816,10 +1142,95 @@ setup() {
   [[ "${lines[3]}" == *"Test Commit 1"* ]]
 }
 
+@test "Patch with children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  git branch other
+
+  echo "Mark 4"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 5"
+  git checkout other
+
+  echo "Mark 6"
+  run metro patch "Patched commit"
+  [[ "$output" == "Cannot patch because commit has children" ]]
+}
+
+@test "Patch with no commits" {
+  echo "Mark 1"
+  git init
+  echo "Mark 2"
+
+  run metro patch "Test Commit 1"
+  echo "Mark 3"
+  [[ "$output" == "No commit to patch." ]]
+}
+
+@test "Patch with detached head" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 4"
+  metro patch "Patch test commit"
+
+  echo "Mark 5"
+  run git log
+  [[ "${lines[3]}" == *"Patch test commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+
+  echo "Mark 6"
+  git checkout master
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Patch test commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+}
+
+@test "Patch with detached head and children" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  echo "Test content 1" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  echo "Test content 2" > test.txt
+  git add -A
+  git commit -m "Test commit 2"
+
+  echo "Mark 4"
+  git checkout HEAD~
+
+  echo "Mark 5"
+  run metro patch "Patched commit"
+  [[ "$output" == "Cannot patch because commit has children" ]]
+}
+
 # ~~~ Test Absorb ~~~
 
 @test "Absorb branch with commit" {
-  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -845,7 +1256,6 @@ setup() {
 }
 
 @test "Absorb branch with conflict" {
-  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -876,8 +1286,7 @@ setup() {
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
 
-@test "Absorb branch with content conflict" {
-  if [[ "$SKIP_ABSORB" == "TRUE" ]]; then skip "Skipping Absorb Tests"; fi
+@test "Absorb branch with content conflict and resolve" {
   echo "$ git init"
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
@@ -914,4 +1323,234 @@ setup() {
   [[ "${lines[4]}" == *"Absorbed other"* ]]
   [[ "${lines[8]}" == *"Test Commit 2"* ]]
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
+}
+
+@test "Absorb branch with content conflict and switch before resolve" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch separate
+
+  echo "Mark 2"
+  git checkout -b other
+  echo "Test file content 1" > test.txt
+  git add -A
+  git commit -m "Test Commit 1"
+
+  echo "Mark 3"
+  git checkout master
+  echo "Test file content 2" > test.txt
+  git add -A
+  git commit -m "Test Commit 2"
+
+  echo "Mark 4"
+  metro absorb other
+
+  echo "Mark 5"
+  git log
+  run git log
+  [[ "${lines[3]}" == *"Test Commit 2"* ]]
+
+  echo "Mark 6"
+  metro switch separate
+  metro switch master
+  metro resolve
+
+  echo "Mark 7"
+  git log
+  run git log
+  [[ "${lines[4]}" == *"Absorbed other"* ]]
+  [[ "${lines[8]}" == *"Test Commit 2"* ]]
+  [[ "${lines[12]}" == *"Test Commit 1"* ]]
+}
+
+@test "Absorb branch while detached" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  git commit --allow-empty -m "Initial Commit"
+  git branch branch-2
+  git checkout branch-2
+  touch "Test"
+  git commit -m "Test commit"
+
+  echo "Mark 3"
+  git checkout master
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 4"
+  run metro absorb
+  [[ "${lines[0]}" == "You must be on a branch to absorb" ]]
+}
+
+# ~~~ Test Info ~~~
+
+@test "Info with no commits" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master" ]]
+  [[ "${lines[1]}" == "Not merging" ]]
+  [[ "${lines[2]}" == "Nothing to commit" ]]
+}
+
+@test "Info with one commit" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Test commit"
+
+  echo "Mark 2"
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "Nothing to commit"* ]]
+}
+
+@test "Info while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Test commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro info
+  [[ "${lines[0]}" == "Head is detached, at commit "* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "Nothing to commit"* ]]
+}
+
+# ~~~ Test Resolve ~~~
+
+@test "Resolve while not absorbing" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro resolve
+  [[ "${lines[0]}" == "You can only resolve conflicts while absorbing." ]]
+}
+
+# See "Absorb branch with content conflict and resolve"
+
+# ~~~ Test List ~~~
+
+@test "List branches" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+  git branch y
+  git branch z
+
+  echo "Mark 2"
+  metro list branches
+  run metro list branches
+  [[ "${lines[0]}" == *"master"* ]]
+  [[ "${lines[1]}" == *"x"* ]]
+  [[ "${lines[2]}" == *"y"* ]]
+  [[ "${lines[3]}" == *"z"* ]]
+}
+
+@test "Empty repo list no branches" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro list branches
+  [[ "${#lines[@]}" == 0 ]]
+}
+
+@test "List branches while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro list branches
+  [[ "${lines[0]}" == *"master"* ]]
+}
+
+@test "List commits" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${lines[4]}" == *"Initial Commit"* ]]
+}
+
+@test "Empty repo list commits" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${#lines[@]}" == 0 ]]
+}
+
+@test "List commits while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro list commits
+  [[ "${lines[4]}" == *"Initial Commit"* ]]
+}
+
+# ~~~ Test Rename ~~~
+
+@test "Rename branch (1 argument)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+
+  echo "Mark 2"
+  metro rename master-1
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == "* master-1" ]]
+}
+
+@test "Rename branch (2 arguments)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+
+  echo "Mark 2"
+  metro rename x y
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == "* master" ]]
+  [[ "${lines[1]}" == "  y" ]]
+}
+
+@test "Rename on empty repo" {
+  echo "Mark 1"
+  git init
+
+  echo "Mark 2"
+  run metro rename master-1
+  [[ "${lines[0]}" == "Cannot rename branch in an empty repo." ]]
+}
+
+@test "Rename while detached" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  run metro rename master-1
+  [[ "${lines[0]}" == "The head is not pointing at any branch, so cannot rename." ]]
+  [[ "${lines[1]}" == "Try using 'metro rename <branch> master-1'." ]]
 }
