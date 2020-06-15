@@ -1393,10 +1393,43 @@ setup() {
   git init
 
   echo "Mark 2"
+  metro info
   run metro info
   [[ "${lines[0]}" == "Current branch is master" ]]
   [[ "${lines[1]}" == "Not merging" ]]
   [[ "${lines[2]}" == "Nothing to commit" ]]
+}
+
+@test "Info with no commits and some changes" {
+  echo "Mark 1"
+  git init
+  echo "Test content" > test.txt
+  git add test.txt
+  echo "Test content 2" > test2.txt
+
+  echo "Mark 2"
+  git status
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   test.txt" ]]
+  [[ "${lines[5]}" == "Untracked files:" ]]
+  [[ "${lines[7]}" == *"test2.txt" ]]
+
+  echo "Mark 3"
+  metro info
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master" ]]
+  [[ "${lines[1]}" == "Not merging" ]]
+  [[ "${lines[2]}" == "2 files to add" ]]
+
+  # Mustn't change index state
+  echo "Mark 4"
+  git status
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   test.txt" ]]
+  [[ "${lines[5]}" == "Untracked files:" ]]
+  [[ "${lines[7]}" == *"test2.txt" ]]
 }
 
 @test "Info with one commit" {
@@ -1409,6 +1442,39 @@ setup() {
   [[ "${lines[0]}" == "Current branch is master"* ]]
   [[ "${lines[1]}" == "Not merging"* ]]
   [[ "${lines[2]}" == "Nothing to commit"* ]]
+}
+
+@test "Info with one commit and some changes" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Test commit"
+  echo "Test content" > test.txt
+  git add test.txt
+  echo "Test content 2" > test2.txt
+
+  echo "Mark 2"
+  git status
+  run git status
+  [[ "${lines[1]}" == "Changes to be committed:" ]]
+  [[ "${lines[3]}" == *"new file:   test.txt" ]]
+  [[ "${lines[4]}" == "Untracked files:" ]]
+  [[ "${lines[6]}" == *"test2.txt" ]]
+
+  echo "Mark 3"
+  metro info
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "2 files to add"* ]]
+
+  # Mustn't change index state
+  echo "Mark 4"
+  git status
+  run git status
+  [[ "${lines[1]}" == "Changes to be committed:" ]]
+  [[ "${lines[3]}" == *"new file:   test.txt" ]]
+  [[ "${lines[4]}" == "Untracked files:" ]]
+  [[ "${lines[6]}" == *"test2.txt" ]]
 }
 
 @test "Info while detached" {
