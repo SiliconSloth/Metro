@@ -676,13 +676,12 @@ setup() {
   echo "$ git init"
   git init
   echo "$ metro branch other"
-  metro branch other
+  run metro branch other
 
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[0]}" == "  master" ]]
-  [[ "${lines[1]}" == "* other" ]]
+  [[ "$output" == "" ]]
 }
 
 @test "Create branch while detached" {

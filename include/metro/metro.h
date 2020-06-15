@@ -162,6 +162,11 @@ namespace metro {
     bool is_on_branch(const Repository& repo, const string& branch);
 
     /**
+     * Check if the current branch has any commits on it.
+     */
+    bool head_exists(const Repository& repo);
+
+    /**
      * Deletes the branch of the given name.
      *
      * @param repo Repo to delete branch from.

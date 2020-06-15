@@ -28,6 +28,11 @@ Command branch {
                 throw MetroException("Branch " + name + " already exists.");
             }
 
+            if (!metro::head_exists(repo)) {
+                throw UnsupportedOperationException("Cannot create branch when the current branch is empty.\n"
+                                                    "Please make an initial commit first.");
+            }
+
             metro::create_branch(repo, name);
             cout << "Created branch " + name + "." << endl;
 

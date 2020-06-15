@@ -159,6 +159,10 @@ namespace metro {
         return !head.detached && head.name == branch;
     }
 
+    bool head_exists(const Repository& repo) {
+        return commit_exists(repo, "HEAD");
+    }
+
     void delete_branch(const Repository& repo, const string& name) {
         // If the user tries to delete the current branch,
         // we must switch out of it first.
