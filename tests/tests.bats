@@ -730,7 +730,8 @@ setup() {
   run git branch --list
   [[ "${lines[0]}" == "* (HEAD detached at "* ]]
   [[ "${lines[1]}" == "  master" ]]
-  [[ "${#lines[@]}" == 2 ]]
+  [[ "${lines[2]}" == "  other" ]]
+  [[ "${#lines[@]}" == 3 ]]
 }
 
 @test "Create branch with children" {

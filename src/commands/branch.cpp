@@ -36,18 +36,13 @@ Command branch {
             metro::create_branch(repo, name);
             cout << "Created branch " + name + "." << endl;
 
-            // Finds differences between head and working dir
-            git::Tree current = metro::get_commit(repo, "HEAD").tree();
-            git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
-            git::Diff diff = git::Diff::tree_to_workdir(repo, current, &opts);
-
-            if (diff.num_deltas() > 0) {
-                cout << "Saved changes to WIP" << endl;
+            if (repo.head_detached() && metro::has_uncommitted_changes(repo)) {
+                cout << "Could not switch to new branch due to uncommitted changes." << endl;
+            } else {
+                metro::switch_branch(repo, name);
+                const metro::Head head = metro::get_head(repo);
+                cout << "Switched to branch " << head.name << ".\n";
             }
-
-            metro::switch_branch(repo, name);
-            const metro::Head head = metro::get_head(repo);
-            cout << "Switched to branch " << head.name << ".\n";
         },
 
         // printHelp
