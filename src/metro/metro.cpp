@@ -238,15 +238,23 @@ namespace metro {
         } catch (BranchNotFoundException&) {
             // We don't mind if the delete fails, we tried it just in case.
         }
-        create_branch(repo, wipName);
 
+        bool headExists = commit_exists(repo, "HEAD");
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
             string message = get_merge_message(repo);
-            commit(repo, "refs/heads/"+wipName, "WIP\n"+message, {"HEAD", "MERGE_HEAD"});
+            if (headExists) {
+                commit(repo, "refs/heads/" + wipName, "WIP\n" + message, {"HEAD", "MERGE_HEAD"});
+            } else {
+                commit(repo, "refs/heads/" + wipName, "WIP\n" + message, {"MERGE_HEAD"});
+            }
             repo.cleanup_state();
         } else {
-            commit(repo, "refs/heads/"+wipName, "WIP", {"HEAD"});
+            if (headExists) {
+                commit(repo, "refs/heads/" + wipName, "WIP", {"HEAD"});
+            } else {
+                commit(repo, "refs/heads/" + wipName, "WIP", {});
+            }
         }
     }
 

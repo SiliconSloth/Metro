@@ -539,13 +539,15 @@ setup() {
   echo "Mark 5"
   metro clone ../remote/repo
   cd repo
+
   echo "Mark 6"
-
   run git branch --list
-  [[ "$output" == "master#wip" ]]
+  [[ "${#lines[@]}" == 0 ]]
 
-  run git log
-  [[ "$output" == "fatal: your current branch 'master' does not have any commits yet" ]]
+  echo "Mark 7"
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   local1.txt" ]]
 }
 
 @test "Sync down changes with unchanged local WIP" {

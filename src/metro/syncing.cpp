@@ -15,11 +15,11 @@ namespace metro {
     bool DualTarget::is_valid(const Repository& repo, map<OID, OID>& wipCommits) const {
         if (hasWip) {
             // head should never be null if hasWip is true.
-            // base should not be null if hasWip is true, as that would imply there is a WIP branch with no base branch.
+            // If the base is null, any commit would be a valid WIP.
             //
-            // The first parent should always be the head of the base branch,
+            // The first parent should always be the head of the base branch (if present),
             // even if the WIP commit is a merge.
-            return (!base.isNull && !head.isNull) && repo.lookup_commit(wipCommits[head]).parent(0).id() == base;
+            return !head.isNull && (base.isNull || repo.lookup_commit(wipCommits[head]).parent(0).id() == base);
         } else {
             return true;
         }
@@ -613,14 +613,9 @@ namespace metro {
                 // as it is hard to tell what the user intended in such a situation.
                 bool localOK = targets.local.is_valid(repo, wipCommits);
                 string side = localOK ? "Remote" : "Local";
-                if ((localOK? targets.remote : targets.local).base.isNull) {
-                    cout << side << " wip branch for " << branchName << " has no corresponding base branch "
-                         << branchName << ". Therefore it cannot be synced." << endl;
-                } else {
-                    cout << side << " wip branch for " << branchName << " is not a valid work in progress branch for "
-                         << branchName << ", so neither branch can be synced. Delete " << to_wip(branchName)
-                         << " to resolve the issue." << endl;
-                }
+                cout << side << " wip branch for " << branchName << " is not a valid work in progress branch for "
+                     << branchName << ", so neither branch can be synced. Delete " << to_wip(branchName)
+                     << " to resolve the issue." << endl;
             }
         }
 
