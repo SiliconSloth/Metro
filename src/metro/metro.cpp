@@ -131,14 +131,27 @@ namespace metro {
         }
     }
 
-    string current_branch_name(const Repository& repo) {
-        BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-        for (Branch branch; iter.next(&branch);) {
-            if (branch.is_head()) {
-                return branch.name();
+    Head get_head(const Repository& repo) {
+        string name = read_all(repo.path() + "HEAD");
+        if (has_prefix(name, "ref: refs/")) {
+            name = name.substr(10, string::npos);
+            if (has_prefix(name, "heads/")) {
+                name = name.substr(6, string::npos);
+            } else if (has_prefix(name, "remotes/")) {
+                name = name.substr(8, string::npos);
             }
         }
-        throw BranchNotFoundException();
+
+        if (has_suffix(name, "\n")) {
+            name = name.substr(0, name.size()-1);
+        }
+
+        return Head{name, repo.head_detached()};
+    }
+
+    bool is_on_branch(const Repository& repo, const string& branch) {
+        const Head head = get_head(repo);
+        return !head.detached && head.name == branch;
     }
 
     void delete_branch(const Repository& repo, const string& name) {
@@ -146,7 +159,7 @@ namespace metro {
         // we must switch out of it first.
         // Preferably switch into the master branch,
         // but if that does not exist just pick an arbitrary branch.
-        if (name == current_branch_name(repo)) {
+        if (is_on_branch(repo, name)) {
             if (branch_exists(repo, "master") && name != "master") {
                 switch_branch(repo, "master");
             } else {
@@ -203,24 +216,17 @@ namespace metro {
         return conflicts;
     }
 
-    void fast_forward(const Repository &repo, string name) {
-        // Replaces all current work with origin
-        string branch = current_branch_name(repo);
-        checkout(repo, name);
-        Branch ref = repo.lookup_branch(branch, GIT_BRANCH_LOCAL);
-        Branch refOrigin = repo.lookup_branch("origin/" + branch, GIT_BRANCH_REMOTE);
-        ref.set_target(refOrigin.target(), "message");
-        checkout_branch(repo, branch);
-    }
-
     void save_wip(const Repository& repo) {
         // If there are no changes since the last commit, don't bother with a WIP commit.
         if (!(has_uncommitted_changes(repo) || merge_ongoing(repo))) {
             return;
         }
 
-        string name = current_branch_name(repo);
-        string wipName = to_wip(name);
+        const Head head = get_head(repo);
+        if (head.detached) {
+            throw UnsupportedOperationException("Attempted to save WIP with detached head");
+        }
+        string wipName = to_wip(head.name);
 
         try {
             delete_branch(repo, wipName);
@@ -240,8 +246,11 @@ namespace metro {
     }
 
     void restore_wip(const Repository& repo) {
-        string name = current_branch_name(repo);
-        string wipName = to_wip(name);
+        const Head head = get_head(repo);
+        if (head.detached) {
+            throw UnsupportedOperationException("Attempted to restore WIP with detached head");
+        }
+        string wipName = to_wip(head.name);
 
         if (!branch_exists(repo, wipName)) {
             return;

@@ -39,13 +39,6 @@ Command commit {
 
                     metro::commit(repo, message, {"HEAD"});
 
-                    // Delete WIP branch if any
-                    string name = metro::current_branch_name(repo);
-                    string wipName = metro::to_wip(name);
-                    if (metro::branch_exists(repo, wipName)) {
-                        metro::delete_branch(repo, wipName);
-                    }
-
                     // Print any changed files
                     int added = diff.num_deltas_of_type(GIT_DELTA_ADDED);
                     int deleted = diff.num_deltas_of_type(GIT_DELTA_DELETED);
@@ -58,13 +51,13 @@ Command commit {
                     if (renamed != 0) cout << renamed << " file" << (renamed > 1 ? "s" : "") << " renamed" << endl;
                     if (copied != 0) cout << copied << " file" << (copied > 1 ? "s" : "") << " copied" << endl;
 
-                    string branch = metro::current_branch_name(repo);
-                    cout << "Saved commit to branch " << branch << "." << endl;
+                    const metro::Head head = metro::get_head(repo);
+                    cout << "Saved commit to branch " << head.name << "." << endl;
                 } else {
                     // Initial commit of repo with no parent.
                     metro::commit(repo, message, {});
-                    string branch = metro::current_branch_name(repo);
-                    cout << "Made initial commit in branch " << branch << "." << endl;
+                    const metro::Head head = metro::get_head(repo);
+                    cout << "Made initial commit in branch " << head.name << "." << endl;
                 }
             } catch (UnsupportedOperationException &e) {
                 cout << e.what() << endl;

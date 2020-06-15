@@ -24,8 +24,8 @@ Command absorbCmd {
             if (hasConflicts) {
                 cout << "Conflicts occurred, please resolve." << endl;
             } else {
-                string current = metro::current_branch_name(repo);
-                cout << "Successfully absorbed " << name << " into " << current << ".\n";
+                const metro::Head head = metro::get_head(repo);
+                cout << "Successfully absorbed " << name << " into " << head.name << ".\n";
             }
         },
 

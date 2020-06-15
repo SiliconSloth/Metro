@@ -28,7 +28,7 @@ void print_details(const git::Repository &repo, git::Commit nth_parent, void *hC
             } else {
                 cout << ", ";
             }
-            if (b.name() == metro::current_branch_name(repo)) {
+            if (metro::is_on_branch(repo, b.name())) {
                 // Green for current branch
                 set_text_colour("-g------f", hConsole);
             } else {
@@ -118,10 +118,9 @@ Command listCmd{
                 }
 
                 git::BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-                std::string current = metro::current_branch_name(repo);
                 for (git::Branch branch; iter.next(&branch);) {
                     std::string name = branch.name();
-                    if (current == name){
+                    if (metro::is_on_branch(repo, name)){
                         cout << " * ";
                         set_text_colour("-g------f", hConsole);
                         cout << branch.name() << endl;

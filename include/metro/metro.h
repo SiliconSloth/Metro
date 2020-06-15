@@ -151,12 +151,15 @@ namespace metro {
     bool branch_exists(const Repository &repo, const string& name);
 
     /**
-     * Gets the name of the current branch.
-     *
-     * @param repo Repo to search for current branch in.
-     * @return The current branch name.
+     * Gets the current head of the repository.
      */
-    string current_branch_name(const Repository& repo);
+    Head get_head(const Repository& repo);
+
+    /**
+     * Checks if the repository's head is at the given branch name.
+     * Always returns false if the head is detached.
+     */
+    bool is_on_branch(const Repository& repo, const string& branch);
 
     /**
      * Deletes the branch of the given name.
@@ -192,15 +195,6 @@ namespace metro {
      * @return The list of conflicts in that index.
      */
     [[nodiscard]] vector<StandaloneConflict> get_conflicts(const Index& index);
-
-    /**
-     * Replaces all current work with new branch, resetting the commit
-     * Does NOT check if safe - do that first
-     *
-     * @param repo Repo to fast-forward within.
-     * @param name Name of branch to fast-forward.
-     */
-    void fast_forward(const Repository &repo, string name);
 
     /**
      * If the working directory has changes since the last commit, or a merge has been started,

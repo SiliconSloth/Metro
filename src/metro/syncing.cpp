@@ -347,7 +347,7 @@ namespace metro {
         } else {
             repo.create_reference("refs/heads/" + branchName, newTarget, true);
             // Update the working dir if this is the current branch.
-            if (branchName == current_branch_name(repo)) {
+            if (is_on_branch(repo, branchName)) {
                 checkout(repo, branchName);
             }
         }
@@ -409,7 +409,7 @@ namespace metro {
         // If this is the current branch, move the head to the new branch
         // so the user stays on their version of the branch.
         // We don't need to checkout as the contents will not have changed.
-        if (name == current_branch_name(repo)) {
+        if (is_on_branch(repo, name)) {
             move_head(repo, newName);
             cout << "You've been moved to " << newName << "." << endl;
         }
@@ -532,7 +532,7 @@ namespace metro {
                     syncedBranches.push_back(to_wip(branchName));
                 }
 
-                if (branchName == current_branch_name(repo)) {
+                if (is_on_branch(repo, branchName)) {
                     cout << "Branch " << branchName << " is already synced." << endl;
                 }
             } else if (targets.local.is_valid(repo, wipCommits) && targets.remote.is_valid(repo, wipCommits)) {

@@ -41,8 +41,8 @@ Command branch {
             }
 
             metro::switch_branch(repo, name);
-            cout << "Switched to branch " << name << ".\n";
-            cout << "Currently on branch " + metro::current_branch_name(repo) << endl;
+            const metro::Head head = metro::get_head(repo);
+            cout << "Switched to branch " << head.name << ".\n";
         },
 
         // printHelp

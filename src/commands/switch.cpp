@@ -26,7 +26,7 @@ Command switchCmd {
             bool exists = metro::branch_exists(repo, wip);
 
             // If branch is current branch
-            if (name == metro::current_branch_name(repo)) {
+            if (metro::is_on_branch(repo, name)) {
                 if (exists) {
                     metro::restore_wip(repo);
                     cout << "Loaded changes from WIP" << endl;

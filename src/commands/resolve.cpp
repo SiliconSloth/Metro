@@ -14,8 +14,8 @@ Command resolve {
             git::Repository repo = git::Repository::open(".");
             metro::resolve(repo);
 
-            string current = metro::current_branch_name(repo);
-            cout << "Successfully absorbed into " << current << ".\n";
+            const metro::Head head = metro::get_head(repo);
+            cout << "Successfully absorbed into " << head.name << ".\n";
         },
 
         // printHelp

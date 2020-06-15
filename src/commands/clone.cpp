@@ -32,15 +32,7 @@ Command clone_repo {
             cout << "Cloning " << url << " into " << name << endl;
             metro::Repository repo = metro::clone(url, name);
 
-            string current_branch;
-            bool found = false;
-            try {
-                current_branch = metro::current_branch_name(repo);
-                found = true;
-            } catch(BranchNotFoundException &ex) {
-                // Do nothing if there is no current branch.
-            }
-            if (found && metro::branch_exists(repo, metro::to_wip(current_branch))) {
+            if (!repo.head_detached()) {
                 metro::restore_wip(repo);
             }
 

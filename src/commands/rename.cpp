@@ -23,10 +23,12 @@ Command renameCmd {
             string from, to;
             if (args.positionals.size() == 1) {
                 to = args.positionals[0];
-                try {
-                    from = metro::current_branch_name(repo);
-                } catch (BranchNotFoundException &e) {
-                    throw MetroException("The HEAD is not pointing at any branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
+                const metro::Head head = metro::get_head(repo);
+                if (head.detached) {
+                    throw MetroException("Head is detached, so cannot rename.\n"
+                                         "Try using 'metro rename <branch> " + to + "'.");
+                } else {
+                    from = head.name;
                 }
             } else {
                 from = args.positionals[0];

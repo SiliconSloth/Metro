@@ -333,9 +333,14 @@ namespace git {
         void set_head(const string& name) const;
 
         /**
+         * Retrieve and resolve the reference pointed at by HEAD.
+         */
+        Branch head() const;
+
+        /**
          * Check if a repository's HEAD is detached.
          */
-        boolean head_detached() const;
+        bool head_detached() const;
 
         /**
          * Updates files in the index and working tree to match the content of the

@@ -175,7 +175,14 @@ namespace git {
         check_error(err);
     }
 
-    boolean Repository::head_detached() const {
+    Branch Repository::head() const {
+        git_reference *out;
+        int err = git_repository_head(&out, repo.get());
+        check_error(err);
+        return Branch(out);
+    }
+
+    bool Repository::head_detached() const {
         int val = git_repository_head_detached(repo.get());
         check_error(val);
         return val;
