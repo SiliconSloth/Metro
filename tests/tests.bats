@@ -1395,9 +1395,9 @@ setup() {
   echo "Mark 2"
   metro info
   run metro info
-  [[ "${lines[0]}" == "Current branch is master" ]]
-  [[ "${lines[1]}" == "Not merging" ]]
-  [[ "${lines[2]}" == "Nothing to commit" ]]
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "Nothing to commit"* ]]
 }
 
 @test "Info with no commits and some changes" {
@@ -1418,9 +1418,9 @@ setup() {
   echo "Mark 3"
   metro info
   run metro info
-  [[ "${lines[0]}" == "Current branch is master" ]]
-  [[ "${lines[1]}" == "Not merging" ]]
-  [[ "${lines[2]}" == "2 files to add" ]]
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "2 files to add"* ]]
 
   # Mustn't change index state
   echo "Mark 4"
