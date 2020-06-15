@@ -923,7 +923,8 @@ setup() {
   echo "Mark 5"
   git branch --list
   run git branch --list
-  [[ "$output" == "  master" ]]
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
 
   echo "Mark 6"
   git checkout master
@@ -1373,6 +1374,7 @@ setup() {
   git branch branch-2
   git checkout branch-2
   touch "Test"
+  git add -A
   git commit -m "Test commit"
 
   echo "Mark 3"
@@ -1417,7 +1419,7 @@ setup() {
 
   echo "Mark 2"
   run metro info
-  [[ "${lines[0]}" == "Head is detached, at commit "* ]]
+  [[ "${lines[0]}" == "Head is detached at commit "* ]]
   [[ "${lines[1]}" == "Not merging"* ]]
   [[ "${lines[2]}" == "Nothing to commit"* ]]
 }
@@ -1489,6 +1491,7 @@ setup() {
   git init
 
   echo "Mark 2"
+  metro list commits
   run metro list commits
   [[ "${#lines[@]}" == 0 ]]
 }
@@ -1539,8 +1542,11 @@ setup() {
   git init
 
   echo "Mark 2"
-  run metro rename master-1
-  [[ "${lines[0]}" == "Cannot rename branch in an empty repo." ]]
+  metro rename master-1
+
+  echo "Mark 3"
+  run git branch --list
+  [[ "$output" == "* master-1" ]]
 }
 
 @test "Rename while detached" {
@@ -1551,6 +1557,9 @@ setup() {
 
   echo "Mark 2"
   run metro rename master-1
-  [[ "${lines[0]}" == "The HEAD is not pointing at any branch, so cannot rename." ]]
-  [[ "${lines[1]}" == "Try using 'metro rename <branch> master-1'." ]]
+
+  echo "Mark 3"
+  run git branch --list
+  [[ "${lines[0]}" == *"* (HEAD detached at"* ]]
+  [[ "${lines[1]}" ==  "  master" ]]
 }
