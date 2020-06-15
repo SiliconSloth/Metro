@@ -1551,6 +1551,6 @@ setup() {
 
   echo "Mark 2"
   run metro rename master-1
-  [[ "${lines[0]}" == "The HEAD is not pointing at any branch, so cannot rename." ]]
+  [[ "${lines[0]}" == "The head is not pointing at any branch, so cannot rename." ]]
   [[ "${lines[1]}" == "Try using 'metro rename <branch> master-1'." ]]
 }

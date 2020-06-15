@@ -460,8 +460,21 @@ namespace metro {
 
     Repository clone(const string& url, const string& path) {
         CredentialStore credentials;
-        Repository repo = clone(url, path, &credentials);
-        return repo;
+        try {
+            Repository repo = clone(url, path, &credentials);
+            return repo;
+        } catch (GitException &e) {
+            string error(e.what());
+            string test;
+            int pos;
+
+            test = "The filename, directory name, or volume label syntax is incorrect.";
+            pos = error.find(test) + string(test).length();
+            if (pos >= 0 && pos <= error.length()) {
+                throw MetroException("Unable to create directory '" + path + "' as that name is disallowed on this OS.");
+            }
+            throw e;
+        }
     }
 
     Repository clone(const string& url, const string& path, CredentialStore *credentials) {

@@ -23,6 +23,10 @@ Command branch {
                 throw MetroException("Branch name can't end in " + string(WIP_SUFFIX));
             }
 
+            if (!git_reference_is_valid_name(("refs/heads/" + name).c_str())) {
+                throw MetroException("Branch name '" + name + "' is an invalid name");
+            }
+
             git::Repository repo = git::Repository::open(".");
             if (metro::branch_exists(repo, name)) {
                 throw MetroException("Branch " + name + " already exists.");

@@ -26,7 +26,7 @@ Command renameCmd {
                 try {
                     from = metro::current_branch_name(repo);
                 } catch (BranchNotFoundException &e) {
-                    throw MetroException("The HEAD is not pointing at any branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
+                    throw MetroException("The head is not pointing at any branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
                 }
             } else {
                 from = args.positionals[0];
@@ -34,6 +34,10 @@ Command renameCmd {
             }
 
             bool force = args.options.find("force") != args.options.end();
+
+            if (!metro::branch_exists(repo, from)) {
+                throw BranchNotFoundException(from);
+            }
 
             // Ensure target branch + wip doesn't exist
             if (metro::branch_exists(repo, to) && !force) throw UnsupportedOperationException("There is already a branch with that name.\nTo overwrite it, use 'metro rename --force'.");
