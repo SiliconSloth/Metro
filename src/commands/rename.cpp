@@ -26,7 +26,7 @@ Command renameCmd {
                 try {
                     from = metro::current_branch_name(repo);
                 } catch (BranchNotFoundException &e) {
-                    throw MetroException("The head is not pointing at any branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
+                    throw MetroException("You are not on a branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
                 }
             } else {
                 from = args.positionals[0];
@@ -61,6 +61,6 @@ Command renameCmd {
 
         // printHelp
         [](const Arguments &args) {
-            cout << "Usage: metro rename <branch-1> [<branch-2>]" << endl;
+            cout << "Usage: metro rename <branch-1> [branch-2]" << endl;
         }
 };

@@ -39,7 +39,7 @@ unsigned int parse_pos_int(const string& str);
  * has_prefix(test, "git"); // Returns false
  * @endcode
  */
-bool has_prefix(string const& str, string pre);
+bool has_prefix(string const& str, string& pre);
 
 /**
  * Tests whether a certain string contains a certain suffix.
@@ -54,7 +54,7 @@ bool has_prefix(string const& str, string pre);
  * has_suffix(test, "git"); // Returns false
  * @endcode
  */
-bool has_suffix(string const& str, string suff);
+bool has_suffix(string const& str, string& suff);
 
 /**
  * True if the string contains no non-whitespace characters.

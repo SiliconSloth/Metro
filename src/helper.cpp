@@ -17,7 +17,7 @@ unsigned int parse_pos_int(const string& str) {
     return -1;
 }
 
-bool has_prefix(const string& str, const string pre) {
+bool has_prefix(const string& str, const string& pre) {
     if (pre.size() <= str.size()) {
         return str.compare(0, pre.size(), pre) == 0;
     } else {
@@ -25,7 +25,7 @@ bool has_prefix(const string& str, const string pre) {
     }
 }
 
-bool has_suffix(const string& str, const string suff) {
+bool has_suffix(const string& str, const string& suff) {
     if (suff.size() <= str.size()) {
         return str.compare(str.size() - suff.size(), suff.size(), suff) == 0;
     } else {
