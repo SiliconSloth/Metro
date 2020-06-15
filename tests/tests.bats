@@ -818,6 +818,24 @@ setup() {
   [[ "${lines[1]}" == "  other" ]]
 }
 
+@test "Switch to non-head revision" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  echo "Test content" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  metro switch HEAD~
+
+  echo "Mark 4"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+}
+
 @test "Switch branch while detached with uncommitted changes" {
   echo "Mark 1"
   git init
