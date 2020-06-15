@@ -1611,8 +1611,14 @@ setup() {
   metro rename master-1
 
   echo "Mark 3"
+  git branch --list
   run git branch --list
-  [[ "$output" == "* master-1" ]]
+  [[ "${#lines[@]}" == 0 ]]
+
+  echo "Mark 4"
+  cat .git/HEAD
+  run cat .git/HEAD
+  [[ "$output" == "ref: refs/heads/master-1"* ]]
 }
 
 @test "Rename while detached" {
