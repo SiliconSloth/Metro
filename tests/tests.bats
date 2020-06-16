@@ -80,13 +80,13 @@ setup() {
   echo "Mark 4"
 
   echo "Test file 3" > test.txt
-  metro commit "Test commit message 3"
+  run metro commit "Test commit message 3"
+  [[ "$status" != 0 ]]
   echo "Mark 5"
 
   git log
   run git log
-  [[ "${lines[3]}" == *"Test commit message 3"* ]]
-  [[ "${lines[7]}" == *"Test commit message 1"* ]]
+  [[ "${lines[3]}" == *"Test commit message 1"* ]]
 }
 
 # ~~~ Test Clone ~~~
@@ -539,13 +539,15 @@ setup() {
   echo "Mark 5"
   metro clone ../remote/repo
   cd repo
+
   echo "Mark 6"
-
   run git branch --list
-  [[ "$output" == "master#wip" ]]
+  [[ "${#lines[@]}" == 0 ]]
 
-  run git log
-  [[ "$output" == "fatal: your current branch 'master' does not have any commits yet" ]]
+  echo "Mark 7"
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   local1.txt" ]]
 }
 
 @test "Sync down changes with unchanged local WIP" {
@@ -674,13 +676,12 @@ setup() {
   echo "$ git init"
   git init
   echo "$ metro branch other"
-  metro branch other
+  run metro branch other
 
   echo "$ git branch --list"
   git branch --list
   run git branch --list
-  [[ "${lines[0]}" == "  master" ]]
-  [[ "${lines[1]}" == "* other" ]]
+  [[ "$output" == "" ]]
 }
 
 @test "Create branch while detached" {
@@ -729,7 +730,8 @@ setup() {
   run git branch --list
   [[ "${lines[0]}" == "* (HEAD detached at "* ]]
   [[ "${lines[1]}" == "  master" ]]
-  [[ "${#lines[@]}" == 2 ]]
+  [[ "${lines[2]}" == "  other" ]]
+  [[ "${#lines[@]}" == 3 ]]
 }
 
 @test "Create branch with children" {
@@ -750,13 +752,16 @@ setup() {
   git checkout HEAD~
 
   echo "Mark 6"
+  git status
   metro branch other
 
   echo "Mark 7"
+  git log
   run git log
   [[ "${lines[3]}" == *"Test commit 1"* ]]
 
   echo "Mark 8"
+  git branch --list
   run git branch --list
   [[ "${lines[0]}" == "  master" ]]
   [[ "${lines[1]}" == "* other" ]]
@@ -816,6 +821,24 @@ setup() {
   [[ "${lines[1]}" == "  other" ]]
 }
 
+@test "Switch to non-head revision" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  echo "Test content" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 3"
+  metro switch HEAD~
+
+  echo "Mark 4"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+}
+
 @test "Switch branch while detached with uncommitted changes" {
   echo "Mark 1"
   git init
@@ -829,7 +852,7 @@ setup() {
   echo "test content" > test.txt
 
   echo "Mark 4"
-  metro switch other
+  run metro switch other
 
   echo "Mark 5"
   git branch --list
@@ -838,6 +861,34 @@ setup() {
   [[ "${lines[1]}" == "  master" ]]
   [[ "${lines[2]}" == "  other" ]]
   [[ "${#lines[@]}" == 3 ]]
+}
+
+@test "Switch branch while detached with uncommitted changes with --force" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch other
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  echo "test content" > test.txt
+
+  echo "Mark 4"
+  metro switch other --force
+
+  echo "Mark 5"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+  [[ "${#lines[@]}" == 2 ]]
+
+  echo "Mark 6"
+  git status
+  run git status
+  [[ "$output" == *"nothing to commit"* ]]
 }
 
 @test "Switch branch with children" {
@@ -923,7 +974,8 @@ setup() {
   echo "Mark 5"
   git branch --list
   run git branch --list
-  [[ "$output" == "  master" ]]
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
 
   echo "Mark 6"
   git checkout master
@@ -957,7 +1009,32 @@ setup() {
   echo "$ ls"
   ls
   run ls
-  [[ "$output" != "test.txt" ]]
+  [[ -z "$output" ]]
+}
+
+@test "Delete last commit with uncommitted changes" {
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
+  echo "Test file content" > test.txt
+  git add -A
+  git commit -m "Test Commit"
+  echo "Test content 2" > test2.txt
+
+  echo "$ metro delete commit"
+  metro delete commit
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[3]}" != *"Test Commit"* ]]
+
+  echo "$ ls"
+  ls
+  run ls
+  [[ -z "$output" ]]
 }
 
 @test "Delete last commit soft" {
@@ -984,9 +1061,37 @@ setup() {
   [[ "$output" == "test.txt" ]]
 }
 
+@test "Delete last commit soft with uncommitted changes" {
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
+  echo "Test file content" > test.txt
+  git add -A
+  git commit -m "Test Commit"
+  echo "Test content 2" > test2.txt
+
+  echo "$ metro delete commit --soft"
+  metro delete commit --soft
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[3]}" != *"Test Commit"* ]]
+
+  echo "$ ls"
+  ls
+  run ls
+  [[ "$output" == *"test.txt"* ]]
+  [[ "$output" == *"test2.txt"* ]]
+  [[ "${#lines[@]}" == 2 ]]
+}
+
 @test "Delete with children" {
   echo "Mark 1"
   git init
+  git commit --allow-empty -m "Initial commit"
 
   echo "Mark 2"
   echo "Test content 1" > test.txt
@@ -1005,12 +1110,21 @@ setup() {
   git checkout other
 
   echo "Mark 6"
-  run metro delete commit
-  [[ "$output" == "Cannot delete because commit has children" ]]
+  metro delete commit
 
   echo "Mark 7"
+  git log
   run git log
-  [[ "${lines[3]}" == *"Test commit 1"* ]]
+  [[ "${lines[3]}" == *"Initial commit"* ]]
+
+  echo "Mark 8"
+  git checkout master
+
+  echo "Mark 9"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${lines[11]}" == *"Initial commit"* ]]
 }
 
 @test "Delete initial commit" {
@@ -1065,12 +1179,13 @@ setup() {
 
   echo "Mark 7"
   run git log
-  [[ "${lines[3]}" == *"Create repository"* ]]
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
 }
 
 @test "Delete with detached head and children" {
   echo "Mark 1"
   git init
+  git commit --allow-empty -m "Initial commit"
 
   echo "Mark 2"
   echo "Test content 1" > test.txt
@@ -1083,15 +1198,24 @@ setup() {
   git commit -m "Test commit 2"
 
   echo "Mark 4"
-  git checkout HEAD~
+  git checkout master~
 
   echo "Mark 5"
-  run metro delete commit
-  [[ "$output" == "Cannot delete because commit has children" ]]
+  metro delete commit
 
   echo "Mark 6"
+  git log
   run git log
-  [[ "${lines[3]}" == *"Test commit 1"* ]]
+  [[ "${lines[3]}" == *"Initial commit"* ]]
+
+  echo "Mark 7"
+  git checkout master
+
+  echo "Mark 8"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${lines[11]}" == *"Initial commit"* ]]
 }
 
 # ~~~ Test Patch ~~~
@@ -1163,8 +1287,18 @@ setup() {
   git checkout other
 
   echo "Mark 6"
-  run metro patch "Patched commit"
-  [[ "$output" == "Cannot patch because commit has children" ]]
+  metro patch "Patched commit"
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Patched commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+
+  echo "Mark 8"
+  run git log master
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${#lines[@]}" == 8 ]]
 }
 
 @test "Patch with no commits" {
@@ -1202,7 +1336,7 @@ setup() {
 
   echo "Mark 7"
   run git log
-  [[ "${lines[3]}" == *"Patch test commit"* ]]
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
   [[ "${#lines[@]}" == 4 ]]
 }
 
@@ -1224,8 +1358,18 @@ setup() {
   git checkout HEAD~
 
   echo "Mark 5"
-  run metro patch "Patched commit"
-  [[ "$output" == "Cannot patch because commit has children" ]]
+  metro patch "Patched commit"
+
+  echo "Mark 6"
+  run git log
+  [[ "${lines[3]}" == *"Patched commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+
+  echo "Mark 7"
+  run git log master
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${#lines[@]}" == 8 ]]
 }
 
 # ~~~ Test Absorb ~~~
@@ -1373,6 +1517,7 @@ setup() {
   git branch branch-2
   git checkout branch-2
   touch "Test"
+  git add -A
   git commit -m "Test commit"
 
   echo "Mark 3"
@@ -1380,8 +1525,8 @@ setup() {
   git checkout "$(git rev-parse HEAD)"
 
   echo "Mark 4"
-  run metro absorb
-  [[ "${lines[0]}" == "You must be on a branch to absorb" ]]
+  run metro absorb branch-2
+  [[ "$output" == "You must be on a branch to absorb." ]]
 }
 
 # ~~~ Test Info ~~~
@@ -1391,10 +1536,43 @@ setup() {
   git init
 
   echo "Mark 2"
+  metro info
   run metro info
-  [[ "${lines[0]}" == "Current branch is master" ]]
-  [[ "${lines[1]}" == "Not merging" ]]
-  [[ "${lines[2]}" == "Nothing to commit" ]]
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "Nothing to commit"* ]]
+}
+
+@test "Info with no commits and some changes" {
+  echo "Mark 1"
+  git init
+  echo "Test content" > test.txt
+  git add test.txt
+  echo "Test content 2" > test2.txt
+
+  echo "Mark 2"
+  git status
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   test.txt" ]]
+  [[ "${lines[5]}" == "Untracked files:" ]]
+  [[ "${lines[7]}" == *"test2.txt" ]]
+
+  echo "Mark 3"
+  metro info
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "2 files to add"* ]]
+
+  # Mustn't change index state
+  echo "Mark 4"
+  git status
+  run git status
+  [[ "${lines[2]}" == "Changes to be committed:" ]]
+  [[ "${lines[4]}" == *"new file:   test.txt" ]]
+  [[ "${lines[5]}" == "Untracked files:" ]]
+  [[ "${lines[7]}" == *"test2.txt" ]]
 }
 
 @test "Info with one commit" {
@@ -1409,6 +1587,39 @@ setup() {
   [[ "${lines[2]}" == "Nothing to commit"* ]]
 }
 
+@test "Info with one commit and some changes" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Test commit"
+  echo "Test content" > test.txt
+  git add test.txt
+  echo "Test content 2" > test2.txt
+
+  echo "Mark 2"
+  git status
+  run git status
+  [[ "${lines[1]}" == "Changes to be committed:" ]]
+  [[ "${lines[3]}" == *"new file:   test.txt" ]]
+  [[ "${lines[4]}" == "Untracked files:" ]]
+  [[ "${lines[6]}" == *"test2.txt" ]]
+
+  echo "Mark 3"
+  metro info
+  run metro info
+  [[ "${lines[0]}" == "Current branch is master"* ]]
+  [[ "${lines[1]}" == "Not merging"* ]]
+  [[ "${lines[2]}" == "2 files to add"* ]]
+
+  # Mustn't change index state
+  echo "Mark 4"
+  git status
+  run git status
+  [[ "${lines[1]}" == "Changes to be committed:" ]]
+  [[ "${lines[3]}" == *"new file:   test.txt" ]]
+  [[ "${lines[4]}" == "Untracked files:" ]]
+  [[ "${lines[6]}" == *"test2.txt" ]]
+}
+
 @test "Info while detached" {
   echo "Mark 1"
   git init
@@ -1417,7 +1628,7 @@ setup() {
 
   echo "Mark 2"
   run metro info
-  [[ "${lines[0]}" == "Head is detached, at commit "* ]]
+  [[ "${lines[0]}" == "Head is detached at commit "* ]]
   [[ "${lines[1]}" == "Not merging"* ]]
   [[ "${lines[2]}" == "Nothing to commit"* ]]
 }
@@ -1481,7 +1692,9 @@ setup() {
 
   echo "Mark 2"
   run metro list commits
-  [[ "${lines[4]}" == *"Initial Commit"* ]]
+  # Strip blank lines to ensure compatibility across terminals
+  run echo "$(echo "$output" | grep -v -e '^[[:space:]]*$')"
+  [[ "${lines[3]}" == *"Initial Commit"* ]]
 }
 
 @test "Empty repo list commits" {
@@ -1489,8 +1702,9 @@ setup() {
   git init
 
   echo "Mark 2"
+  metro list commits
   run metro list commits
-  [[ "${#lines[@]}" == 0 ]]
+  [[ "$output" == "No commits at this location" ]]
 }
 
 @test "List commits while detached" {
@@ -1501,7 +1715,9 @@ setup() {
 
   echo "Mark 2"
   run metro list commits
-  [[ "${lines[4]}" == *"Initial Commit"* ]]
+  # Strip blank lines to ensure compatibility across terminals
+  run echo "$(echo "$output" | grep -v -e '^[[:space:]]*$')"
+  [[ "${lines[3]}" == *"Initial Commit"* ]]
 }
 
 # ~~~ Test Rename ~~~
@@ -1539,8 +1755,17 @@ setup() {
   git init
 
   echo "Mark 2"
-  run metro rename master-1
-  [[ "${lines[0]}" == "Cannot rename branch in an empty repo." ]]
+  metro rename master-1
+
+  echo "Mark 3"
+  git branch --list
+  run git branch --list
+  [[ "${#lines[@]}" == 0 ]]
+
+  echo "Mark 4"
+  cat .git/HEAD
+  run cat .git/HEAD
+  [[ "$output" == "ref: refs/heads/master-1"* ]]
 }
 
 @test "Rename while detached" {
@@ -1551,6 +1776,47 @@ setup() {
 
   echo "Mark 2"
   run metro rename master-1
-  [[ "${lines[0]}" == "The head is not pointing at any branch, so cannot rename." ]]
-  [[ "${lines[1]}" == "Try using 'metro rename <branch> master-1'." ]]
+
+  echo "Mark 3"
+  run git branch --list
+  [[ "${lines[0]}" == *"* (HEAD detached at"* ]]
+  [[ "${lines[1]}" ==  "  master" ]]
+}
+
+@test "Rename branch while detached (2 arguments)" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 2"
+  metro rename x y
+
+  echo "Mark 3"
+  run git branch
+  [[ "${lines[0]}" == *"* (HEAD detached at"* ]]
+  [[ "${lines[1]}" ==  "  master" ]]
+  [[ "${lines[2]}" ==  "  y" ]]
+}
+
+@test "Rename non-existent branch" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+
+  echo "Mark 2"
+  run metro rename z y
+
+  echo "Mark 3"
+  echo "$output"
+  [[ "$output" == "Branch 'z' not found." ]]
+
+  echo "Mark 4"
+  run git branch
+  echo "$output"
+  [[ "${lines[0]}" ==  "* master" ]]
+  [[ "${lines[1]}" ==  "  x" ]]
+  [[ "${#lines[@]}" ==  2 ]]
 }

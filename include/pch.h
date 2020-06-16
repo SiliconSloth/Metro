@@ -89,6 +89,7 @@ using std::function;
 #include "gitwrapper/strarray.h"
 #include "gitwrapper/diff.h"
 
+#include "metro/head.h"
 #include "metro/metro.h"
 #include "metro/credentials.h"
 #include "metro/merging.h"

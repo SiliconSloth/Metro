@@ -13,7 +13,12 @@ Command info {
         // execute
         [](const Arguments &args) {
             git::Repository repo = git::Repository::open(".");
-            cout << "Current branch is " << metro::current_branch_name(repo) << endl;
+            const metro::Head head = metro::get_head(repo);
+            if (head.detached) {
+                cout << "Head is detached at commit " << head.name << endl;
+            } else {
+                cout << "Current branch is " << head.name << endl;
+            }
             cout << (metro::merge_ongoing(repo) ? "Merge ongoing" : "Not merging") << endl;
             metro::add_all(repo);
             git::Diff diff = metro::current_changes(repo);

@@ -151,12 +151,20 @@ namespace metro {
     bool branch_exists(const Repository &repo, const string& name);
 
     /**
-     * Gets the name of the current branch.
-     *
-     * @param repo Repo to search for current branch in.
-     * @return The current branch name.
+     * Gets the current head of the repository.
      */
-    string current_branch_name(const Repository& repo);
+    Head get_head(const Repository& repo);
+
+    /**
+     * Checks if the repository's head is at the given branch name.
+     * Always returns false if the head is detached.
+     */
+    bool is_on_branch(const Repository& repo, const string& branch);
+
+    /**
+     * Check if the current branch has any commits on it.
+     */
+    bool head_exists(const Repository& repo);
 
     /**
      * Deletes the branch of the given name.
@@ -178,6 +186,16 @@ namespace metro {
     void checkout(const Repository& repo, const string& name);
 
     /**
+     * Checks out the given commit without moving head,
+     * such that the working directory will match the commit contents.
+     * Doesn't change current branch ref.
+     *
+     * @param repo Repo to checkout from.
+     * @param commit Commit to checkout.
+     */
+    void checkout(const Repository& repo, const Commit& commit);
+
+    /**
      * Whether the user has changes currently not committed.
      *
      * @param repo Repo to check against HEAD for.
@@ -192,15 +210,6 @@ namespace metro {
      * @return The list of conflicts in that index.
      */
     [[nodiscard]] vector<StandaloneConflict> get_conflicts(const Index& index);
-
-    /**
-     * Replaces all current work with new branch, resetting the commit
-     * Does NOT check if safe - do that first
-     *
-     * @param repo Repo to fast-forward within.
-     * @param name Name of branch to fast-forward.
-     */
-    void fast_forward(const Repository &repo, string name);
 
     /**
      * If the working directory has changes since the last commit, or a merge has been started,
@@ -223,9 +232,10 @@ namespace metro {
      *
      * @param repo Repo to switch to branch within.
      * @param name Name of branch to switch to.
+     * @param saveWip Whether or not to save uncommitted changes to the WIP branch before switching.
      * @throws UnsupportedOperationException If switching to a WIP branch is attempted.
      */
-    void switch_branch(const Repository& repo, const string& name);
+    void switch_branch(const Repository& repo, const string& name, bool saveWip);
 
     /**
      * Moves the head to the given ref.
@@ -236,12 +246,10 @@ namespace metro {
     void move_head(const Repository& repo, const string& name);
 
     /**
-     * Checks out the given branch by name
-     *
-     * @param repo Repo to checkout from.
-     * @param name Plain Text branch name reference (e.g. 'master')
+     * Resets head to the specified commit.
+     * If hard is specified the work dir is also reset to match the commit, otherwise it is left unmodified.
      */
-    void checkout_branch(const Repository& repo, const string& name);
+    void reset_head(const Repository& repo, const Commit& commit, bool hard);
 
     /**
      * Fill a list with all the references that can be found in a repository.

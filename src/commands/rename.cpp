@@ -23,10 +23,12 @@ Command renameCmd {
             string from, to;
             if (args.positionals.size() == 1) {
                 to = args.positionals[0];
-                try {
-                    from = metro::current_branch_name(repo);
-                } catch (BranchNotFoundException &e) {
-                    throw MetroException("You are not on a branch, so cannot rename.\nTry using 'metro rename <branch> " + to + "'.");
+                const metro::Head head = metro::get_head(repo);
+                if (head.detached) {
+                    throw MetroException("Head is detached, so cannot rename.\n"
+                                         "Try using 'metro rename <branch> " + to + "'.");
+                } else {
+                    from = head.name;
                 }
             } else {
                 from = args.positionals[0];
@@ -35,7 +37,7 @@ Command renameCmd {
 
             bool force = args.options.find("force") != args.options.end();
 
-            if (!metro::branch_exists(repo, from)) {
+            if (!metro::branch_exists(repo, from) && !metro::is_on_branch(repo, from)) {
                 throw BranchNotFoundException(from);
             }
 
@@ -43,8 +45,12 @@ Command renameCmd {
             if (metro::branch_exists(repo, to) && !force) throw UnsupportedOperationException("There is already a branch with that name.\nTo overwrite it, use 'metro rename --force'.");
             if (metro::branch_exists(repo, metro::to_wip(to)) && !force) throw UnsupportedOperationException("There is a WIP branch for the target branch name.\nTo overwrite it, use 'metro rename --force'.");
 
-            git::Branch current = repo.lookup_branch(from, GIT_BRANCH_LOCAL);
-            current.rename(to, force);
+            if (metro::branch_exists(repo, from)) {
+                git::Branch current = repo.lookup_branch(from, GIT_BRANCH_LOCAL);
+                current.rename(to, force);
+            } else {
+                write_all("ref: refs/heads/" + to + "\n", repo.path()+"HEAD");
+            }
 
             // Delete target wip if exists
             if (metro::branch_exists(repo, metro::to_wip(to))) {
