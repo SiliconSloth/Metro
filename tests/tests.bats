@@ -885,7 +885,7 @@ setup() {
   echo "Mark 6"
   git status
   run git status
-  [[ "${lines[1]}" == "nothing to commit, working tree clean" ]]
+  [[ "$output" == *"nothing to commit"* ]]
 }
 
 @test "Switch branch with children" {
@@ -1080,8 +1080,8 @@ setup() {
   echo "$ ls"
   ls
   run ls
-  [[ "${lines[0]}" == "test.txt" ]]
-  [[ "${lines[1]}" == "test2.txt" ]]
+  [[ "$output" == *"test.txt"* ]]
+  [[ "$output" == *"test2.txt"* ]]
   [[ "${#lines[@]}" == 2 ]]
 }
 
