@@ -78,9 +78,18 @@ namespace metro {
             throw RepositoryExistsException();
         }
 
-        Repository repo = Repository::init(path+"/.git", false);
-        commit(repo, "Create repository", {});
-        return repo;
+        try {
+            Repository repo = Repository::init(path+"/.git", false);
+            commit(repo, "Create repository", {});
+            return repo;
+        } catch (GitException &e) {
+            string error(e.what());
+            int pos = error.find("The filename, directory name, or volume label syntax is incorrect.");
+            if (pos >= 0 && pos <= error.length()) {
+                throw MetroException("Unable to create directory '" + path + "' as that name is disallowed on this OS.");
+            }
+            throw e;
+        }
     }
 
     void delete_last_commit(const Repository& repo, bool reset) {

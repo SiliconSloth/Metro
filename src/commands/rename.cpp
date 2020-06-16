@@ -37,6 +37,10 @@ Command renameCmd {
 
             bool force = args.options.find("force") != args.options.end();
 
+            if (!metro::branch_exists(repo, from)) {
+                throw BranchNotFoundException(from);
+            }
+
             // Ensure target branch + wip doesn't exist
             if (metro::branch_exists(repo, to) && !force) throw UnsupportedOperationException("There is already a branch with that name.\nTo overwrite it, use 'metro rename --force'.");
             if (metro::branch_exists(repo, metro::to_wip(to)) && !force) throw UnsupportedOperationException("There is a WIP branch for the target branch name.\nTo overwrite it, use 'metro rename --force'.");
@@ -63,6 +67,6 @@ Command renameCmd {
 
         // printHelp
         [](const Arguments &args) {
-            cout << "Usage: metro rename <branch-1> [<branch-2>]" << endl;
+            cout << "Usage: metro rename <branch-1> [branch-2]" << endl;
         }
 };
