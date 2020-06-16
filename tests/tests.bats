@@ -1176,12 +1176,13 @@ setup() {
 
   echo "Mark 7"
   run git log
-  [[ "${lines[3]}" == *"Create repository"* ]]
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
 }
 
 @test "Delete with detached head and children" {
   echo "Mark 1"
   git init
+  git commit --allow-empty -m "Initial commit"
 
   echo "Mark 2"
   echo "Test content 1" > test.txt
@@ -1194,15 +1195,24 @@ setup() {
   git commit -m "Test commit 2"
 
   echo "Mark 4"
-  git checkout HEAD~
+  git checkout master~
 
   echo "Mark 5"
-  run metro delete commit
-  [[ "$output" == "Cannot delete because commit has children" ]]
+  metro delete commit
 
   echo "Mark 6"
+  git log
   run git log
-  [[ "${lines[3]}" == *"Test commit 1"* ]]
+  [[ "${lines[3]}" == *"Initial commit"* ]]
+
+  echo "Mark 7"
+  git checkout master
+
+  echo "Mark 8"
+  run git log
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${lines[11]}" == *"Initial commit"* ]]
 }
 
 # ~~~ Test Patch ~~~
