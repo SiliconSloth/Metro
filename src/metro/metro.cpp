@@ -84,6 +84,10 @@ namespace metro {
     }
 
     void delete_last_commit(const Repository& repo, bool reset) {
+        if (!head_exists(repo)) {
+            throw MetroException("No commit to delete.");
+        }
+
         Commit lastCommit = get_commit(repo, "HEAD");
         if (lastCommit.parentcount() == 0) {
             throw UnsupportedOperationException("Can't delete initial commit.");
