@@ -1333,7 +1333,7 @@ setup() {
 
   echo "Mark 7"
   run git log
-  [[ "${lines[3]}" == *"Patch test commit"* ]]
+  [[ "${lines[3]}" == *"Test commit 1"* ]]
   [[ "${#lines[@]}" == 4 ]]
 }
 
@@ -1355,8 +1355,18 @@ setup() {
   git checkout HEAD~
 
   echo "Mark 5"
-  run metro patch "Patched commit"
-  [[ "$output" == "Cannot patch because commit has children" ]]
+  metro patch "Patched commit"
+
+  echo "Mark 6"
+  run git log
+  [[ "${lines[3]}" == *"Patched commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+
+  echo "Mark 7"
+  run git log master
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${#lines[@]}" == 8 ]]
 }
 
 # ~~~ Test Absorb ~~~
