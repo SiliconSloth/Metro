@@ -37,7 +37,7 @@ Command renameCmd {
 
             bool force = args.options.find("force") != args.options.end();
 
-            if (!metro::branch_exists(repo, from)) {
+            if (!metro::branch_exists(repo, from) && !metro::is_on_branch(repo, from)) {
                 throw BranchNotFoundException(from);
             }
 
