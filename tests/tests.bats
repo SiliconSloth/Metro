@@ -1689,7 +1689,9 @@ setup() {
 
   echo "Mark 2"
   run metro list commits
-  [[ "${lines[4]}" == *"Initial Commit"* ]]
+  # Strip blank lines to ensure compatibility across terminals
+  run echo "$(echo "$output" | grep -v -e '^[[:space:]]*$')"
+  [[ "${lines[3]}" == *"Initial Commit"* ]]
 }
 
 @test "Empty repo list commits" {
@@ -1710,7 +1712,9 @@ setup() {
 
   echo "Mark 2"
   run metro list commits
-  [[ "${lines[4]}" == *"Initial Commit"* ]]
+  # Strip blank lines to ensure compatibility across terminals
+  run echo "$(echo "$output" | grep -v -e '^[[:space:]]*$')"
+  [[ "${lines[3]}" == *"Initial Commit"* ]]
 }
 
 # ~~~ Test Rename ~~~
