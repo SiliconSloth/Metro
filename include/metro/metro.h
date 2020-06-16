@@ -243,6 +243,12 @@ namespace metro {
     void checkout_branch(const Repository& repo, const string& name);
 
     /**
+     * Resets head to the specified commit.
+     * If hard is specified the work dir is also reset to match the commit, otherwise it is left unmodified.
+     */
+    void reset_head(const Repository& repo, const Commit& commit, bool hard);
+
+    /**
      * Fill a list with all the references that can be found in a repository.
      * Returns a string array filled with the names of all references.
      *

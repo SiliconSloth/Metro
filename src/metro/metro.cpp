@@ -89,12 +89,7 @@ namespace metro {
             throw UnsupportedOperationException("Can't delete initial commit.");
         }
         Commit parent = lastCommit.parent(0);
-
-        git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
-        checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
-        git_reset_t resetType = reset? GIT_RESET_HARD : GIT_RESET_SOFT;
-
-        repo.reset_to_commit(parent, resetType, checkoutOpts);
+        reset_head(repo, parent, reset);
     }
 
     void patch(const Repository& repo, const string& message) {
@@ -341,16 +336,6 @@ namespace metro {
     }
 
     /**
-     * Hard reset to the current HEAD.
-     *
-     * @param repo Repo to reset within.
-     */
-    void reset_head(const Repository &repo) {
-        Commit head = get_last_commit(repo);
-        repo.reset_to_commit(head, GIT_RESET_HARD, git_checkout_options{});
-    }
-
-    /**
      * Sets the url for the origin remote, creating it if it doesn't exist.
      *
      * @param repo Repo to set origin for.
@@ -388,6 +373,20 @@ namespace metro {
     void checkout_branch(const Repository &repo, const string& name) {
         checkout(repo, name);
         move_head(repo, name);
+    }
+
+    void reset_head(const Repository& repo, const Commit& commit, bool hard) {
+        if (hard) {
+            // Changes must be staged, or else they won't get reverted.
+            Index index = add_all(repo);
+            index.write();
+        }
+
+        git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+        checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+        git_reset_t resetType = hard? GIT_RESET_HARD : GIT_RESET_SOFT;
+
+        repo.reset_to_commit(commit, resetType, checkoutOpts);
     }
 
     StrArray reference_list(const Repository& repo) {
