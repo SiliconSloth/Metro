@@ -1284,8 +1284,18 @@ setup() {
   git checkout other
 
   echo "Mark 6"
-  run metro patch "Patched commit"
-  [[ "$output" == "Cannot patch because commit has children" ]]
+  metro patch "Patched commit"
+
+  echo "Mark 7"
+  run git log
+  [[ "${lines[3]}" == *"Patched commit"* ]]
+  [[ "${#lines[@]}" == 4 ]]
+
+  echo "Mark 8"
+  run git log master
+  [[ "${lines[3]}" == *"Test commit 2"* ]]
+  [[ "${lines[7]}" == *"Test commit 1"* ]]
+  [[ "${#lines[@]}" == 8 ]]
 }
 
 @test "Patch with no commits" {
