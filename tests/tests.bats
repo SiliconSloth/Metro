@@ -849,7 +849,7 @@ setup() {
   echo "test content" > test.txt
 
   echo "Mark 4"
-  metro switch other
+  run metro switch other
 
   echo "Mark 5"
   git branch --list
@@ -858,6 +858,34 @@ setup() {
   [[ "${lines[1]}" == "  master" ]]
   [[ "${lines[2]}" == "  other" ]]
   [[ "${#lines[@]}" == 3 ]]
+}
+
+@test "Switch branch while detached with uncommitted changes with --force" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch other
+
+  echo "Mark 2"
+  git checkout "$(git rev-parse HEAD)"
+
+  echo "Mark 3"
+  echo "test content" > test.txt
+
+  echo "Mark 4"
+  metro switch other --force
+
+  echo "Mark 5"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "  master" ]]
+  [[ "${lines[1]}" == "* other" ]]
+  [[ "${#lines[@]}" == 2 ]]
+
+  echo "Mark 6"
+  git status
+  run git status
+  [[ "${lines[1]}" == "nothing to commit, working tree clean" ]]
 }
 
 @test "Switch branch with children" {

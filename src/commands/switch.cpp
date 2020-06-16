@@ -20,7 +20,20 @@ Command switchCmd {
             }
             string name = args.positionals[0];
 
+            bool force = args.options.find("force") != args.options.end();
+            bool saveWip = true;
+
             git::Repository repo = git::Repository::open(".");
+
+            if (repo.head_detached() && metro::has_uncommitted_changes(repo)) {
+                if (force) {
+                    saveWip = false;
+                    cout << "Discarding uncommitted changes on current branch." << endl;
+                } else {
+                    throw MetroException("Your uncommitted changes cannot be saved as you are not on a branch.\n"
+                                         "If you would like to switch anyway, use --force");
+                }
+            }
 
             string wip = metro::to_wip(name);
             bool exists = metro::branch_exists(repo, wip);
@@ -36,25 +49,13 @@ Command switchCmd {
                 return;
             }
 
-            // Finds differences between head and working dir
-            git::Tree current = metro::get_commit(repo, "HEAD").tree();
-            git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
-            git::Diff diff = git::Diff::tree_to_workdir(repo, current, &opts);
-
-            if (diff.num_deltas() > 0) {
-                cout << "Saved changes to WIP" << endl;
-            }
-
-            metro::switch_branch(repo, name);
+            metro::switch_branch(repo, name, saveWip);
             cout << "Switched to branch " << name << ".\n";
-
-            if (exists) {
-                cout << "Loaded changes from WIP" << endl;
-            }
         },
 
         // printHelp
         [](const Arguments &args) {
             std::cout << "Usage: metro switch <branch>\n";
+            print_options({"force", "help"});
         }
 };

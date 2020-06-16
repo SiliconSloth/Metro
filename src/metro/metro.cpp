@@ -165,14 +165,14 @@ namespace metro {
         // but if that does not exist just pick an arbitrary branch.
         if (is_on_branch(repo, name)) {
             if (branch_exists(repo, "master") && name != "master") {
-                switch_branch(repo, "master");
+                switch_branch(repo, "master", false);
             } else {
                 bool found = false;
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 for (Branch branch; iter.next(&branch);) {
                     // Pick any branch that isn't the one being deleted and isn't a WIP branch.
                     if (branch.name() != name && !is_wip(branch.name())) {
-                        switch_branch(repo, branch.name());
+                        switch_branch(repo, branch.name(), false);
                         found = true;
                         break;
                     }
@@ -306,7 +306,7 @@ namespace metro {
         index.write();
     }
 
-    void switch_branch(const Repository& repo, const string& name) {
+    void switch_branch(const Repository& repo, const string& name, bool saveWip) {
         if (is_wip(name)) {
             throw UnsupportedOperationException("Can't switch to WIP branch.");
         }
@@ -314,7 +314,12 @@ namespace metro {
             throw BranchNotFoundException();
         }
 
-        save_wip(repo);
+        if (saveWip) {
+            save_wip(repo);
+        } else {
+            reset_head(repo, get_commit(repo, "HEAD"), true);
+        }
+
         checkout(repo, name);
         move_head(repo, name);
         restore_wip(repo);

@@ -222,9 +222,10 @@ namespace metro {
      *
      * @param repo Repo to switch to branch within.
      * @param name Name of branch to switch to.
+     * @param saveWip Whether or not to save uncommitted changes to the WIP branch before switching.
      * @throws UnsupportedOperationException If switching to a WIP branch is attempted.
      */
-    void switch_branch(const Repository& repo, const string& name);
+    void switch_branch(const Repository& repo, const string& name, bool saveWip);
 
     /**
      * Moves the head to the given ref.
