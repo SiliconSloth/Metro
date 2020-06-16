@@ -196,7 +196,11 @@ namespace metro {
     }
 
     void checkout(const Repository& repo, const string& name) {
-        Tree tree = get_commit(repo, name).tree();
+        checkout(repo, get_commit(repo, name));
+    }
+
+    void checkout(const Repository& repo, const Commit& commit) {
+        Tree tree = commit.tree();
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
         repo.checkout_tree(tree, checkoutOpts);
@@ -264,6 +268,11 @@ namespace metro {
         }
         string wipName = to_wip(head.name);
 
+        // Don't attempt to restore a WIP branch onto itself.
+        if (wipName == head.name) {
+            return;
+        }
+
         if (!branch_exists(repo, wipName)) {
             return;
         }
@@ -307,12 +316,7 @@ namespace metro {
     }
 
     void switch_branch(const Repository& repo, const string& name, bool saveWip) {
-        if (is_wip(name)) {
-            throw UnsupportedOperationException("Can't switch to WIP branch.");
-        }
-        if (!branch_exists(repo, name)) {
-            throw BranchNotFoundException();
-        }
+        const Commit commit = get_commit(repo, name);
 
         if (saveWip) {
             save_wip(repo);
@@ -320,14 +324,20 @@ namespace metro {
             reset_head(repo, get_commit(repo, "HEAD"), true);
         }
 
-        checkout(repo, name);
+        checkout(repo, commit);
         move_head(repo, name);
-        restore_wip(repo);
+
+        if (!repo.head_detached()) {
+            restore_wip(repo);
+        }
     }
 
     void move_head(const Repository& repo, const string& name) {
-        Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
-        repo.set_head(branch.reference_name());
+        if (branch_exists(repo, name)) {
+            repo.set_head(repo.lookup_branch(name, GIT_BRANCH_LOCAL).reference_name());
+        } else {
+            repo.set_head_detached(get_commit(repo, name).id());
+        }
     }
 
     /**
@@ -373,11 +383,6 @@ namespace metro {
         sources.push_back(annOther);
 
         return repo.merge_analysis(sources);
-    }
-
-    void checkout_branch(const Repository &repo, const string& name) {
-        checkout(repo, name);
-        move_head(repo, name);
     }
 
     void reset_head(const Repository& repo, const Commit& commit, bool hard) {

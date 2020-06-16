@@ -186,6 +186,16 @@ namespace metro {
     void checkout(const Repository& repo, const string& name);
 
     /**
+     * Checks out the given commit without moving head,
+     * such that the working directory will match the commit contents.
+     * Doesn't change current branch ref.
+     *
+     * @param repo Repo to checkout from.
+     * @param commit Commit to checkout.
+     */
+    void checkout(const Repository& repo, const Commit& commit);
+
+    /**
      * Whether the user has changes currently not committed.
      *
      * @param repo Repo to check against HEAD for.
@@ -234,14 +244,6 @@ namespace metro {
      * @param name Ref reference to switch to.
      */
     void move_head(const Repository& repo, const string& name);
-
-    /**
-     * Checks out the given branch by name
-     *
-     * @param repo Repo to checkout from.
-     * @param name Plain Text branch name reference (e.g. 'master')
-     */
-    void checkout_branch(const Repository& repo, const string& name);
 
     /**
      * Resets head to the specified commit.

@@ -175,6 +175,11 @@ namespace git {
         check_error(err);
     }
 
+    void Repository::set_head_detached(const OID& commitish) const {
+        int err = git_repository_set_head_detached(repo.get(), &commitish.oid);
+        check_error(err);
+    }
+
     Branch Repository::head() const {
         git_reference *out;
         int err = git_repository_head(&out, repo.get());

@@ -3,8 +3,8 @@
  */
 
 /**
- * The switch command switches from the current repo to the target repo, saving work to WIP and loading new work from
- * WIP if any.
+ * The switch command switches from the current branch/revision to the branch/revision repo,
+ * saving work to WIP and loading new work from WIP if any.
  */
 Command switchCmd {
         "switch",
@@ -50,7 +50,24 @@ Command switchCmd {
             }
 
             metro::switch_branch(repo, name, saveWip);
-            cout << "Switched to branch " << name << ".\n";
+
+            git::OID head = metro::get_commit(repo, "HEAD").id();
+            if (repo.head_detached()) {
+                cout << "Switched to commit " << head.str() << endl;
+                cout << "Head is currently detached.  You will not be able to make new commits "
+                        "until you switch back to a branch." << endl;
+            } else {
+                cout << "Switched to branch " << name << ".\n";
+            }
+
+            git::BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+            for (git::Branch branch; iter.next(&branch);) {
+                if (branch.target() == head && metro::is_wip(branch.name())) {
+                    cout << "WARNING: You are currently on a WIP branch (" << branch.name() << ")" << endl;
+                    cout << "Making changes to a WIP branch can corrupt your repository, "
+                            "so it is highly recommended that you switch to a normal branch!" << endl;
+                }
+            }
         },
 
         // printHelp
