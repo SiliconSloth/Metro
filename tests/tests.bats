@@ -978,7 +978,32 @@ setup() {
   echo "$ ls"
   ls
   run ls
-  [[ "$output" != "test.txt" ]]
+  [[ -z "$output" ]]
+}
+
+@test "Delete last commit with uncommitted changes" {
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
+  echo "Test file content" > test.txt
+  git add -A
+  git commit -m "Test Commit"
+  echo "Test content 2" > test2.txt
+
+  echo "$ metro delete commit"
+  metro delete commit
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[3]}" != *"Test Commit"* ]]
+
+  echo "$ ls"
+  ls
+  run ls
+  [[ -z "$output" ]]
 }
 
 @test "Delete last commit soft" {
@@ -1003,6 +1028,33 @@ setup() {
   ls
   run ls
   [[ "$output" == "test.txt" ]]
+}
+
+@test "Delete last commit soft with uncommitted changes" {
+  echo "$ git init"
+  git init
+  echo "$ git commit --allow-empty -m \"Initial Commit\""
+  git commit --allow-empty -m "Initial Commit"
+  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
+  echo "Test file content" > test.txt
+  git add -A
+  git commit -m "Test Commit"
+  echo "Test content 2" > test2.txt
+
+  echo "$ metro delete commit --soft"
+  metro delete commit --soft
+
+  echo "$ git log"
+  git log
+  run git log
+  [[ "${lines[3]}" != *"Test Commit"* ]]
+
+  echo "$ ls"
+  ls
+  run ls
+  [[ "${lines[0]}" == "test.txt" ]]
+  [[ "${lines[1]}" == "test2.txt" ]]
+  [[ "${#lines[@]}" == 2 ]]
 }
 
 @test "Delete with children" {
