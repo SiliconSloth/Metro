@@ -752,13 +752,16 @@ setup() {
   git checkout HEAD~
 
   echo "Mark 6"
+  git status
   metro branch other
 
   echo "Mark 7"
+  git log
   run git log
   [[ "${lines[3]}" == *"Test commit 1"* ]]
 
   echo "Mark 8"
+  git branch --list
   run git branch --list
   [[ "${lines[0]}" == "  master" ]]
   [[ "${lines[1]}" == "* other" ]]
