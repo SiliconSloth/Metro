@@ -1792,3 +1792,24 @@ setup() {
   [[ "${lines[1]}" ==  "  master" ]]
   [[ "${lines[2]}" ==  "  y" ]]
 }
+
+@test "Rename non-existent branch" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch x
+
+  echo "Mark 2"
+  run metro rename z y
+
+  echo "Mark 3"
+  echo "$output"
+  [[ "$output" == "Branch 'z' not found." ]]
+
+  echo "Mark 4"
+  run git branch
+  echo "$output"
+  [[ "${lines[0]}" ==  "* master" ]]
+  [[ "${lines[1]}" ==  "  x" ]]
+  [[ "${#lines[@]}" ==  2 ]]
+}
