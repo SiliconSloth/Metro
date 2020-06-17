@@ -213,7 +213,11 @@ int main(int argc, char *argv[]) {
 
         // If -v is specified, ignore all other contents of the command, printing version and exiting.
         if (args.options.find("version") != args.options.end()) {
-            cout << "Metro version " << METRO_RELEASE << "-" << METRO_MAJOR << "." << METRO_MINOR << "." << METRO_REVISION << endl;
+            cout << "Metro version " << METRO_STAGE << "-" << METRO_MAJOR << "." << METRO_MINOR;
+#ifdef METRO_DEVELOPMENT_BUILD
+            cout << "-dev";
+#endif
+            cout << endl;
             return 0;
         }
 
