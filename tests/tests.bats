@@ -839,6 +839,44 @@ setup() {
   [[ "${lines[1]}" == "  master" ]]
 }
 
+@test "Switch to tag" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git tag test-tag -m "Test tag"
+  echo "Test content" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 2"
+  metro switch test-tag
+
+  echo "Mark 3"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+}
+
+@test "Switch to annotated tag" {
+  echo "Mark 1"
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git tag test-tag -a -m "Test tag"
+  echo "Test content" > test.txt
+  git add -A
+  git commit -m "Test commit 1"
+
+  echo "Mark 2"
+  metro switch test-tag
+
+  echo "Mark 3"
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* (HEAD detached at "* ]]
+  [[ "${lines[1]}" == "  master" ]]
+}
+
 @test "Switch branch while detached with uncommitted changes" {
   echo "Mark 1"
   git init
