@@ -197,6 +197,37 @@ struct ANSIException : public MetroException {
  */
 struct AttachedWIPException : public MetroException {
     explicit AttachedWIPException():
-            MetroException("This can only be executed on a detached WIP.\nYou can detach the WIP using 'metro fix detach'")
+            MetroException("This can only be executed when this branch has a WIP branch.\n"
+                           "If you have changes, you can create a WIP branch with them using 'metro wip save'")
+    {}
+};
+
+/**
+ * DetachedWIPException should be thrown when the WIP is detached from the branch, but should not be.
+ */
+struct DetachedWIPException : public MetroException {
+    explicit DetachedWIPException():
+            MetroException("This can only be executed when this branch doesn't have a WIP branch.\n"
+                           "You can force this operation with '--force' to replace the WIP contents.")
+    {}
+};
+
+/**
+ * UnexpectedWIPException should be thrown when trying to save the WIP but a WIP already exists.
+ */
+struct UnexpectedWIPException : public MetroException {
+    explicit UnexpectedWIPException():
+            MetroException("Failed to save the WIP because a WIP branch is already there.\n"
+                           "Please remove the WIP branch using 'metro delete branch branch-name#wip --force' or delete your changes 'metro delete commit'")
+    {}
+};
+
+/**
+ * InvalidWIPException should be thrown when the WIP is required, but is invalid.
+ */
+struct InvalidWIPException : public MetroException {
+    explicit InvalidWIPException(string base_branch):
+            MetroException("The WIP branch for " + base_branch + " is invalid, so cannot be restored.\n"
+                            "You can restore anyway using 'metro wip squash' and trying again.")
     {}
 };

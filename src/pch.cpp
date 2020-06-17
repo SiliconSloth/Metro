@@ -16,6 +16,7 @@
 #include "gitwrapper/conflict_iterator.cpp"
 #include "gitwrapper/diff.cpp"
 #include "gitwrapper/config.cpp"
+#include "gitwrapper/treebuilder.cpp"
 
 #include "metro/metro.cpp"
 #include "metro/merging.cpp"

@@ -88,6 +88,7 @@ using std::function;
 #include "gitwrapper/repository.h"
 #include "gitwrapper/strarray.h"
 #include "gitwrapper/diff.h"
+#include "gitwrapper/treebuilder.h"
 
 #include "metro/head.h"
 #include "metro/metro.h"

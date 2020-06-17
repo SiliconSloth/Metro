@@ -224,8 +224,9 @@ namespace metro {
      * and resuming a merge if one was ongoing.
      *
      * @param repo Repo to restore WIP for.
+     * @param force Whether to replace the current work.
      */
-    void restore_wip(const Repository& repo);
+    void restore_wip(const Repository& repo, bool force);
 
     /**
      * Moves to the given branch, checking out changes and the HEAD of that branch.
@@ -259,4 +260,13 @@ namespace metro {
      * @return Array of references.
      */
     StrArray reference_list(const Repository& repo);
+
+    /**
+     * Resets the current working directory to the empty tree - ie. an empty directory.
+     * This does not wipe any data from the repository - only files in the working
+     * directory or staging area.
+     *
+     * @param repo Repo to reset directory of
+     */
+    void reset_to_empty(const Repository& repo);
 }

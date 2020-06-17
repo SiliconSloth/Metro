@@ -647,7 +647,7 @@ namespace metro {
         }
 
         update_sync_cache(repo, syncedBranches);
-        restore_wip(repo);
+        restore_wip(repo, false);
     }
 
     void force_pull(const Repository& repo) {
