@@ -888,12 +888,14 @@ setup() {
 
     metro wip squash
 
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[0]}" == "  master#wip" ]]
+
+    git checkout master#wip
     run cat test.txt
     [[ "${lines[0]}" == "Test file content 1" ]]
     [[ "${lines[1]}" == "Test file content 2" ]]
-
-    run git branch
-    [[ "${lines[0]}" == "* master" ]]
 }
 
 @test "Squash WIP branch with non-empty working dir" {
@@ -920,32 +922,4 @@ setup() {
     git checkout master#wip
     run git log
     [[ "${lines[4]}" == *"WIP"* ]]
-}
-
-@test "Eject WIP branch" {
-    git init
-    git commit --allow-empty -m "Initial Commit"
-    git checkout -b master#wip
-    echo "Test file content 1" > test.txt
-    git commit -m "WIP"
-    git checkout master
-    echo "Test file content 2" > test.txt
-    git commit -m "Test commit 1"
-
-    metro wip eject other -m "Test commit 2"
-
-    run cat test.txt
-    [[ "${lines[0]}" == "Test file content 2" ]]
-
-    run git branch
-    [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[0]}" == "  other" ]]
-
-    git checkout other
-
-    run cat test.txt
-    [[ "${lines[0]}" == "Test file content 1" ]]
-
-    run git log
-    [[ "${lines[4]}" == *"Test commit 2"* ]]
 }
