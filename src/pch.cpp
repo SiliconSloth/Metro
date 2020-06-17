@@ -7,6 +7,7 @@
 
 #include "gitwrapper/oid.cpp"
 #include "gitwrapper/index.cpp"
+#include "gitwrapper/tree.cpp"
 #include "gitwrapper/branch.cpp"
 #include "gitwrapper/branch_iterator.cpp"
 #include "gitwrapper/repository.cpp"

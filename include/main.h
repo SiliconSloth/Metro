@@ -5,10 +5,10 @@
 #pragma once
 #include "pch.h"
 
-#define METRO_RELEASE "alpha-debug"
+#define METRO_STAGE "alpha"
 #define METRO_MAJOR 1
-#define METRO_MINOR 0
-#define METRO_REVISION 0
+#define METRO_MINOR 1
+#define METRO_DEVELOPMENT_BUILD
 
 // List of all commands
 Command *allCommands[] = {

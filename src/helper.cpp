@@ -17,7 +17,7 @@ unsigned int parse_pos_int(const string& str) {
     return -1;
 }
 
-bool has_prefix(string const& str, string pre) {
+bool has_prefix(const string& str, const string& pre) {
     if (pre.size() <= str.size()) {
         return str.compare(0, pre.size(), pre) == 0;
     } else {
@@ -25,7 +25,7 @@ bool has_prefix(string const& str, string pre) {
     }
 }
 
-bool has_suffix(string const& str, string suff) {
+bool has_suffix(const string& str, const string& suff) {
     if (suff.size() <= str.size()) {
         return str.compare(str.size() - suff.size(), suff.size(), suff) == 0;
     } else {
@@ -136,18 +136,24 @@ void print_padded(const string& str, size_t len) {
 }
 
 string read_all(const string& path) {
-    //TODO: Exception if the file is not found/read fails
     ifstream file(path);
     string message((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
     file.close();
+
+    if (file.fail()) {
+        throw MetroException("Error reading from file: " + path);
+    }
     return message;
 }
 
 void write_all(const string& text, const string& path) {
-    //TODO: Exception if the file is not found/write fails
     ofstream file(path);
     file << text;
     file.close();
+
+    if (file.fail()) {
+        throw MetroException("Error writing to file: " + path);
+    }
 }
 
 string time_to_string(git_time time) {

@@ -33,7 +33,10 @@ Command wip {
             else throw UnexpectedPositionalException(args.positionals[0]);
 
             git::Repository repo = git::Repository::open(".");
-            string current_branch = metro::current_branch_name(repo);
+            metro::Head current_branch = metro::get_head(repo);
+            if (current_branch.detached) {
+                throw MetroException("'metro fix' can only be used on a branch.");
+            }
             switch (command) {
                 case SAVE_WIP:
                     break;
@@ -42,7 +45,7 @@ Command wip {
                 case RESTORE_WIP:
                     break;
                 case SQUASH_WIP:
-                    if (!metro::branch_exists(repo, metro::to_wip(current_branch))) {
+                    if (!metro::branch_exists(repo, metro::to_wip(current_branch.name))) {
                         throw AttachedWIPException();
                     }
                     break;

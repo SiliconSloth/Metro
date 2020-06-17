@@ -12,6 +12,9 @@ Command patch {
         // execute
         [](const Arguments &args) {
             git::Repository repo = git::Repository::open(".");
+            if (!metro::head_exists(repo)) {
+                throw MetroException("No commit to patch.");
+            }
             metro::assert_not_merging(repo);
 
             // Uses existing message as default

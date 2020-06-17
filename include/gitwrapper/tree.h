@@ -13,16 +13,21 @@ namespace git {
         shared_ptr<git_tree> tree;
 
     public:
+        Tree() : tree(nullptr) {}
+
         explicit Tree(git_tree *tree) : tree(tree, git_tree_free) {}
 
         explicit Tree(shared_ptr<git_tree> tree) : tree(std::move(tree)) {}
 
-        Tree() = delete;
-
-        Tree operator=(Tree t) = delete;
-
         [[nodiscard]] shared_ptr<git_tree> ptr() const {
             return tree;
         }
+
+        /**
+         * Get the id of a tree.
+         *
+         * @return OID of the tree.
+         */
+        [[nodiscard]] OID id() const;
     };
 }

@@ -333,6 +333,30 @@ namespace git {
         void set_head(const string& name) const;
 
         /**
+         * Make the repository HEAD directly point to the Commit.
+         *
+         * If the provided commitish cannot be found in the repository,
+         * the HEAD is unaltered and GIT_ENOTFOUND is returned.
+         *
+         * If the provided commitish cannot be peeled into a commit, the HEAD is unaltered and -1 is returned.
+         *
+         * Otherwise, the HEAD will eventually be detached and will directly point to the peeled Commit.
+         *
+         * @param commitish Object id of the Commit the HEAD should point to.
+         */
+         void set_head_detached(const OID& commitish) const;
+
+        /**
+         * Retrieve and resolve the reference pointed at by HEAD.
+         */
+        Branch head() const;
+
+        /**
+         * Check if a repository's HEAD is detached.
+         */
+        bool head_detached() const;
+
+        /**
          * Updates files in the index and working tree to match the content of the
          * tree pointed at by the tree.
          *

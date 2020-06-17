@@ -3,8 +3,8 @@
  */
 
 /**
- * The switch command switches from the current repo to the target repo, saving work to WIP and loading new work from
- * WIP if any.
+ * The switch command switches from the current branch/revision to the branch/revision repo,
+ * saving work to WIP and loading new work from WIP if any.
  */
 Command switchCmd {
         "switch",
@@ -20,13 +20,26 @@ Command switchCmd {
             }
             string name = args.positionals[0];
 
+            bool force = args.options.find("force") != args.options.end();
+            bool saveWip = true;
+
             git::Repository repo = git::Repository::open(".");
+
+            if (repo.head_detached() && metro::has_uncommitted_changes(repo)) {
+                if (force) {
+                    saveWip = false;
+                    cout << "Discarding uncommitted changes on current branch." << endl;
+                } else {
+                    throw MetroException("Your uncommitted changes cannot be saved as you are not on a branch.\n"
+                                         "If you would like to switch anyway, use --force");
+                }
+            }
 
             string wip = metro::to_wip(name);
             bool exists = metro::branch_exists(repo, wip);
 
             // If branch is current branch
-            if (name == metro::current_branch_name(repo)) {
+            if (metro::is_on_branch(repo, name)) {
                 if (exists) {
                     metro::restore_wip(repo);
                     cout << "Loaded changes from WIP" << endl;
@@ -36,25 +49,30 @@ Command switchCmd {
                 return;
             }
 
-            // Finds differences between head and working dir
-            git::Tree current = metro::get_commit(repo, "HEAD").tree();
-            git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
-            git::Diff diff = git::Diff::tree_to_workdir(repo, current, &opts);
+            metro::switch_branch(repo, name, saveWip);
 
-            if (diff.num_deltas() > 0) {
-                cout << "Saved changes to WIP" << endl;
+            git::OID head = metro::get_commit(repo, "HEAD").id();
+            if (repo.head_detached()) {
+                cout << "Switched to commit " << head.str() << endl;
+                cout << "Head is currently detached.  You will not be able to make new commits "
+                        "until you switch back to a branch." << endl;
+            } else {
+                cout << "Switched to branch " << name << ".\n";
             }
 
-            metro::switch_branch(repo, name);
-            cout << "Switched to branch " << name << ".\n";
-
-            if (exists) {
-                cout << "Loaded changes from WIP" << endl;
+            git::BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
+            for (git::Branch branch; iter.next(&branch);) {
+                if (branch.target() == head && metro::is_wip(branch.name())) {
+                    cout << "WARNING: You are currently on a WIP branch (" << branch.name() << ")" << endl;
+                    cout << "Making changes to a WIP branch can corrupt your repository, "
+                            "so it is highly recommended that you switch to a normal branch!" << endl;
+                }
             }
         },
 
         // printHelp
         [](const Arguments &args) {
             std::cout << "Usage: metro switch <branch>\n";
+            print_options({"force", "help"});
         }
 };

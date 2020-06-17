@@ -28,7 +28,7 @@ void print_details(const git::Repository &repo, git::Commit nth_parent, void *hC
             } else {
                 cout << ", ";
             }
-            if (b.name() == metro::current_branch_name(repo)) {
+            if (metro::is_on_branch(repo, b.name())) {
                 // Green for current branch
                 set_text_colour("-g------f", hConsole);
             } else {
@@ -110,18 +110,21 @@ Command listCmd{
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
-                git::Commit commit = metro::get_commit(repo, "HEAD");
-                print_from_commit(repo, commit, hConsole);
+                if (metro::commit_exists(repo, "HEAD")) {
+                    git::Commit commit = metro::get_commit(repo, "HEAD");
+                    print_from_commit(repo, commit, hConsole);
+                } else {
+                    cout << "No commits at this location" << endl;
+                }
             } else if (args.positionals[0] == "branches") {
                 if (args.positionals.size() > 1) {
                     throw UnexpectedPositionalException(args.positionals[1]);
                 }
 
                 git::BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
-                std::string current = metro::current_branch_name(repo);
                 for (git::Branch branch; iter.next(&branch);) {
                     std::string name = branch.name();
-                    if (current == name){
+                    if (metro::is_on_branch(repo, name)){
                         cout << " * ";
                         set_text_colour("-g------f", hConsole);
                         cout << branch.name() << endl;
