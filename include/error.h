@@ -191,3 +191,12 @@ struct ANSIException : public MetroException {
             MetroException("This terminal is incompatible with special character features.")
     {}
 };
+
+/**
+ * AttachedWIPException should be thrown when the WIP is not detached from the branch, but should be.
+ */
+struct AttachedWIPException : public MetroException {
+    explicit AttachedWIPException():
+            MetroException("This can only be executed on a detached WIP.\nYou can detach the WIP using 'metro fix detach'")
+    {}
+};

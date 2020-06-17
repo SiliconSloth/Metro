@@ -37,3 +37,4 @@
 #include "commands/list.cpp"
 #include "commands/sink.cpp"
 #include "commands/rename.cpp"
+#include "commands/fix.cpp"

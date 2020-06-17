@@ -25,7 +25,8 @@ Command *allCommands[] = {
         &syncCmd,
         &listCmd,
         &sinkCmd,
-        &renameCmd
+        &renameCmd,
+        &fix
 };
 
 // Defines a mistype the user may make

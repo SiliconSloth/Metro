@@ -802,3 +802,150 @@ setup() {
   [[ "${lines[8]}" == *"Test Commit 2"* ]]
   [[ "${lines[12]}" == *"Test Commit 1"* ]]
 }
+
+# ~~~ Test Wip ~~~
+
+@test "Save to WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    echo "Test file content 1" > test.txt
+
+    metro wip save
+
+    run ls | wc - 1
+    [[ "${lines[0]}" == "0" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
+}
+
+@test "Delete WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    git checkout master
+    echo "Test file content 2" > test.txt
+
+    metro wip delete
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 2" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+}
+
+@test "Restore WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    git checkout master
+    echo "Test file content 2" > test.txt
+
+    metro wip restore
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+}
+
+@test "Restore invalid WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    echo "\nTest file content 2" >> test.txt
+    git commit -m "Error"
+    git checkout master
+
+    not metro wip restore
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 2" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[0]}" == "  master#wip" ]]
+}
+
+@test "Squash WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    echo "\nTest file content 2" >> test.txt
+    git commit -m "Error"
+    git checkout master
+
+    metro wip squash
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1" ]]
+    [[ "${lines[1]}" == "Test file content 2" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+}
+
+@test "Squash WIP branch with non-empty working dir" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    echo "\nTest file content 2" >> test.txt
+    git commit -m "Error"
+    git checkout master
+    echo "Test file content 3" > test.txt
+    git commit -m "Test commit"
+
+    metro wip squash
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 3" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[0]}" == "  master#wip" ]]
+
+    git checkout master#wip
+    run git log
+    [[ "${lines[4]}" == *"WIP"* ]]
+}
+
+@test "Eject WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git commit -m "WIP"
+    git checkout master
+    echo "Test file content 2" > test.txt
+    git commit -m "Test commit 1"
+
+    metro wip eject other -m "Test commit 2"
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 2" ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[0]}" == "  other" ]]
+
+    git checkout other
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1" ]]
+
+    run git log
+    [[ "${lines[4]}" == *"Test commit 2"* ]]
+}
