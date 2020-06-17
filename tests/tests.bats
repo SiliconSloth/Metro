@@ -1838,22 +1838,17 @@ setup() {
     [[ "${lines[1]}" == "  master#wip" ]]
 }
 
-@test "Delete WIP branch" {
+@test "Fail to save to WIP branch" {
     git init
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "WIP"
     git checkout master
     echo "Test file content 2" > test.txt
 
-    metro wip delete
-
-    run cat test.txt
-    [[ "${lines[0]}" == "Test file content 2" ]]
-
-    run git branch
-    [[ "${lines[0]}" == "* master" ]]
+    not metro wip save
 }
 
 @test "Restore WIP branch" {
@@ -1861,6 +1856,7 @@ setup() {
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "WIP"
     git checkout master
     echo "Test file content 2" > test.txt
@@ -1879,8 +1875,10 @@ setup() {
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "WIP"
     echo "\nTest file content 2" >> test.txt
+    git add -A
     git commit -m "Error"
     git checkout master
 
@@ -1899,8 +1897,10 @@ setup() {
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "WIP"
     echo "\nTest file content 2" >> test.txt
+    git add -A
     git commit -m "Error"
     git checkout master
 
@@ -1921,11 +1921,14 @@ setup() {
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "WIP"
     echo "\nTest file content 2" >> test.txt
+    git add -A
     git commit -m "Error"
     git checkout master
     echo "Test file content 3" > test.txt
+    git add -A
     git commit -m "Test commit"
 
     metro wip squash
@@ -1942,12 +1945,35 @@ setup() {
     [[ "${lines[4]}" == *"WIP"* ]]
 }
 
+@test "Squash valid WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git add -A
+    git commit -m "WIP"
+    git checkout master
+
+    metro wip squash
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[0]}" == "  master#wip" ]]
+
+    git checkout master#wip
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1" ]]
+    [[ "${lines[1]}" == "Test file content 2" ]]
+}
+
 @test "Wip commands don't work in detached" {
     git init
     git commit --allow-empty -m "Initial Commit"
     echo "Test file content 1" > test.txt
+    git add -A
     git commit -m "Test commit 1"
     echo "\nTest file content 2" >> test.txt
+    git add -A
     git commit -m "Test commit 2"
 
     git checkout HEAD~1
@@ -1955,7 +1981,6 @@ setup() {
 
     not metro wip save
     not metro wip restore
-    not metro wip delete
     not metro wip squash
 }
 
@@ -1970,6 +1995,7 @@ setup() {
 
     git checkout master#wip
     echo "\nTest file content 2" >> test.txt
+    git add -A
     git commit -m "Test commit"
 
     git checkout --orphan master
@@ -1987,11 +2013,4 @@ setup() {
     run cat test.txt
     [[ "${lines[0]}" == "Test file content 1" ]]
     [[ "${lines[1]}" == "Test file content 2" ]]
-
-    metro wip save
-
-    metro wip delete
-
-    run git branch
-  [[ "${#lines[@]}" ==  0 ]]
 }
