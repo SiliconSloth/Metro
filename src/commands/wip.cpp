@@ -35,7 +35,10 @@ Command wip {
             git::Repository repo = git::Repository::open(".");
             metro::Head current_branch = metro::get_head(repo);
             if (current_branch.detached) {
-                throw MetroException("'metro fix' can only be used on a branch.");
+                throw MetroException("'metro wip' can only be used on a branch.");
+            }
+            if (command != SAVE_WIP && !metro::branch_exists(repo, metro::to_wip(current_branch.name))) {
+                throw AttachedWIPException();
             }
             switch (command) {
                 case SAVE_WIP:
@@ -45,9 +48,6 @@ Command wip {
                 case RESTORE_WIP:
                     break;
                 case SQUASH_WIP:
-                    if (!metro::branch_exists(repo, metro::to_wip(current_branch.name))) {
-                        throw AttachedWIPException();
-                    }
                     break;
             }
         },

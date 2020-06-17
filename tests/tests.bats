@@ -1942,8 +1942,56 @@ setup() {
     [[ "${lines[4]}" == *"WIP"* ]]
 }
 
-@test "Wip commands don't work in detached or no-branches" {
+@test "Wip commands don't work in detached" {
     git init
-    run metro wip save
-    [[ "${lines[0]}" == "" ]]
+    git commit --allow-empty -m "Initial Commit"
+    echo "Test file content 1" > test.txt
+    git commit -m "Test commit 1"
+    echo "\nTest file content 2" >> test.txt
+    git commit -m "Test commit 2"
+
+    git checkout HEAD~1
+    echo "\nTest file content 3" >> test.txt
+
+    not metro wip save
+    not metro wip restore
+    not metro wip delete
+    not metro wip squash
+}
+
+@test "Wip commands work without initial commit" {
+    git init
+    echo "Test file content 1" > test.txt
+
+    metro wip save
+
+    run git branch
+    [[ "${lines[0]}" == "master#wip" ]]
+
+    git checkout master#wip
+    echo "\nTest file content 2" >> test.txt
+    git commit -m "Test commit"
+
+    git checkout --orphan master
+
+    metro wip squash
+
+    git checkout master#wip
+    run git log
+    [[ "${lines[4]}" == *"WIP"* ]]
+
+    git checkout --orphan master
+
+    metro wip restore
+
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1" ]]
+    [[ "${lines[1]}" == "Test file content 2" ]]
+
+    metro wip save
+
+    metro wip delete
+
+    run git branch
+  [[ "${#lines[@]}" ==  0 ]]
 }
