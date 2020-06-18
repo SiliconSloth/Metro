@@ -117,8 +117,13 @@ namespace metro {
 
     Commit get_commit(const Repository& repo, const string& revision) {
         Object object = repo.revparse_single(revision);
-        Commit commit = (Commit) object;
-        return commit;
+        if (object.type() == GIT_OBJECT_COMMIT) {
+            return (Commit) object;
+        } else if (object.type() == GIT_OBJECT_TAG) {
+            return (Commit) ((Tag) object).target();
+        } else {
+            throw MetroException("The requested object is not a commit or tag");
+        }
     }
 
     bool commit_exists(const Repository &repo, const string& name) {

@@ -23,8 +23,21 @@ namespace git {
             return object;
         }
 
+        /**
+         * Get the object type of an object.
+         *
+         * @return The object's type.
+         */
+        [[nodiscard]] git_object_t type() const {
+            return git_object_type(object.get());
+        }
+
         explicit operator Commit() {
             return Commit(shared_ptr<git_commit>(object, reinterpret_cast<git_commit*>(object.get())));
+        }
+
+        explicit operator Tag() {
+            return Tag(shared_ptr<git_tag>(object, reinterpret_cast<git_tag*>(object.get())));
         }
     };
 }
