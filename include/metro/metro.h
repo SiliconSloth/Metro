@@ -220,6 +220,20 @@ namespace metro {
     void save_wip(const Repository& repo);
 
     /**
+     * TODO WRITE
+     * @param repo
+     */
+    void save_changes(const Repository &repo, const function<string(string)>& alias, const string& m);
+
+    /**
+     * TODO WRITE
+     * @param repo
+     * @param force
+     * @param alias
+     */
+    void restore_changes(const Repository& repo, bool force, const function<string(string)>& alias, const string& m);
+
+    /**
      * Deletes the WIP commit at head if any, restoring the contents to the working directory
      * and resuming a merge if one was ongoing.
      *
@@ -227,6 +241,14 @@ namespace metro {
      * @param force Whether to replace the current work.
      */
     void restore_wip(const Repository& repo, bool force);
+
+    /**
+     * Squashes the commits on the WIP branch into a single WIP commit, using the base
+     * as the last commit on the current branch, and preserving and merges in the WIP.
+     *
+     * @param repo Repo to squash WIP in.
+     */
+    void squash_wip(const Repository& repo);
 
     /**
      * Moves to the given branch, checking out changes and the HEAD of that branch.
@@ -269,4 +291,13 @@ namespace metro {
      * @param repo Repo to reset directory of
      */
     void reset_to_empty(const Repository& repo);
+
+    /**
+     * TODO WRITE
+     * @param pre
+     * @param post
+     * @param commit
+     * @return
+     */
+    bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit);
 }

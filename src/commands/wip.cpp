@@ -50,6 +50,7 @@ Command wip {
                     metro::restore_wip(repo, args.options.find("force") != args.options.end());
                     break;
                 case SQUASH_WIP:
+                    metro::squash_wip(repo);
                     break;
             }
         },
