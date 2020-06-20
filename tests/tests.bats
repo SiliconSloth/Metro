@@ -986,6 +986,43 @@ setup() {
   [[ "$output" == "* master" ]]
 }
 
+@test "Delete current WIP" {
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch master#wip
+
+  git branch --list
+  run git branch --list
+  [[ "${lines[1]}" == "  master#wip" ]]
+
+  git branch master#wip
+  git commit --allow-empty -m "WIP"
+  run metro delete branch master#wip
+  [[ "${lines[0]}" == "Deleted branch master#wip." ]]
+
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* master" ]]
+}
+
+@test "Delete current invalid WIP" {
+  git init
+  git commit --allow-empty -m "Initial Commit"
+  git branch master#wip
+
+  git branch --list
+  run git branch --list
+  [[ "${lines[1]}" == "  master#wip" ]]
+
+  git branch master#wip
+  run metro delete branch master#wip
+  [[ "${lines[0]}" == "Deleted branch master#wip." ]]
+
+  git branch --list
+  run git branch --list
+  [[ "${lines[0]}" == "* master" ]]
+}
+
 # ~~~ Test Delete Commit ~~~
 
 @test "Delete last commit" {
@@ -1889,7 +1926,7 @@ setup() {
 
     run git branch
     [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[0]}" == "  master#wip" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
 }
 
 @test "Squash WIP branch" {
@@ -1908,7 +1945,7 @@ setup() {
 
     run git branch
     [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[0]}" == "  master#wip" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
     run cat test.txt
@@ -1938,7 +1975,7 @@ setup() {
 
     run git branch
     [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[0]}" == "  master#wip" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
     run git log
@@ -1964,6 +2001,36 @@ setup() {
     run cat test.txt
     [[ "${lines[0]}" == "Test file content 1" ]]
     [[ "${lines[1]}" == "Test file content 2" ]]
+}
+
+@test "Squash WIP branch with merge" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git branch --orphan other
+    echo "Test file content 1" > test-1.txt
+    git add -A
+    git commit -m "Test Commit"
+
+    git checkout master
+    git checkout -b master#wip
+    echo "Test file content 2" > test-2.txt
+    git add -A
+    git commit -m "WIP"
+    git merge --allow-unrelated-histories other
+    git checkout master
+
+    metro wip squash
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
+
+    git checkout master#wip
+    run git log
+    [[ "${lines[1]}" == *"Merge"* ]]
+    [[ "${lines[5]}" == *"WIP"* ]]
+    [[ "${lines[9]}" == *"Test Commit"* ]]
+    [[ "${lines[13]}" == *"Initial Commit"* ]]
 }
 
 @test "Wip commands don't work in detached" {

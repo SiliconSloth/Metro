@@ -387,35 +387,29 @@ namespace metro {
             OID wip_oid = repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).target();
             Commit base = repo.lookup_commit(oid);
             Commit target = repo.lookup_commit(wip_oid);
-            vector<Commit> chain;
-            auto pre = [oid, &chain](Commit commit) {
-                // Empty the commit chain
-                while (!chain.empty()) {
-                    chain.pop_back();
-                }
-                return commit.id() == oid;
-            };
-            auto post = [oid, &chain](Commit commit) {
-                // Add the commit to the commit chain
-                chain.push_back(commit);
-                return false;
-            };
-            tree_iterator(pre, post, target);
+
+            Commit pointer = target;
             vector<Commit> parents;
             parents.push_back(base);
-            for (int i = 1; i < chain.size(); i++) {
-                Commit current = chain.at(i);
-                Commit parent = chain.at(i-1);
-                for (const auto& p : current.parents()) {
-                    if (parent.id() != p.id()) {
-                        parents.push_back(p);
-                    }
+            while (true) {
+                if (pointer.id() == base.id()) break;
+                vector<Commit> ps = pointer.parents();
+                for (int i = 1; i < ps.size(); i++) {
+                    parents.push_back(ps.at(i));
                 }
+                pointer = pointer.parent(0);
             }
             add_all(repo);
             Tree current = working_tree(repo);
             checkout(repo, target);
-            commit(repo, "WIP", parents);
+            assert(!parents.empty());
+            if (parents.size() == 1) {
+                commit(repo, "WIP", parents);
+            } else if (parents.size() == 2) {
+                commit(repo, default_merge_message(parents.at(1).id().str()), parents);
+            } else {
+                commit(repo, default_merge_message("Octopus Merge"), parents);
+            }
             Commit newCommit = repo.lookup_commit(repo.head().target());
             repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).set_target(newCommit.parent(0).id(), "Squash WIP p1");
             repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).set_target(newCommit.id(), "Squash WIP p2");
@@ -424,9 +418,19 @@ namespace metro {
             checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
             repo.checkout_tree(current, checkoutOpts);
         } else {
-            OID wip_oid = repo.lookup_branch(to_wip(head.name), GIT_BRANCH_LOCAL).target();
+            OID wip_oid = repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).target();
             Commit target = repo.lookup_commit(wip_oid);
-            // TODO stuff
+
+            add_all(repo);
+            Tree current = working_tree(repo);
+            checkout(repo, target);
+            commit(repo, "WIP", {});
+            Commit newCommit = repo.lookup_commit(repo.head().target());
+            repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).delete_reference();
+            repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).set_target(newCommit.id(), "Squash WIP");
+            git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+            checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+            repo.checkout_tree(current, checkoutOpts);
         }
     }
 
