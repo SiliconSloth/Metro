@@ -1867,8 +1867,8 @@ setup() {
 
     metro wip save
 
-    run ls | wc - 1
-    [[ "${lines[0]}" == "0" ]]
+    run ls
+    [[ "${#lines[@]}" ==  0 ]]
 
     run git branch
     [[ "${lines[0]}" == "* master" ]]
@@ -1885,10 +1885,11 @@ setup() {
     git checkout master
     echo "Test file content 2" > test.txt
 
-    not metro wip save
+    run metro wip save
+    [[ $status != 0 ]]
 }
 
-@test "Restore WIP branch" {
+@test "Restore WIP branch fail" {
     git init
     git commit --allow-empty -m "Initial Commit"
     git checkout -b master#wip
@@ -1898,7 +1899,21 @@ setup() {
     git checkout master
     echo "Test file content 2" > test.txt
 
-    metro wip restore
+    run metro wip restore
+    [[ $status != 0 ]]
+}
+
+@test "Force restore WIP branch" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git add -A
+    git commit -m "WIP"
+    git checkout master
+    echo "Test file content 2" > test.txt
+
+    metro wip restore --force
 
     run cat test.txt
     [[ "${lines[0]}" == "Test file content 1" ]]
@@ -1914,19 +1929,16 @@ setup() {
     echo "Test file content 1" > test.txt
     git add -A
     git commit -m "WIP"
-    echo "\nTest file content 2" >> test.txt
+    echo "Test file content 2" >> test.txt
     git add -A
     git commit -m "Error"
     git checkout master
 
-    not metro wip restore
+    run metro wip restore
+    [[ $status != 0 ]]
 
-    run cat test.txt
-    [[ "${lines[0]}" == "Test file content 2" ]]
-
-    run git branch
-    [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[1]}" == "  master#wip" ]]
+    run ls
+    [[ "${#lines[@]}" ==  0 ]]
 }
 
 @test "Squash WIP branch" {
@@ -1936,7 +1948,7 @@ setup() {
     echo "Test file content 1" > test.txt
     git add -A
     git commit -m "WIP"
-    echo "\nTest file content 2" >> test.txt
+    echo "Test file content 2" >> test.txt
     git add -A
     git commit -m "Error"
     git checkout master
@@ -1948,9 +1960,10 @@ setup() {
     [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
+    cat test.txt
     run cat test.txt
-    [[ "${lines[0]}" == "Test file content 1" ]]
-    [[ "${lines[1]}" == "Test file content 2" ]]
+    [[ "${lines[0]}" == "Test file content 1"* ]]
+    [[ "${lines[1]}" == "Test file content 2"* ]]
 }
 
 @test "Squash WIP branch with non-empty working dir" {
@@ -1960,7 +1973,35 @@ setup() {
     echo "Test file content 1" > test.txt
     git add -A
     git commit -m "WIP"
-    echo "\nTest file content 2" >> test.txt
+    echo "Test file content 2" >> test.txt
+    git add -A
+    git commit -m "Error"
+    git checkout master
+    echo "Test file content 3" > test.txt
+
+    metro wip squash
+
+    cat test.txt
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 3"* ]]
+
+    run git branch
+    [[ "${lines[0]}" == "* master" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
+
+    git checkout master#wip -f
+    run git log
+    [[ "${lines[3]}" == *"WIP"* ]]
+}
+
+@test "Squash WIP branch with extra commit" {
+    git init
+    git commit --allow-empty -m "Initial Commit"
+    git checkout -b master#wip
+    echo "Test file content 1" > test.txt
+    git add -A
+    git commit -m "WIP"
+    echo "Test file content 2" >> test.txt
     git add -A
     git commit -m "Error"
     git checkout master
@@ -1968,18 +2009,27 @@ setup() {
     git add -A
     git commit -m "Test commit"
 
-    metro wip squash
+    run metro wip squash
+    [[ $status != 0 ]]
 
+    metro wip squash --force
+
+    cat test.txt
     run cat test.txt
-    [[ "${lines[0]}" == "Test file content 3" ]]
+    [[ "${lines[0]}" == "Test file content 3"* ]]
 
     run git branch
     [[ "${lines[0]}" == "* master" ]]
     [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
+    cat test.txt
+    run cat test.txt
+    [[ "${lines[0]}" == "Test file content 1"* ]]
+    [[ "${lines[1]}" == "Test file content 2"* ]]
+
     run git log
-    [[ "${lines[4]}" == *"WIP"* ]]
+    [[ "${lines[3]}" == *"WIP"* ]]
 }
 
 @test "Squash valid WIP branch" {
@@ -1993,20 +2043,21 @@ setup() {
 
     metro wip squash
 
+    git branch
     run git branch
     [[ "${lines[0]}" == "* master" ]]
-    [[ "${lines[0]}" == "  master#wip" ]]
+    [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
+    cat test.txt
     run cat test.txt
     [[ "${lines[0]}" == "Test file content 1" ]]
-    [[ "${lines[1]}" == "Test file content 2" ]]
 }
 
 @test "Squash WIP branch with merge" {
     git init
     git commit --allow-empty -m "Initial Commit"
-    git branch --orphan other
+    git checkout --orphan other
     echo "Test file content 1" > test-1.txt
     git add -A
     git commit -m "Test Commit"
@@ -2026,11 +2077,12 @@ setup() {
     [[ "${lines[1]}" == "  master#wip" ]]
 
     git checkout master#wip
+    git log
     run git log
     [[ "${lines[1]}" == *"Merge"* ]]
-    [[ "${lines[5]}" == *"WIP"* ]]
-    [[ "${lines[9]}" == *"Test Commit"* ]]
-    [[ "${lines[13]}" == *"Initial Commit"* ]]
+    [[ "${lines[4]}" == *"Absorbed"* ]]
+    [[ "$output" == *"Test Commit"* ]]
+    [[ "$output" == *"Initial Commit"* ]]
 }
 
 @test "Wip commands don't work in detached" {
@@ -2046,9 +2098,12 @@ setup() {
     git checkout HEAD~1
     echo "\nTest file content 3" >> test.txt
 
-    not metro wip save
-    not metro wip restore
-    not metro wip squash
+    run metro wip save
+    [[ $status != 0 ]]
+    run metro wip restore
+    [[ $status != 0 ]]
+    run metro wip squash
+    [[ $status != 0 ]]
 }
 
 @test "Wip commands work without initial commit" {
@@ -2058,10 +2113,10 @@ setup() {
     metro wip save
 
     run git branch
-    [[ "${lines[0]}" == "master#wip" ]]
+    [[ "${lines[0]}" == "  master#wip" ]]
 
     git checkout master#wip
-    echo "\nTest file content 2" >> test.txt
+    echo "Test file content 2" >> test.txt
     git add -A
     git commit -m "Test commit"
 
@@ -2071,13 +2126,15 @@ setup() {
 
     git checkout master#wip
     run git log
-    [[ "${lines[4]}" == *"WIP"* ]]
+    [[ "${lines[3]}" == *"WIP"* ]]
 
     git checkout --orphan master
+    rm test.txt
 
     metro wip restore
 
+    cat test.txt
     run cat test.txt
-    [[ "${lines[0]}" == "Test file content 1" ]]
-    [[ "${lines[1]}" == "Test file content 2" ]]
+    [[ "${lines[0]}" == "Test file content 1"* ]]
+    [[ "${lines[1]}" == "Test file content 2"* ]]
 }

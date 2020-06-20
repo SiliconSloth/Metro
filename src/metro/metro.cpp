@@ -364,21 +364,16 @@ namespace metro {
         index.write();
     }
 
-    void squash_wip(const Repository& repo) {
+    void squash_wip(const Repository& repo, bool force) {
         // Ensure head is attached
         Head head = get_head(repo);
         if (head.detached) {
             throw UnsupportedOperationException("Attempted to squash WIP with detached head");
         }
         string wipName = to_wip(head.name);
-        string tempName = head.name + "#temp";
 
         if (!branch_exists(repo, wipName)) {
             throw AttachedWIPException();
-        }
-
-        if (branch_exists(repo, tempName)) {
-            throw MetroException("Metro needs to create a branch called " + tempName + "to squash the WIP, but it already exists.");
         }
 
         // Ensure the WIP is valid
@@ -389,10 +384,22 @@ namespace metro {
             Commit target = repo.lookup_commit(wip_oid);
 
             Commit pointer = target;
+            Commit compare = base;
             vector<Commit> parents;
             parents.push_back(base);
+            if (force) {
+                compare = repo.lookup_commit(repo.merge_base(oid, wip_oid));
+            }
             while (true) {
-                if (pointer.id() == base.id()) break;
+                if (pointer.id() == compare.id()) break;
+                if (pointer.parentcount() == 0) {
+                    assert(!force);
+                    throw MetroException("There have been commits to master since the WIP was made.\n"
+                                         "You can squash anyway using `metro wip squash --force`, but the resulting working\n"
+                                         "directory will undo the changes in those commits.\n"
+                                         "Alternatively you can move the WIP to a new branch with 'metro rename " +
+                                         wipName + " <other>'.\n");
+                }
                 vector<Commit> ps = pointer.parents();
                 for (int i = 1; i < ps.size(); i++) {
                     parents.push_back(ps.at(i));
