@@ -1,5 +1,3 @@
-#include "gitwrapper/treebuilder.h"
-
 namespace git {
     Treebuilder Treebuilder::create(const Repository &repo) {
         git_treebuilder *tb;

@@ -220,20 +220,6 @@ namespace metro {
     void save_wip(const Repository& repo);
 
     /**
-     * TODO WRITE
-     * @param repo
-     */
-    void save_changes(const Repository &repo, const function<string(string)>& alias, const string& m);
-
-    /**
-     * TODO WRITE
-     * @param repo
-     * @param force
-     * @param alias
-     */
-    void restore_changes(const Repository& repo, bool force, const function<string(string)>& alias, const string& m);
-
-    /**
      * Deletes the WIP commit at head if any, restoring the contents to the working directory
      * and resuming a merge if one was ongoing.
      *
@@ -293,11 +279,14 @@ namespace metro {
     void reset_to_empty(const Repository& repo);
 
     /**
-     * TODO WRITE
-     * @param pre
-     * @param post
-     * @param commit
-     * @return
+     * Iterates over a commit tree, running `pre` as a commit is entered and `post` as a commit is exited.
+     * The first time either function returns true, the search will backtrack to the start without
+     * exploring new commits.
+     *
+     * @param pre Function to run when entering nodes
+     * @param post Function to run when exiting nodes
+     * @param commit Root commit
+     * @return True if the exit was forceful
      */
     bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit);
 }
