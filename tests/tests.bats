@@ -987,37 +987,49 @@ setup() {
 }
 
 @test "Delete current WIP" {
+  echo "Mark 1"
   git init
   git commit --allow-empty -m "Initial Commit"
   git branch master#wip
 
+  echo "Mark 2"
   git branch --list
   run git branch --list
   [[ "${lines[1]}" == "  master#wip" ]]
 
-  git branch master#wip
+  echo "Mark 3"
+  git checkout master#wip
   git commit --allow-empty -m "WIP"
+
+  echo "Mark 4"
   run metro delete branch master#wip
+  echo "$output"
   [[ "${lines[0]}" == "Deleted branch master#wip." ]]
 
+  echo "Mark 5"
   git branch --list
   run git branch --list
   [[ "${lines[0]}" == "* master" ]]
 }
 
 @test "Delete current invalid WIP" {
+  echo "Mark 1"
   git init
   git commit --allow-empty -m "Initial Commit"
   git branch master#wip
 
+  echo "Mark 2"
   git branch --list
   run git branch --list
   [[ "${lines[1]}" == "  master#wip" ]]
 
-  git branch master#wip
+  echo "Mark 3"
+  git checkout master#wip
   run metro delete branch master#wip
+  echo "$output"
   [[ "${lines[0]}" == "Deleted branch master#wip." ]]
 
+  echo "Mark 4"
   git branch --list
   run git branch --list
   [[ "${lines[0]}" == "* master" ]]
