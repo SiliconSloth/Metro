@@ -193,22 +193,12 @@ struct ANSIException : public MetroException {
 };
 
 /**
- * AttachedWIPException should be thrown when the WIP is not detached from the branch, but should be.
+ * NeedWIPException should be thrown when there is no #wip branch, but there should be.
  */
-struct AttachedWIPException : public MetroException {
-    explicit AttachedWIPException():
+struct NeedWIPException : public MetroException {
+    explicit NeedWIPException():
             MetroException("This can only be executed when this branch has a #wip branch.\n"
                            "If you have changes, you can create a #wip branch with them using 'metro wip save'")
-    {}
-};
-
-/**
- * DetachedWIPException should be thrown when the WIP is detached from the branch, but should not be.
- */
-struct DetachedWIPException : public MetroException {
-    explicit DetachedWIPException():
-            MetroException("This can only be executed when this branch doesn't have a #wip branch.\n"
-                           "You can force this operation with '--force' to replace the #wip contents.")
     {}
 };
 

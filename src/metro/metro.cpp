@@ -373,7 +373,7 @@ namespace metro {
         string wipName = to_wip(head.name);
 
         if (!branch_exists(repo, wipName)) {
-            throw AttachedWIPException();
+            throw NeedWIPException();
         }
 
         // Ensure the WIP is valid

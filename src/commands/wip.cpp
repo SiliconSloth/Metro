@@ -42,10 +42,10 @@ Command wip {
                 return;
             }
             if (command != SAVE_WIP && !metro::branch_exists(repo, wipBranch)) {
-                throw AttachedWIPException();
+                throw NeedWIPException();
             }
             if (command == SAVE_WIP && metro::branch_exists(repo, wipBranch)) {
-                throw DetachedWIPException();
+                throw UnexpectedWIPException(wipBranch);
             }
 
             switch (command) {
