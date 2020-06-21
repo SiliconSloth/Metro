@@ -13,12 +13,12 @@ enum Subcommand {
  */
 Command wip {
         "wip",
-        "Fix issues with WIP",
+        "Fix issues with #wip branches",
 
         // execute
         [](const Arguments &args) {
             if (args.positionals.empty()) {
-                throw MissingPositionalException("Sub-command");
+                throw MissingPositionalException("command");
             }
             if (args.positionals.size() > 1) {
                 throw UnexpectedPositionalException(args.positionals[1]);
@@ -36,21 +36,32 @@ Command wip {
             if (current_branch.detached) {
                 throw MetroException("'metro wip' can only be used on a branch.");
             }
-            if (command != SAVE_WIP && !metro::branch_exists(repo, metro::to_wip(current_branch.name))) {
+            string wipBranch = metro::to_wip(current_branch.name);
+            if (command == SAVE_WIP && !metro::has_uncommitted_changes(repo)) {
+                cout << "No uncommitted changes to save." << endl;
+                return;
+            }
+            if (command != SAVE_WIP && !metro::branch_exists(repo, wipBranch)) {
                 throw AttachedWIPException();
             }
-            if (command == SAVE_WIP && metro::branch_exists(repo, metro::to_wip(current_branch.name))) {
+            if (command == SAVE_WIP && metro::branch_exists(repo, wipBranch)) {
                 throw DetachedWIPException();
             }
+
             switch (command) {
                 case SAVE_WIP:
                     metro::save_wip(repo);
+                    cout << "Saved changes to " << wipBranch << "." << endl;
+                    cout << "Removed changes from the working directory." << endl;
                     break;
                 case RESTORE_WIP:
                     metro::restore_wip(repo, args.options.find("force") != args.options.end());
+                    cout << "Restored changes from " << wipBranch << endl;
                     break;
                 case SQUASH_WIP:
                     metro::squash_wip(repo, args.options.find("force") != args.options.end());
+                    cout << "Squashed " << wipBranch << " into a single commit." << endl;
+                    cout << "Use `metro wip restore` to restore the changes from " << wipBranch << endl;
                     break;
             }
         },
@@ -59,8 +70,8 @@ Command wip {
         [](const Arguments &args) {
             string command_s = !args.positionals.empty() ? args.positionals[0] : "";
             string save_message = "Saves the contents of the working directory to a WIP commit in a #wip branch.";
-            string restore_message = "Restores the WIP branch deleting any changes in the working directory.";
-            string squash_message = "Squashes the WIP branch into a single WIP commit.";
+            string restore_message = "Restores the #wip branch, deleting any changes in the working directory.";
+            string squash_message = "Squashes the #wip branch, into a single WIP commit.";
             if (command_s == "save") {
                 cout << save_message << endl;
                 cout << "Usage: metro wip save\n";

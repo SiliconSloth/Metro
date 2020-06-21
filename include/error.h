@@ -197,8 +197,8 @@ struct ANSIException : public MetroException {
  */
 struct AttachedWIPException : public MetroException {
     explicit AttachedWIPException():
-            MetroException("This can only be executed when this branch has a WIP branch.\n"
-                           "If you have changes, you can create a WIP branch with them using 'metro wip save'")
+            MetroException("This can only be executed when this branch has a #wip branch.\n"
+                           "If you have changes, you can create a #wip branch with them using 'metro wip save'")
     {}
 };
 
@@ -207,8 +207,8 @@ struct AttachedWIPException : public MetroException {
  */
 struct DetachedWIPException : public MetroException {
     explicit DetachedWIPException():
-            MetroException("This can only be executed when this branch doesn't have a WIP branch.\n"
-                           "You can force this operation with '--force' to replace the WIP contents.")
+            MetroException("This can only be executed when this branch doesn't have a #wip branch.\n"
+                           "You can force this operation with '--force' to replace the #wip contents.")
     {}
 };
 
@@ -216,9 +216,10 @@ struct DetachedWIPException : public MetroException {
  * UnexpectedWIPException should be thrown when trying to save the WIP but a WIP already exists.
  */
 struct UnexpectedWIPException : public MetroException {
-    explicit UnexpectedWIPException():
-            MetroException("Failed to save the WIP because a WIP branch is already there.\n"
-                           "Please remove the WIP branch using 'metro delete branch branch-name#wip --force' or delete your changes 'metro delete commit'")
+    explicit UnexpectedWIPException(const string& wipBranch):
+            MetroException("Failed to save uncomitted changes because `" + wipBranch + "` already exists.\n"
+                           "Please remove the #wip branch using 'metro delete branch " + wipBranch + "' "
+                           "or move it to its own branch with `metro rename " + wipBranch + "<new-name>`.")
     {}
 };
 
@@ -226,8 +227,13 @@ struct UnexpectedWIPException : public MetroException {
  * InvalidWIPException should be thrown when the WIP is required, but is invalid.
  */
 struct InvalidWIPException : public MetroException {
-    explicit InvalidWIPException(string base_branch):
-            MetroException("The WIP branch for " + base_branch + " is invalid, so cannot be restored.\n"
-                            "You can restore anyway using 'metro wip squash' and trying again.")
+    explicit InvalidWIPException(const string& baseBranch, const string& wipBranch):
+            MetroException("The #wip branch for " + baseBranch + " is invalid, so your changes cannot be restored.\n"
+                           "You can solve this issue using one of the following commands:\n"
+                           "`metro wip squash` will turn all commits on the #wip branch into uncommitted changes "
+                           "on this branch. This will lose all commit structure on the #wip branch.\n"
+                           "`metro delete branch" + wipBranch + "` will delete your previous uncommitted changes.\n"
+                           "`metro rename " + wipBranch + " <new-name>` will move the commits on the #wip branch "
+                           "to their own branch, so you can salvage work from them at your leisure.")
     {}
 };

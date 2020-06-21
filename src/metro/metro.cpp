@@ -255,7 +255,7 @@ namespace metro {
         string wipName = to_wip(head.name);
 
         if (branch_exists(repo, wipName)) {
-            throw UnexpectedWIPException();
+            throw UnexpectedWIPException(wipName);
         }
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
@@ -310,13 +310,13 @@ namespace metro {
                 if (parent.id() == oid) found = true;
             }
             if (!found) {
-                throw InvalidWIPException(head.name);
+                throw InvalidWIPException(head.name, to_wip(head.name));
             }
         } else {
             OID wip_oid = repo.lookup_branch(to_wip(head.name), GIT_BRANCH_LOCAL).target();
             Commit target = repo.lookup_commit(wip_oid);
             if (target.parentcount() != 0) {
-                throw InvalidWIPException(head.name);
+                throw InvalidWIPException(head.name, to_wip(head.name));
             }
         }
 
