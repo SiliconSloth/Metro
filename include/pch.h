@@ -67,12 +67,6 @@ using std::map;
 using std::string;
 using std::function;
 
-#include "commands.h"
-#include "helper.h"
-#include "error.h"
-#include "exit.h"
-#include "child_process.h"
-
 #include "gitwrapper/oid.h"
 #include "gitwrapper/branch.h"
 #include "gitwrapper/conflict_iterator.h"
@@ -97,5 +91,11 @@ using std::function;
 #include "metro/branch_descriptor.h"
 #include "metro/syncing.h"
 #include "metro/url_descriptor.h"
+
+#include "commands.h"
+#include "helper.h"
+#include "exit.h"
+#include "child_process.h"
+#include "error.h"
 
 #endif //PCH_H

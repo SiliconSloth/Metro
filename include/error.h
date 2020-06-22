@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "pch.h"
+
 /**
  * Checks the return value of a git function for an error.
  * @param test Return value to test.
@@ -197,8 +199,8 @@ struct ANSIException : public MetroException {
  */
 struct NeedWIPException : public MetroException {
     explicit NeedWIPException():
-            MetroException("This can only be executed when this branch has a #wip branch.\n"
-                           "If you have changes, you can create a #wip branch with them using 'metro wip save'")
+            MetroException("This can only be executed when this branch has a " WIP_SUFFIX " branch.\n"
+                           "If you have changes, you can create a " WIP_SUFFIX " branch with them using 'metro wip save'")
     {}
 };
 
@@ -208,7 +210,7 @@ struct NeedWIPException : public MetroException {
 struct UnexpectedWIPException : public MetroException {
     explicit UnexpectedWIPException(const string& wipBranch):
             MetroException("Failed to save uncomitted changes because `" + wipBranch + "` already exists.\n"
-                           "Please remove the #wip branch using 'metro delete branch " + wipBranch + "' "
+                           "Please remove the " WIP_SUFFIX " branch using 'metro delete branch " + wipBranch + "' "
                            "or move it to its own branch with `metro rename " + wipBranch + "<new-name>`.")
     {}
 };
@@ -218,12 +220,12 @@ struct UnexpectedWIPException : public MetroException {
  */
 struct InvalidWIPException : public MetroException {
     explicit InvalidWIPException(const string& baseBranch, const string& wipBranch):
-            MetroException("The #wip branch for " + baseBranch + " is invalid, so your changes cannot be restored.\n"
+            MetroException("The " WIP_SUFFIX " branch for " + baseBranch + " is invalid, so your changes cannot be restored.\n"
                            "You can solve this issue using one of the following commands:\n"
-                           "`metro wip squash` will turn all commits on the #wip branch into uncommitted changes "
-                           "on this branch. This will lose all commit structure on the #wip branch.\n"
+                           "`metro wip squash` will turn all commits on the " WIP_SUFFIX " branch into uncommitted changes "
+                           "on this branch. This will lose all commit structure on the " WIP_SUFFIX " branch.\n"
                            "`metro delete branch" + wipBranch + "` will delete your previous uncommitted changes.\n"
-                           "`metro rename " + wipBranch + " <new-name>` will move the commits on the #wip branch "
+                           "`metro rename " + wipBranch + " <new-name>` will move the commits on the " WIP_SUFFIX " branch "
                            "to their own branch, so you can salvage work from them at your leisure.")
     {}
 };

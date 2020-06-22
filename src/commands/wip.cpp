@@ -13,7 +13,7 @@ enum Subcommand {
  */
 Command wip {
         "wip",
-        "Fix issues with #wip branches",
+        "Fix issues with " WIP_SUFFIX " branches",
 
         // execute
         [](const Arguments &args) {
@@ -68,9 +68,9 @@ Command wip {
         // printHelp
         [](const Arguments &args) {
             string command_s = !args.positionals.empty() ? args.positionals[0] : "";
-            string save_message = "Saves the contents of the working directory to a WIP commit in a #wip branch.";
-            string restore_message = "Restores the #wip branch, deleting any changes in the working directory.";
-            string squash_message = "Squashes the #wip branch, into a single WIP commit.";
+            string save_message = "Saves the contents of the working directory to a WIP commit in a " WIP_SUFFIX " branch.";
+            string restore_message = "Restores the " WIP_SUFFIX " branch, deleting any changes in the working directory.";
+            string squash_message = "Squashes the " WIP_SUFFIX " branch, into a single WIP commit.";
             if (command_s == "save") {
                 cout << save_message << endl;
                 cout << "Usage: metro wip save\n";
