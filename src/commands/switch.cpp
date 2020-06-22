@@ -49,7 +49,7 @@ Command switchCmd {
                 return;
             }
 
-            metro::switch_branch(repo, name, saveWip);
+            metro::switch_branch(repo, name, saveWip, true);
 
             git::OID head = metro::get_commit(repo, "HEAD").id();
             if (repo.head_detached()) {

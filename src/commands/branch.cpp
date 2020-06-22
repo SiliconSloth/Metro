@@ -43,7 +43,7 @@ Command branch {
             if (repo.head_detached() && metro::has_uncommitted_changes(repo)) {
                 cout << "Could not switch to new branch due to uncommitted changes." << endl;
             } else {
-                metro::switch_branch(repo, name, true);
+                metro::switch_branch(repo, name, true, true);
                 const metro::Head head = metro::get_head(repo);
                 cout << "Switched to branch " << head.name << ".\n";
             }

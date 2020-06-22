@@ -181,14 +181,16 @@ namespace metro {
         // but if that does not exist just pick an arbitrary branch.
         if (is_on_branch(repo, name)) {
             if (branch_exists(repo, "master") && name != "master") {
-                switch_branch(repo, "master", false);
+                // Don't try to restore after switching if the branch being deleted is the #wip branch.
+                switch_branch(repo, "master", false, name != to_wip("master"));
             } else {
                 bool found = false;
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 for (Branch branch; iter.next(&branch);) {
                     // Pick any branch that isn't the one being deleted and isn't a WIP branch.
                     if (branch.name() != name && !is_wip(branch.name())) {
-                        switch_branch(repo, branch.name(), false);
+                        // Don't try to restore after switching if the branch being deleted is the #wip branch.
+                        switch_branch(repo, branch.name(), false, name != to_wip(branch.name()));
                         found = true;
                         break;
                     }
@@ -441,7 +443,7 @@ namespace metro {
         }
     }
 
-    void switch_branch(const Repository& repo, const string& name, bool saveWip) {
+    void switch_branch(const Repository& repo, const string& name, bool saveWip, bool restoreWip) {
         const Commit commit = get_commit(repo, name);
 
         if (saveWip) {
@@ -453,7 +455,7 @@ namespace metro {
         checkout(repo, commit);
         move_head(repo, name);
 
-        if (!repo.head_detached()) {
+        if (restoreWip && !repo.head_detached()) {
             restore_wip(repo, false);
         }
     }
