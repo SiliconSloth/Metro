@@ -59,13 +59,7 @@ namespace std_filesystem = std::experimental::filesystem;
 #define git_error_last giterr_last
 #endif
 
-using std::cout;
-using std::endl;
-using std::flush;
-using std::vector;
-using std::map;
-using std::string;
-using std::function;
+using namespace std;
 
 #include "gitwrapper/oid.h"
 #include "gitwrapper/branch.h"
