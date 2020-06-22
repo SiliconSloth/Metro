@@ -224,8 +224,17 @@ namespace metro {
      * and resuming a merge if one was ongoing.
      *
      * @param repo Repo to restore WIP for.
+     * @param force Whether to replace the current work.
      */
-    void restore_wip(const Repository& repo);
+    void restore_wip(const Repository& repo, bool force);
+
+    /**
+     * Squashes the commits on the WIP branch into a single WIP commit, using the base
+     * as the last commit on the current branch, and preserving and merges in the WIP.
+     *
+     * @param repo Repo to squash WIP in.
+     */
+    void squash_wip(const Repository& repo);
 
     /**
      * Moves to the given branch, checking out changes and the HEAD of that branch.
@@ -233,9 +242,10 @@ namespace metro {
      * @param repo Repo to switch to branch within.
      * @param name Name of branch to switch to.
      * @param saveWip Whether or not to save uncommitted changes to the WIP branch before switching.
+     * @param restoreWip Whether or not to restore the WIP branch of the new branch after switching.
      * @throws UnsupportedOperationException If switching to a WIP branch is attempted.
      */
-    void switch_branch(const Repository& repo, const string& name, bool saveWip);
+    void switch_branch(const Repository& repo, const string& name, bool saveWip, bool restoreWip);
 
     /**
      * Moves the head to the given ref.
@@ -259,4 +269,25 @@ namespace metro {
      * @return Array of references.
      */
     StrArray reference_list(const Repository& repo);
+
+    /**
+     * Resets the current working directory to the empty tree - ie. an empty directory.
+     * This does not wipe any data from the repository - only files in the working
+     * directory or staging area.
+     *
+     * @param repo Repo to reset directory of
+     */
+    void reset_to_empty(const Repository& repo);
+
+    /**
+     * Iterates over a commit tree, running `pre` as a commit is entered and `post` as a commit is exited.
+     * The first time either function returns true, the search will backtrack to the start without
+     * exploring new commits.
+     *
+     * @param pre Function to run when entering nodes
+     * @param post Function to run when exiting nodes
+     * @param commit Root commit
+     * @return True if the exit was forceful
+     */
+    bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit);
 }

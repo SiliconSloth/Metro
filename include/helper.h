@@ -4,8 +4,6 @@
 
 #pragma once
 
-using namespace std;
-
 /**
  * Check if a non-terminated char array is equal to a null-terminated char array.
  * The third argument is the length of the first string.

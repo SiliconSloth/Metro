@@ -1,22 +1,22 @@
 namespace metro {
 
-    bool merge_ongoing(const Repository& repo) {
+    bool merge_ongoing(const Repository &repo) {
         try {
             // Revision will only exist if merging
             repo.revparse_single("MERGE_HEAD");
-        } catch (GitException&) {
+        } catch (GitException &) {
             return false;
         }
         return true;
     }
 
-    void assert_not_merging(const Repository& repo) {
+    void assert_not_merging(const Repository &repo) {
         if (merge_ongoing(repo)) {
             throw CurrentlyMergingException();
         }
     }
 
-    Tree working_tree(const Repository& repo) {
+    Tree working_tree(const Repository &repo) {
         Index index = add_all(repo);
         // Write the files in the index into a tree that can be attached to the commit.
         OID oid = index.write_tree();
@@ -28,11 +28,11 @@ namespace metro {
         return tree;
     }
 
-    Diff current_changes(const Repository& repo) {
+    Diff current_changes(const Repository &repo) {
         Tree current = Tree();
         try {
             current = get_commit(repo, "HEAD").tree();
-        } catch (GitException& ex) {
+        } catch (GitException &ex) {
             // The current branch might have no commits, which is ok.
         }
         git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
@@ -41,7 +41,8 @@ namespace metro {
         return diff;
     }
 
-    void commit(const Repository& repo, const string& updateRef, const string& message, const vector<Commit>& parentCommits) {
+    void commit(const Repository &repo, const string &updateRef, const string &message,
+                const vector<Commit> &parentCommits) {
         git_signature author = repo.default_signature();
         Tree tree = working_tree(repo);
 
@@ -49,50 +50,52 @@ namespace metro {
         repo.create_commit(updateRef, author, author, "UTF-8", message, tree, parentCommits);
     }
 
-    void commit(const Repository& repo, const string& updateRef, const string& message, const initializer_list<string> parentRevs) {
+    void commit(const Repository &repo, const string &updateRef, const string &message,
+                const initializer_list<string> parentRevs) {
         // Retrieve the commit objects associated with the given parent revisions.
         vector<Commit> parentCommits;
-        for (const string& parentRev : parentRevs) {
+        for (const string &parentRev : parentRevs) {
             parentCommits.push_back(static_cast<Commit>(repo.revparse_single(parentRev)));
         }
 
         commit(repo, updateRef, message, parentCommits);
     }
 
-    void commit(const Repository& repo, const string& message, const vector<Commit>& parentCommits) {
+    void commit(const Repository &repo, const string &message, const vector<Commit> &parentCommits) {
         commit(repo, "HEAD", message, parentCommits);
     }
 
-    void commit(const Repository& repo, const string& message, initializer_list<string> parentRevs) {
+    void commit(const Repository &repo, const string &message, initializer_list<string> parentRevs) {
         commit(repo, "HEAD", message, parentRevs);
     }
 
-    Index add_all(const Repository& repo) {
+    Index add_all(const Repository &repo) {
         Index index = repo.index();
         index.add_all(StrArray(), GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, nullptr);
         return index;
     }
 
-    Repository create(const string& path) {
-        if (Repository::exists(path+"/.git")) {
+    Repository create(const string &path) {
+        if (Repository::exists(path + "/.git")) {
             throw RepositoryExistsException();
         }
 
         try {
-            Repository repo = Repository::init(path+"/.git", false);
+            Repository repo = Repository::init(path + "/.git", false);
             commit(repo, "Create repository", {});
             return repo;
         } catch (GitException &e) {
             string error(e.what());
             int pos = error.find("The filename, directory name, or volume label syntax is incorrect.");
             if (pos >= 0 && pos <= error.length()) {
-                throw MetroException("Unable to create directory '" + path + "' as that name is disallowed on this OS.");
+                throw MetroException(
+                        "Unable to create directory '" + path + "' as that name is disallowed on this OS.");
             }
             throw e;
         }
     }
 
-    void delete_last_commit(const Repository& repo, bool reset) {
+    void delete_last_commit(const Repository &repo, bool reset) {
         if (!head_exists(repo)) {
             throw MetroException("No commit to delete.");
         }
@@ -105,7 +108,7 @@ namespace metro {
         reset_head(repo, parent, reset);
     }
 
-    void patch(const Repository& repo, const string& message) {
+    void patch(const Repository &repo, const string &message) {
         assert_not_merging(repo);
 
         git_signature author = repo.default_signature();
@@ -115,7 +118,7 @@ namespace metro {
         commit.amend("HEAD", author, author, "UTF-8", message, tree);
     }
 
-    Commit get_commit(const Repository& repo, const string& revision) {
+    Commit get_commit(const Repository &repo, const string &revision) {
         Object object = repo.revparse_single(revision);
         if (object.type() == GIT_OBJECT_COMMIT) {
             return (Commit) object;
@@ -126,30 +129,30 @@ namespace metro {
         }
     }
 
-    bool commit_exists(const Repository &repo, const string& name) {
+    bool commit_exists(const Repository &repo, const string &name) {
         try {
             get_commit(repo, name);
             return true;
-        } catch (GitException&) {
+        } catch (GitException &) {
             return false;
         }
     }
 
-    void create_branch(const Repository &repo, const string& name) {
+    void create_branch(const Repository &repo, const string &name) {
         Commit commit = get_commit(repo, "HEAD");
         repo.create_branch(name, commit, false);
     }
 
-    bool branch_exists(const Repository &repo, const string& name) {
+    bool branch_exists(const Repository &repo, const string &name) {
         try {
             repo.lookup_branch(name, GIT_BRANCH_LOCAL);
             return true;
-        } catch (GitException&) {
+        } catch (GitException &) {
             return false;
         }
     }
 
-    Head get_head(const Repository& repo) {
+    Head get_head(const Repository &repo) {
         string name = read_all(repo.path() + "HEAD");
         if (has_prefix(name, "ref: refs/")) {
             name = name.substr(10, string::npos);
@@ -161,36 +164,38 @@ namespace metro {
         }
 
         if (has_suffix(name, "\n")) {
-            name = name.substr(0, name.size()-1);
+            name = name.substr(0, name.size() - 1);
         }
 
         return Head{name, repo.head_detached()};
     }
 
-    bool is_on_branch(const Repository& repo, const string& branch) {
+    bool is_on_branch(const Repository &repo, const string &branch) {
         const Head head = get_head(repo);
         return !head.detached && head.name == branch;
     }
 
-    bool head_exists(const Repository& repo) {
+    bool head_exists(const Repository &repo) {
         return commit_exists(repo, "HEAD");
     }
 
-    void delete_branch(const Repository& repo, const string& name) {
+    void delete_branch(const Repository &repo, const string &name) {
         // If the user tries to delete the current branch,
         // we must switch out of it first.
         // Preferably switch into the master branch,
         // but if that does not exist just pick an arbitrary branch.
         if (is_on_branch(repo, name)) {
             if (branch_exists(repo, "master") && name != "master") {
-                switch_branch(repo, "master", false);
+                // Don't try to restore after switching if the branch being deleted is the #wip branch.
+                switch_branch(repo, "master", false, name != to_wip("master"));
             } else {
                 bool found = false;
                 BranchIterator iter = repo.new_branch_iterator(GIT_BRANCH_LOCAL);
                 for (Branch branch; iter.next(&branch);) {
                     // Pick any branch that isn't the one being deleted and isn't a WIP branch.
                     if (branch.name() != name && !is_wip(branch.name())) {
-                        switch_branch(repo, branch.name(), false);
+                        // Don't try to restore after switching if the branch being deleted is the #wip branch.
+                        switch_branch(repo, branch.name(), false, name != to_wip(branch.name()));
                         found = true;
                         break;
                     }
@@ -205,7 +210,7 @@ namespace metro {
 
         Branch branch = repo.lookup_branch(name, GIT_BRANCH_LOCAL);
         branch.delete_branch();
-        
+
         // Also delete the WIP branch if present.
         if (branch_exists(repo, to_wip(name))) {
             Branch branch = repo.lookup_branch(to_wip(name), GIT_BRANCH_LOCAL);
@@ -213,18 +218,18 @@ namespace metro {
         }
     }
 
-    void checkout(const Repository& repo, const string& name) {
+    void checkout(const Repository &repo, const string &name) {
         checkout(repo, get_commit(repo, name));
     }
 
-    void checkout(const Repository& repo, const Commit& commit) {
+    void checkout(const Repository &repo, const Commit &commit) {
         Tree tree = commit.tree();
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
         repo.checkout_tree(tree, checkoutOpts);
     }
 
-    bool has_uncommitted_changes(const Repository& repo) {
+    bool has_uncommitted_changes(const Repository &repo) {
         git_status_options opts = GIT_STATUS_OPTIONS_INIT;
         opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
         opts.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED;
@@ -233,7 +238,7 @@ namespace metro {
         return status.entrycount() > 0;
     }
 
-    vector<StandaloneConflict> get_conflicts(const Index& index) {
+    vector<StandaloneConflict> get_conflicts(const Index &index) {
         vector<StandaloneConflict> conflicts;
         ConflictIterator iter = index.conflict_iterator();
         for (Conflict conflict{}; iter.next(conflict);) {
@@ -242,25 +247,23 @@ namespace metro {
         return conflicts;
     }
 
-    void save_wip(const Repository& repo) {
+    void save_wip(const Repository &repo) {
         // If there are no changes since the last commit, don't bother with a WIP commit.
         if (!(has_uncommitted_changes(repo) || merge_ongoing(repo))) {
             return;
         }
 
-        const Head head = get_head(repo);
+        Head head = get_head(repo);
+        bool headExists = head_exists(repo);
+        if (!headExists) head = metro::Head(string("master"), false);
         if (head.detached) {
             throw UnsupportedOperationException("Attempted to save WIP with detached head");
         }
         string wipName = to_wip(head.name);
 
-        try {
-            delete_branch(repo, wipName);
-        } catch (BranchNotFoundException&) {
-            // We don't mind if the delete fails, we tried it just in case.
+        if (branch_exists(repo, wipName)) {
+            throw UnexpectedWIPException(wipName);
         }
-
-        bool headExists = commit_exists(repo, "HEAD");
         if (merge_ongoing(repo)) {
             // Store the merge message in the second line (and beyond) of the WIP commit message.
             string message = get_merge_message(repo);
@@ -277,23 +280,58 @@ namespace metro {
                 commit(repo, "refs/heads/" + wipName, "WIP", {});
             }
         }
+
+        if (headExists) {
+            reset_head(repo, get_commit(repo, get_head(repo).name), true);
+        } else {
+            reset_to_empty(repo);
+        }
     }
 
-    void restore_wip(const Repository& repo) {
-        const Head head = get_head(repo);
+    void restore_wip(const Repository& repo, bool force) {
+        // Ensure working dir is empty
+        add_all(repo);
+        if (!force && current_changes(repo).num_deltas() != 0) {
+            throw MetroException("Couldn't restore WIP because the working directory has changed.\n"
+                                 "To replace the working directory, you can use 'metro wip restore --force'");
+        }
+
+        // Ensure head is attached
+        Head head = get_head(repo);
         if (head.detached) {
             throw UnsupportedOperationException("Attempted to restore WIP with detached head");
         }
         string wipName = to_wip(head.name);
+
+        if (!branch_exists(repo, wipName)) {
+            return;
+        }
+
+        // Ensure the WIP is valid
+        if (head_exists(repo)) {
+            OID oid = repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).target();
+            OID wip_oid = repo.lookup_branch(to_wip(head.name), GIT_BRANCH_LOCAL).target();
+            Commit target = repo.lookup_commit(wip_oid);
+            bool found = false;
+            for (Commit parent : target.parents()) {
+                if (parent.id() == oid) found = true;
+            }
+            if (!found) {
+                throw InvalidWIPException(head.name, to_wip(head.name));
+            }
+        } else {
+            OID wip_oid = repo.lookup_branch(to_wip(head.name), GIT_BRANCH_LOCAL).target();
+            Commit target = repo.lookup_commit(wip_oid);
+            if (target.parentcount() != 0) {
+                throw InvalidWIPException(head.name, to_wip(head.name));
+            }
+        }
 
         // Don't attempt to restore a WIP branch onto itself.
         if (wipName == head.name) {
             return;
         }
 
-        if (!branch_exists(repo, wipName)) {
-            return;
-        }
         Commit wipCommit = get_commit(repo, wipName);
         Index index = repo.index();
 
@@ -333,7 +371,84 @@ namespace metro {
         index.write();
     }
 
-    void switch_branch(const Repository& repo, const string& name, bool saveWip) {
+    void squash_wip(const Repository& repo, bool force) {
+        // Ensure head is attached
+        Head head = get_head(repo);
+        if (head.detached) {
+            throw UnsupportedOperationException("Attempted to squash WIP with detached head");
+        }
+        string wipName = to_wip(head.name);
+
+        if (!branch_exists(repo, wipName)) {
+            throw NeedWIPException();
+        }
+
+        // Ensure the WIP is valid
+        if (head_exists(repo)) {
+            OID oid = repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).target();
+            OID wip_oid = repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).target();
+            Commit base = repo.lookup_commit(oid);
+            Commit target = repo.lookup_commit(wip_oid);
+
+            Commit pointer = target;
+            Commit compare = base;
+            vector<Commit> parents;
+            parents.push_back(base);
+            if (force) {
+                compare = repo.lookup_commit(repo.merge_base(oid, wip_oid));
+            }
+            while (true) {
+                if (pointer.id() == compare.id()) break;
+                if (pointer.parentcount() == 0) {
+                    assert(!force);
+                    throw MetroException("There have been commits to master since the WIP was made.\n"
+                                         "You can squash anyway using `metro wip squash --force`, but the resulting working\n"
+                                         "directory will undo the changes in those commits.\n"
+                                         "Alternatively you can move the WIP to a new branch with 'metro rename " +
+                                         wipName + " <other>'.\n");
+                }
+                vector<Commit> ps = pointer.parents();
+                for (int i = 1; i < ps.size(); i++) {
+                    parents.push_back(ps.at(i));
+                }
+                pointer = pointer.parent(0);
+            }
+            add_all(repo);
+            Tree current = working_tree(repo);
+            checkout(repo, target);
+            assert(!parents.empty());
+            if (parents.size() == 1) {
+                commit(repo, "WIP", parents);
+            } else if (parents.size() == 2) {
+                commit(repo, default_merge_message(parents.at(1).id().str()), parents);
+            } else {
+                commit(repo, default_merge_message("Octopus Merge"), parents);
+            }
+            Commit newCommit = repo.lookup_commit(repo.head().target());
+            repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).set_target(newCommit.parent(0).id(), "Squash WIP p1");
+            repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).set_target(newCommit.id(), "Squash WIP p2");
+            checkout(repo, base);
+            git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+            checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+            repo.checkout_tree(current, checkoutOpts);
+        } else {
+            OID wip_oid = repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).target();
+            Commit target = repo.lookup_commit(wip_oid);
+
+            add_all(repo);
+            Tree current = working_tree(repo);
+            checkout(repo, target);
+            commit(repo, "WIP", {});
+            Commit newCommit = repo.lookup_commit(repo.head().target());
+            repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).delete_reference();
+            repo.lookup_branch(wipName, GIT_BRANCH_LOCAL).set_target(newCommit.id(), "Squash WIP");
+            git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+            checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+            repo.checkout_tree(current, checkoutOpts);
+        }
+    }
+
+    void switch_branch(const Repository& repo, const string& name, bool saveWip, bool restoreWip) {
         const Commit commit = get_commit(repo, name);
 
         if (saveWip) {
@@ -345,8 +460,8 @@ namespace metro {
         checkout(repo, commit);
         move_head(repo, name);
 
-        if (!repo.head_detached()) {
-            restore_wip(repo);
+        if (restoreWip && !repo.head_detached()) {
+            restore_wip(repo, false);
         }
     }
 
@@ -422,5 +537,27 @@ namespace metro {
         int error = git_reference_list(&refs, repo.ptr().get());
         check_error(error);
         return StrArray(&refs);
+    }
+
+    void reset_to_empty(const Repository& repo) {
+        // We create an empty tree to replace the working directory with
+        Treebuilder empty = Treebuilder::create(repo);
+        OID oid = empty.write();
+        Tree tree = repo.lookup_tree(oid);
+
+        // Then we simply checkout the tree
+        git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+        checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
+        repo.checkout_tree(tree, checkoutOpts);
+    }
+
+    bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit) {
+        bool exit = pre(commit);
+        for (auto parent : commit.parents()) {
+            if (exit) break;
+            exit = tree_iterator(pre, post, parent) | exit;
+        }
+        exit = post(commit) | exit;
+        return exit;
     }
 }

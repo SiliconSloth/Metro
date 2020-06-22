@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 
 namespace metro {
@@ -7,6 +9,8 @@ namespace metro {
      * detached indicates if the head is detached or not.
      */
     struct Head {
+        Head(string name, bool detached) : name(std::move(name)), detached(detached) {}
+
         string name;
         bool detached;
     };

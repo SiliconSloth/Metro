@@ -33,7 +33,7 @@ Command clone_repo {
             metro::Repository repo = metro::clone(url, name);
 
             if (!repo.head_detached()) {
-                metro::restore_wip(repo);
+                metro::restore_wip(repo, true);
             }
 
             cout << "Cloning complete." << endl;

@@ -19,8 +19,6 @@ namespace git {
 
         Commit() = delete;
 
-        Commit operator=(Commit c) = delete;
-
         [[nodiscard]] shared_ptr<git_commit> ptr() const {
             return commit;
         }
