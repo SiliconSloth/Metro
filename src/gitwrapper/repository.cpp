@@ -8,16 +8,16 @@ namespace git {
     }
 
     Repository Repository::open(const string& path) {
-        std_filesystem::path original(path);
-        std_filesystem::path git_path(path + "/.git");
+        std::filesystem::path original(path);
+        std::filesystem::path git_path(path + "/.git");
 
-        if (std_filesystem::exists(git_path)) {
+        if (std::filesystem::exists(git_path)) {
             git_repository *gitRepo = nullptr;
             int err = git_repository_open(&gitRepo, path.c_str());
             check_error(err);
 
             return Repository(gitRepo);
-        } else if (std_filesystem::exists(original)) {
+        } else if (std::filesystem::exists(original)) {
             return Repository::open(path + "/..");
         } else {
             // In this case, it is not a git repository

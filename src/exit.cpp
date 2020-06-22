@@ -21,7 +21,7 @@ void on_application_exit(int sig_num) {
     sleep(1);
 #endif //_WIN32
 
-    using namespace std_filesystem;
+    using namespace std::filesystem;
     path current = current_path();
     path full(current.string() + "\\" + exit_config.directory);
     remove_all(full); // Remove whether exists or not

@@ -46,18 +46,13 @@ void _set_errno(int value) {
     errno = value;
 }
 #endif //_WIN32
-#if _WIN32 || __APPLE__ || __MACH__
-#include <filesystem>
-namespace std_filesystem = std::filesystem;
-#elif __unix__
-#include <experimental/filesystem>
-namespace std_filesystem = std::experimental::filesystem;
-#endif
 
 #include "git2.h"
 #if (LIBGIT2_VER_MINOR < 28)
 #define git_error_last giterr_last
 #endif
+
+#include "filesystem.h"
 
 using namespace std;
 
