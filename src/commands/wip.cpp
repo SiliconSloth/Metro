@@ -32,7 +32,6 @@ Command wip {
 
             git::Repository repo = git::Repository::open(".");
             metro::Head current_branch = metro::get_head(repo);
-            if (!metro::head_exists(repo)) current_branch = metro::Head(string("master"), false);
             if (current_branch.detached) {
                 throw MetroException("'metro wip' can only be used on a branch.");
             }
