@@ -17,7 +17,14 @@ We are currently working on fixing bugs and generally improving the user experie
 See the [wiki](https://siliconsloth.github.io/Metro/) for details and info.
 
 ## Download
-### Alpha Builds
-The latest and greatest! Keep in mind these builds are highly experimental. Use with EXTREME CAUTION at own risk.
 
- - [Version 1.0.0 Alpha](https://github.com/SiliconSloth/Metro/releases/tag/v1.0.0-alpha)
+The latest version of Metro is alpha-1.1. You can download binaries from the
+[Releases](https://github.com/SiliconSloth/Metro/releases) page, or build from source as above.
+
+The Windows binaries depend on the Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019,
+which you can download [here]( https://support.microsoft.com/en-gb/help/2977003/the-latest-supported-visual-c-downloads).
+
+Keep in mind that alpha builds are highly experimental and subject to change.
+Use with caution at your own risk.
+
+**[Download Metro alpha-1.1](https://github.com/SiliconSloth/Metro/releases/tag/alpha-1.1)**
