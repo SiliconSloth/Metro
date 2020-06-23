@@ -1,6 +1,6 @@
 namespace metro {
     string default_merge_message(const string& mergedName) {
-        return "Absorbed " + mergedName;
+        return "Merge commit '" + mergedName + "'";
     }
 
     string get_merge_message(const Repository& repo) {
@@ -28,7 +28,5 @@ namespace metro {
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE | GIT_CHECKOUT_ALLOW_CONFLICTS;
         repo.merge(sources, mergeOpts, checkoutOpts);
-
-        set_merge_message(repo, default_merge_message(name));
     }
 }
