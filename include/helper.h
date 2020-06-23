@@ -185,15 +185,3 @@ void disable_ansi();
  * @return The contents of the variable
  */
 string get_env(const string& name);
-
-/**
- * Replace all instances of a string with another
- * string, returning the result.
- *
- * @param in Input string to replace in.
- * @param find String to search for.
- * @param replace String to replace with.
- * @return The string with all instances of `find`
- *         replaced with `replace`
- */
-string replace_all(string in, string find, string replace);

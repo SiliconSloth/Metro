@@ -11,10 +11,6 @@ namespace metro {
         write_all(message, repo.path() + "/MERGE_MSG");
     }
 
-    string merge_head_id(const Repository& repo) {
-        return get_commit(repo, "MERGE_HEAD").id().str();
-    }
-
     void start_merge(const Repository& repo, const string& name) {
         Commit otherHead = get_commit(repo, name);
         AnnotatedCommit annotatedOther = repo.lookup_annotated_commit(otherHead.id());
@@ -34,35 +30,5 @@ namespace metro {
         repo.merge(sources, mergeOpts, checkoutOpts);
 
         set_merge_message(repo, default_merge_message(name));
-    }
-
-    void resolve(const Repository& repo) {
-        if (!merge_ongoing(repo)) {
-            throw NotMergingException();
-        }
-
-        // Get the merge details before the merge state is cleared.
-        string mergeHead = merge_head_id(repo);
-        string message = get_merge_message(repo);
-
-        repo.cleanup_state();
-        repo.index().cleanup_conflicts();
-        commit(repo, message, {"HEAD", mergeHead});
-    }
-
-    bool absorb(const Repository& repo, const string& mergeHead) {
-        if (is_wip(mergeHead)) {
-            throw UnsupportedOperationException("Can't absorb WIP branch.");
-        }
-        assert_not_merging(repo);
-
-        start_merge(repo, mergeHead);
-        if (repo.index().has_conflicts()) {
-            return true;
-        } else {
-            // If no conflicts occurred make the merge commit right away.
-            resolve(repo);
-            return false;
-        }
     }
 }
