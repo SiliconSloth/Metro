@@ -75,26 +75,6 @@ namespace metro {
         return index;
     }
 
-    Repository create(const string &path) {
-        if (Repository::exists(path + "/.git")) {
-            throw RepositoryExistsException();
-        }
-
-        try {
-            Repository repo = Repository::init(path + "/.git", false);
-            commit(repo, "Create repository", {});
-            return repo;
-        } catch (GitException &e) {
-            string error(e.what());
-            int pos = error.find("The filename, directory name, or volume label syntax is incorrect.");
-            if (pos >= 0 && pos <= error.length()) {
-                throw MetroException(
-                        "Unable to create directory '" + path + "' as that name is disallowed on this OS.");
-            }
-            throw e;
-        }
-    }
-
     void delete_last_commit(const Repository &repo, bool reset) {
         if (!head_exists(repo)) {
             throw MetroException("No commit to delete.");
@@ -106,16 +86,6 @@ namespace metro {
         }
         Commit parent = lastCommit.parent(0);
         reset_head(repo, parent, reset);
-    }
-
-    void patch(const Repository &repo, const string &message) {
-        assert_not_merging(repo);
-
-        git_signature author = repo.default_signature();
-        Tree tree = working_tree(repo);
-        Commit commit = get_commit(repo, "HEAD");
-
-        commit.amend("HEAD", author, author, "UTF-8", message, tree);
     }
 
     Commit get_commit(const Repository &repo, const string &revision) {
@@ -136,11 +106,6 @@ namespace metro {
         } catch (GitException &) {
             return false;
         }
-    }
-
-    void create_branch(const Repository &repo, const string &name) {
-        Commit commit = get_commit(repo, "HEAD");
-        repo.create_branch(name, commit, false);
     }
 
     bool branch_exists(const Repository &repo, const string &name) {
@@ -474,16 +439,6 @@ namespace metro {
     }
 
     /**
-     * Gets the commit at the head of the branch.
-     *
-     * @param repo Repo to find commit in.
-     * @return Commit at head of branch.
-     */
-    Commit get_last_commit(const Repository &repo) {
-        return get_commit(repo, "HEAD");
-    }
-
-    /**
      * Sets the url for the origin remote, creating it if it doesn't exist.
      *
      * @param repo Repo to set origin for.
@@ -502,22 +457,6 @@ namespace metro {
         }
     }
 
-    /**
-     * Analyses the given branch against the HEAD for methods of merging.
-     *
-     * @param repo Repo with branch and HEAD to compare.
-     * @param name Name of branch reference to perform merge analysis on.
-     * @return The results of analysing the merge.
-     */
-    git_merge_analysis_t merge_analysis(const Repository &repo, const string& name) {
-        Commit otherHead = get_commit(repo, name);
-        AnnotatedCommit annOther = repo.lookup_annotated_commit(otherHead.id());
-        vector<AnnotatedCommit> sources;
-        sources.push_back(annOther);
-
-        return repo.merge_analysis(sources);
-    }
-
     void reset_head(const Repository& repo, const Commit& commit, bool hard) {
         if (hard) {
             // Changes must be staged, or else they won't get reverted.
@@ -532,13 +471,6 @@ namespace metro {
         repo.reset_to_commit(commit, resetType, checkoutOpts);
     }
 
-    StrArray reference_list(const Repository& repo) {
-        git_strarray refs;
-        int error = git_reference_list(&refs, repo.ptr().get());
-        check_error(error);
-        return StrArray(&refs);
-    }
-
     void reset_to_empty(const Repository& repo) {
         // We create an empty tree to replace the working directory with
         Treebuilder empty = Treebuilder::create(repo);
@@ -549,15 +481,5 @@ namespace metro {
         git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
         checkoutOpts.checkout_strategy = GIT_CHECKOUT_FORCE;
         repo.checkout_tree(tree, checkoutOpts);
-    }
-
-    bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit) {
-        bool exit = pre(commit);
-        for (auto parent : commit.parents()) {
-            if (exit) break;
-            exit = tree_iterator(pre, post, parent) | exit;
-        }
-        exit = post(commit) | exit;
-        return exit;
     }
 }

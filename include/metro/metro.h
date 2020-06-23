@@ -87,16 +87,6 @@ namespace metro {
     Index add_all(const Repository& repo);
 
     /**
-     * Create a new empty git repository in the specified directory,
-     * with an initial commit.
-     *
-     * @param path Path reference to creat new repo at (This should NOT contain the .git directory on the path).
-     * @return Returns the repository created.
-     * @throws RepositoryExistsException If the repo already exists.
-     */
-    Repository create(const string& path);
-
-    /**
      * Deletes the commit at the HEAD of the current branch.
      *
      * @param repo Repository to delete the commit from.
@@ -104,16 +94,6 @@ namespace metro {
      * @throws UnsupportedOperationException If HEAD has no parents.
      */
     void delete_last_commit(const Repository& repo, bool reset);
-
-    /**
-     * Amends the last commit with your changes.
-     * Note: THIS WILL REPLACE PREVIOUS COMMIT METADATA WITH YOUR OWN
-     *
-     * @param repo The repo to replace previous commit within.
-     * @param message The new message to attach to the patched commit.
-     * @throws CurrentlyMergingException if a merge is currently taking place.
-     */
-    void patch(const Repository& repo, const string& message);
 
     /**
      * Gets the commit corresponding to the given revision.
@@ -132,14 +112,6 @@ namespace metro {
      * @return True if the commit exists
      */
     bool commit_exists(const Repository &repo, const string& name);
-
-    /**
-     * Create a new branch from the current head with the specified name.
-     *
-     * @param repo Repo to make the branch in.
-     * @param name Name of the new branch to create.
-     */
-    void create_branch(const Repository &repo, const string& name);
 
     /**
      * Tests whether a certain branch exists in the repo.
@@ -262,15 +234,6 @@ namespace metro {
     void reset_head(const Repository& repo, const Commit& commit, bool hard);
 
     /**
-     * Fill a list with all the references that can be found in a repository.
-     * Returns a string array filled with the names of all references.
-     *
-     * @param repo Repo to get list of references from.
-     * @return Array of references.
-     */
-    StrArray reference_list(const Repository& repo);
-
-    /**
      * Resets the current working directory to the empty tree - ie. an empty directory.
      * This does not wipe any data from the repository - only files in the working
      * directory or staging area.
@@ -278,16 +241,4 @@ namespace metro {
      * @param repo Repo to reset directory of
      */
     void reset_to_empty(const Repository& repo);
-
-    /**
-     * Iterates over a commit tree, running `pre` as a commit is entered and `post` as a commit is exited.
-     * The first time either function returns true, the search will backtrack to the start without
-     * exploring new commits.
-     *
-     * @param pre Function to run when entering nodes
-     * @param post Function to run when exiting nodes
-     * @param commit Root commit
-     * @return True if the exit was forceful
-     */
-    bool tree_iterator(function<bool(Commit)> pre, function<bool(Commit)> post, Commit commit);
 }
