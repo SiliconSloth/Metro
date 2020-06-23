@@ -234,7 +234,7 @@ namespace metro {
      *
      * @param repo Repo to squash WIP in.
      */
-    void squash_wip(const Repository& repo);
+    void squash_wip(const Repository& repo, bool force);
 
     /**
      * Moves to the given branch, checking out changes and the HEAD of that branch.
