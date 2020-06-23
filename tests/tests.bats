@@ -152,16 +152,13 @@ setup() {
   [[ "${lines[1]}" == *"local1-2.txt"* ]]
 }
 
-@test "Sync deleted commit" {
-  echo "$ git init remote"
+@test "Sync reset commit" {
+  echo "Mark 1"
   git init remote/repo --bare
-  cd remote/repo
-
-  cd ../..
   mkdir local1
   cd local1
-  echo "$ cd ~/local1"
-  echo "$ git clone git@remote & echo \"local1 file content 1\" > local1-1.txt & git commit -am \"Local1 commit message\""
+
+  echo "Mark 2"
   git clone ../remote/repo
   cd repo
   echo "local1 file content 1" > local1-1.txt
@@ -169,37 +166,31 @@ setup() {
   git commit -m "Local1 commit message 1"
   echo "local1 file content 2" > local1-2.txt
   git add -A
-  echo "$ echo \"local1 file content 2\" > local1-2.txt & git commit -m \"Local1 commit message 2\""
   git commit -m "Local1 commit message 2"
 
+  echo "Mark 3"
   cd ../..
   mkdir local2
   cd local2
-  echo "$ cd ~/local2"
-  echo "$ git clone git@remote"
   git clone ../remote/repo
 
-  echo "$ cd ~/local1"
+  echo "Mark 4"
   cd ../local1/repo
-  echo "$ metro sync"
   metro sync
-  echo "$ cd ~/local2"
+  echo "Mark 5"
   cd ../../local2/repo
-  echo "$ metro sync"
   metro sync
 
+  echo "Mark 6"
   cd ../../local1/repo
-  echo "$ cd ~/local1"
-  echo "$ metro delete commit"
-  metro delete commit
-  echo "$ metro sync"
+  git reset HEAD~ --hard
+  echo "Mark 7"
   metro sync
+  echo "Mark 8"
   cd ../../local2/repo
-  echo "$ cd ~/local2"
-  echo "$ metro sync"
   metro sync
 
-  echo "$ git log"
+  echo "Mark 9"
   git log
   run git log
   [[ "${lines[3]}" != *"Local1 commit message 2"* ]]
@@ -760,8 +751,8 @@ setup() {
   git init
   echo "$ git commit --allow-empty -m \"Initial Commit\""
   git commit --allow-empty -m "Initial Commit"
-  echo "$ metro delete branch master"
-  run metro delete branch master
+  echo "$ metro delete master"
+  run metro delete master
   [[ "$status" != 0 ]]
 }
 
@@ -778,8 +769,8 @@ setup() {
   run git branch --list
   [[ "${lines[1]}" == "  other" ]]
 
-  echo "$ metro delete branch other"
-  metro delete branch other
+  echo "$ metro delete other"
+  metro delete other
 
   echo "$ git branch --list"
   git branch --list
@@ -799,7 +790,7 @@ setup() {
   git checkout "$(git rev-parse HEAD)"
 
   echo "Mark 4"
-  metro delete branch other
+  metro delete other
 
   echo "Mark 5"
   git branch --list
@@ -832,7 +823,7 @@ setup() {
   git commit --allow-empty -m "WIP"
 
   echo "Mark 4"
-  run metro delete branch master#wip
+  run metro delete master#wip
   echo "$output"
   [[ "${lines[0]}" == "Deleted branch master#wip." ]]
 
@@ -855,7 +846,7 @@ setup() {
 
   echo "Mark 3"
   git checkout master#wip
-  run metro delete branch master#wip
+  run metro delete master#wip
   echo "$output"
   [[ "${lines[0]}" == "Deleted branch master#wip." ]]
 
@@ -863,239 +854,6 @@ setup() {
   git branch --list
   run git branch --list
   [[ "${lines[0]}" == "* master" ]]
-}
-
-# ~~~ Test Delete Commit ~~~
-
-@test "Delete last commit" {
-  echo "$ git init"
-  git init
-  echo "$ git commit --allow-empty -m \"Initial Commit\""
-  git commit --allow-empty -m "Initial Commit"
-  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
-  echo "Test file content" > test.txt
-  git add -A
-  git commit -m "Test Commit"
-
-  echo "$ metro delete commit"
-  metro delete commit
-
-  echo "$ git log"
-  git log
-  run git log
-  [[ "${lines[3]}" != *"Test Commit"* ]]
-
-  echo "$ ls"
-  ls
-  run ls
-  [[ -z "$output" ]]
-}
-
-@test "Delete last commit with uncommitted changes" {
-  echo "$ git init"
-  git init
-  echo "$ git commit --allow-empty -m \"Initial Commit\""
-  git commit --allow-empty -m "Initial Commit"
-  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
-  echo "Test file content" > test.txt
-  git add -A
-  git commit -m "Test Commit"
-  echo "Test content 2" > test2.txt
-
-  echo "$ metro delete commit"
-  metro delete commit
-
-  echo "$ git log"
-  git log
-  run git log
-  [[ "${lines[3]}" != *"Test Commit"* ]]
-
-  echo "$ ls"
-  ls
-  run ls
-  [[ -z "$output" ]]
-}
-
-@test "Delete last commit soft" {
-  echo "$ git init"
-  git init
-  echo "$ git commit --allow-empty -m \"Initial Commit\""
-  git commit --allow-empty -m "Initial Commit"
-  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
-  echo "Test file content" > test.txt
-  git add -A
-  git commit -m "Test Commit"
-
-  echo "$ metro delete commit --soft"
-  metro delete commit --soft
-
-  echo "$ git log"
-  git log
-  run git log
-  [[ "${lines[3]}" != *"Test Commit"* ]]
-
-  echo "$ ls"
-  ls
-  run ls
-  [[ "$output" == "test.txt" ]]
-}
-
-@test "Delete last commit soft with uncommitted changes" {
-  echo "$ git init"
-  git init
-  echo "$ git commit --allow-empty -m \"Initial Commit\""
-  git commit --allow-empty -m "Initial Commit"
-  echo "$ echo \"Test file content\" > test.txt & git commit -am \"Test Commit\""
-  echo "Test file content" > test.txt
-  git add -A
-  git commit -m "Test Commit"
-  echo "Test content 2" > test2.txt
-
-  echo "$ metro delete commit --soft"
-  metro delete commit --soft
-
-  echo "$ git log"
-  git log
-  run git log
-  [[ "${lines[3]}" != *"Test Commit"* ]]
-
-  echo "$ ls"
-  ls
-  run ls
-  [[ "$output" == *"test.txt"* ]]
-  [[ "$output" == *"test2.txt"* ]]
-  [[ "${#lines[@]}" == 2 ]]
-}
-
-@test "Delete with children" {
-  echo "Mark 1"
-  git init
-  git commit --allow-empty -m "Initial commit"
-
-  echo "Mark 2"
-  echo "Test content 1" > test.txt
-  git add -A
-  git commit -m "Test commit 1"
-
-  echo "Mark 3"
-  git branch other
-
-  echo "Mark 4"
-  echo "Test content 2" > test.txt
-  git add -A
-  git commit -m "Test commit 2"
-
-  echo "Mark 5"
-  git checkout other
-
-  echo "Mark 6"
-  metro delete commit
-
-  echo "Mark 7"
-  git log
-  run git log
-  [[ "${lines[3]}" == *"Initial commit"* ]]
-
-  echo "Mark 8"
-  git checkout master
-
-  echo "Mark 9"
-  run git log
-  [[ "${lines[3]}" == *"Test commit 2"* ]]
-  [[ "${lines[7]}" == *"Test commit 1"* ]]
-  [[ "${lines[11]}" == *"Initial commit"* ]]
-}
-
-@test "Delete initial commit" {
-  echo "Mark 1"
-  git init
-
-  echo "Mark 2"
-  echo "Test content 1" > test.txt
-  git add -A
-  git commit -m "Test commit 1"
-
-  echo "Mark 3"
-  run metro delete commit
-  [[ "$output" == "Can't delete initial commit." ]]
-
-  echo "Mark 4"
-  run git log
-  [[ "${lines[3]}" == *"Test commit 1"* ]]
-}
-
-@test "Delete with no commits" {
-  echo "Mark 1"
-  git init
-  echo "Mark 2"
-
-  run metro delete commit
-  echo "Mark 3"
-  [[ "$output" == "No commit to delete." ]]
-}
-
-@test "Delete with detached head" {
-  echo "Mark 1"
-  git init
-  git commit --allow-empty -m "Create repository"
-
-  echo "Mark 2"
-  echo "Test content 1" > test.txt
-  git add -A
-  git commit -m "Test commit 1"
-
-  echo "Mark 3"
-  git checkout "$(git rev-parse HEAD)"
-
-  echo "Mark 4"
-  metro delete commit
-
-  echo "Mark 5"
-  run git log
-  [[ "${lines[3]}" == *"Create repository"* ]]
-
-  echo "Mark 6"
-  git checkout master
-
-  echo "Mark 7"
-  run git log
-  [[ "${lines[3]}" == *"Test commit 1"* ]]
-}
-
-@test "Delete with detached head and children" {
-  echo "Mark 1"
-  git init
-  git commit --allow-empty -m "Initial commit"
-
-  echo "Mark 2"
-  echo "Test content 1" > test.txt
-  git add -A
-  git commit -m "Test commit 1"
-
-  echo "Mark 3"
-  echo "Test content 2" > test.txt
-  git add -A
-  git commit -m "Test commit 2"
-
-  echo "Mark 4"
-  git checkout master~
-
-  echo "Mark 5"
-  metro delete commit
-
-  echo "Mark 6"
-  git log
-  run git log
-  [[ "${lines[3]}" == *"Initial commit"* ]]
-
-  echo "Mark 7"
-  git checkout master
-
-  echo "Mark 8"
-  run git log
-  [[ "${lines[3]}" == *"Test commit 2"* ]]
-  [[ "${lines[7]}" == *"Test commit 1"* ]]
-  [[ "${lines[11]}" == *"Initial commit"* ]]
 }
 
 # ~~~ Test Rename ~~~
