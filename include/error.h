@@ -146,15 +146,6 @@ struct CurrentlyMergingException : public MetroException {
 };
 
 /**
- * NotMergingException should be thrown when a merge is not in progress and an operation cannot be performed unless a merge is in progress.
- */
-struct NotMergingException : public MetroException {
-    explicit NotMergingException():
-            MetroException("You can only resolve conflicts while absorbing.")
-    {}
-};
-
-/**
  * BranchNotFoundException should be thrown when an access is attempted to a branch which does not exist.
  */
 struct BranchNotFoundException : public MetroException {

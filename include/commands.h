@@ -34,7 +34,6 @@ const Option ALL_OPTIONS[] = {
         {"help", "h", false, "Explain how to use command"},
         {"pull", "d", false, "Only pull changes, without pushing changes to remote"},
         {"push", "u", false, "Only push changes, without pulling changes from remote. Requires no conflicts"},
-        {"soft", "s", false, "Delete the last commit without reverting changes in the working directory"},
         {"version", "v", false, "Print the version of Metro being used"}
 };
 
