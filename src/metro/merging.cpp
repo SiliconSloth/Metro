@@ -17,6 +17,7 @@ namespace metro {
         vector<AnnotatedCommit> sources = {annotatedOther};
 
         git_merge_analysis_t analysis = repo.merge_analysis(sources);
+        // TODO: Possible bug: What if a WIP being restored is a merge of two branches that are up-to-date?
         if ((analysis & (GIT_MERGE_ANALYSIS_NONE | GIT_MERGE_ANALYSIS_UP_TO_DATE)) != 0) {
             throw UnnecessaryMergeException();
         }
