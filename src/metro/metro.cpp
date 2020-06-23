@@ -75,19 +75,6 @@ namespace metro {
         return index;
     }
 
-    void delete_last_commit(const Repository &repo, bool reset) {
-        if (!head_exists(repo)) {
-            throw MetroException("No commit to delete.");
-        }
-
-        Commit lastCommit = get_commit(repo, "HEAD");
-        if (lastCommit.parentcount() == 0) {
-            throw UnsupportedOperationException("Can't delete initial commit.");
-        }
-        Commit parent = lastCommit.parent(0);
-        reset_head(repo, parent, reset);
-    }
-
     Commit get_commit(const Repository &repo, const string &revision) {
         Object object = repo.revparse_single(revision);
         if (object.type() == GIT_OBJECT_COMMIT) {

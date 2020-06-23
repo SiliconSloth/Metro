@@ -87,15 +87,6 @@ namespace metro {
     Index add_all(const Repository& repo);
 
     /**
-     * Deletes the commit at the HEAD of the current branch.
-     *
-     * @param repo Repository to delete the commit from.
-     * @param reset True to make it a hard reset.
-     * @throws UnsupportedOperationException If HEAD has no parents.
-     */
-    void delete_last_commit(const Repository& repo, bool reset);
-
-    /**
      * Gets the commit corresponding to the given revision.
      *
      * @param repo Repo to find the commit in.
