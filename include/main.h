@@ -8,7 +8,7 @@
 #define METRO_STAGE "alpha"
 #define METRO_MAJOR 1
 #define METRO_MINOR 1
-#define METRO_DEVELOPMENT_BUILD
+//#define METRO_DEVELOPMENT_BUILD
 
 // List of all commands
 Command *allCommands[] = {
