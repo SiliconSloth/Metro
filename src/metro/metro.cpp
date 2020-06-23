@@ -385,9 +385,10 @@ namespace metro {
             if (parents.size() == 1) {
                 commit(repo, "WIP", parents);
             } else if (parents.size() == 2) {
-                commit(repo, default_merge_message(parents.at(1).id().str()), parents);
+                commit(repo, "WIP\n" + default_merge_message(parents.at(1).id().str()), parents);
             } else {
-                commit(repo, default_merge_message("Octopus Merge"), parents);
+                // TODO: Change to match Git's default
+                commit(repo, "WIP\n" + default_merge_message("Octopus Merge"), parents);
             }
             Commit newCommit = repo.lookup_commit(repo.head().target());
             repo.lookup_branch(head.name, GIT_BRANCH_LOCAL).set_target(newCommit.parent(0).id(), "Squash WIP p1");

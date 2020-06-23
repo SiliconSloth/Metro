@@ -1179,7 +1179,8 @@ setup() {
     git log
     run git log
     [[ "${lines[1]}" == *"Merge"* ]]
-    [[ "${lines[4]}" == *"Absorbed"* ]]
+    [[ "${lines[4]}" == *"WIP"* ]]
+    [[ "${lines[5]}" == *"Merge commit '"* ]]
     [[ "$output" == *"Test Commit"* ]]
     [[ "$output" == *"Initial Commit"* ]]
 }
