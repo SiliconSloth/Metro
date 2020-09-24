@@ -20,7 +20,7 @@ can be deleted with the standard `metro delete branch` command.
 ## `metro wip restore`
 
 Replaces the contents of the working directory with the contents of the WIP commit,
-overriding any existing uncommitted changed. This also deletes the WIP branch.
+overriding any existing uncommitted changes. This also deletes the WIP branch.
 
 ## `metro wip squash`
 
