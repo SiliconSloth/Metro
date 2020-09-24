@@ -19,10 +19,12 @@ can be deleted with the standard `metro delete branch` command.
 
 ## `metro wip restore`
 
-Restores the contents of the WIP branch back to the working directory, overriding 
-any existing uncommitted changes. The WIP branch is deleted by this operation.
+Replaces the contents of the working directory with the contents of the WIP commit,
+overriding any existing uncommitted changed. This also deletes the WIP branch.
 
 ## `metro wip squash`
 
-Squashes an invalid WIP branch into a single valid commit past master while keeping the contents
+Squashes an invalid WIP branch into a single valid commit past the base branch while keeping the contents
 of the repository at that commit the same.
+
+It does this by committing the contents of the WIP branch to a new WIP commit just after the base.
