@@ -48,6 +48,6 @@ Command patch {
 
         // printHelp
         [](const Arguments &args) {
-            std::cout << "Usage: metro patch <message>\n";
+            std::cout << "Usage: metro patch [message]\n";
         }
 };
