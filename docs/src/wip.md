@@ -24,5 +24,7 @@ any existing uncommitted changes. The WIP branch is deleted by this operation.
 
 ## `metro wip squash`
 
-Squashes an invalid WIP branch into a single valid commit past master while keeping the contents
-of the repository at that commit the same.
+Commits the content of the head of the WIP branch to a single commit that is a child
+of the base branch's head. This is useful if commits have been made on top of the WIP
+branch, rendering it invalid; `restore` allows all these commits to be converted into
+uncommitted changes in a single valid WIP commit.
