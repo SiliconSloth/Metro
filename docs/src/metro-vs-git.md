@@ -55,14 +55,13 @@ To github.com:Black-Photon/Git-Testing.git
 Having to do so much is difficult to learn and not at all intuitive. Why do you need to add files? What does -m do? In what order do I pull and push? It also takes up time working out all the commands each time. Now what if that was:
 ```bash
 > metro commit "Changed file"
-Committed Successfully
+1 file modified
+Saved commit to branch master.
 
 > metro sync
-Conflict Found:
-[0] Absorb local master line into remote master line
-[1] Move local changes to new line master-local
-> 0
-Successfully Absorbed Changes
+Fetching all branches from remote...
+Branch master had remote changes that conflicted with yours; your commits have been moved to master#1.
+You've been moved to master#1.
 ```
 
 ## Features
