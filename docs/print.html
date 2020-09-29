@@ -82,8 +82,8 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="building/building.html"><strong aria-hidden="true">1.</strong> Building</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="building/windows.html"><strong aria-hidden="true">1.1.</strong> Building for Windows</a></li><li class="chapter-item expanded "><a href="building/linux.html"><strong aria-hidden="true">1.2.</strong> Building for Linux</a></li><li class="chapter-item expanded "><a href="building/macos.html"><strong aria-hidden="true">1.3.</strong> Building for macOS</a></li></ol></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">2.</strong> Commands</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="repository.html"><strong aria-hidden="true">2.1.</strong> Creating a repository</a></li><li class="chapter-item expanded "><a href="commit.html"><strong aria-hidden="true">2.2.</strong> Making commits</a></li><li class="chapter-item expanded "><a href="sync.html"><strong aria-hidden="true">2.3.</strong> Syncing with remote</a></li><li class="chapter-item expanded "><a href="branches.html"><strong aria-hidden="true">2.4.</strong> Handling branches</a></li><li class="chapter-item expanded "><a href="absorb.html"><strong aria-hidden="true">2.5.</strong> Absorbing code</a></li></ol></li><li class="chapter-item expanded "><a href="metro-vs-git.html"><strong aria-hidden="true">3.</strong> Metro vs Git</a></li></ol>
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="expanded "><a href="building/building.html"><strong aria-hidden="true">2.</strong> Building</a></li><li><ol class="section"><li class="expanded "><a href="building/windows.html"><strong aria-hidden="true">2.1.</strong> Building for Windows</a></li><li class="expanded "><a href="building/linux.html"><strong aria-hidden="true">2.2.</strong> Building for Linux</a></li><li class="expanded "><a href="building/macos.html"><strong aria-hidden="true">2.3.</strong> Building for macOS</a></li></ol></li><li class="expanded "><a href="commands/commands.html"><strong aria-hidden="true">3.</strong> Commands</a></li><li><ol class="section"><li class="expanded "><a href="commands/basic.html"><strong aria-hidden="true">3.1.</strong> Basic Commands</a></li><li class="expanded "><a href="commands/switch.html"><strong aria-hidden="true">3.2.</strong> Switching Branches</a></li><li class="expanded "><a href="commands/sync.html"><strong aria-hidden="true">3.3.</strong> Syncing with a Remote Repository</a></li><li class="expanded "><a href="commands/wip.html"><strong aria-hidden="true">3.4.</strong> Work In Progress Branches</a></li></ol></li><li class="expanded "><a href="metro-vs-git.html"><strong aria-hidden="true">4.</strong> Metro vs Git</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -251,86 +251,102 @@ cmake --build .
 <p>If you want to be able to run Metro from any directory on your computer, add the directory containing <code>metro</code> to your path.</p>
 <p>You can do this by adding <code>export PATH=PATH:/path-to-metro/build</code> to <code>$HOME/.bash_profile</code> or similar</p>
 <h1><a class="header" href="#commands" id="commands">Commands</a></h1>
-<h2><a class="header" href="#running-metro" id="running-metro">Running Metro</a></h2>
-<p>From the <code>/build</code> directory, Metro can be run using the <code>./metro</code> command. By default, this will output a list of commands:</p>
-<pre><code>$ ./metro 
-Usage: metro &lt;command&gt; &lt;args&gt; [options]
-create - Create a repo
-commit - Make a commit
-patch - Update the last commit with the current work
-delete - Deletes a commit or branch
-branch - Create a new branch
-switch - Switch to a different branch
-info - Show the state of the repo
-absorb - Merge the changes in another branch into this one
-resolve - Commit resolved conflicts after absorb
-Use --help for help.
-</code></pre>
-<h1><a class="header" href="#creating-a-repository" id="creating-a-repository">Creating a repository</a></h1>
-<p>To create a repository with metro, you use the create command:</p>
-<pre><code>metro create
-</code></pre>
-<blockquote>
-<p><strong>Git Equivalent</strong></p>
-<p><code>metro create</code> is similar to <code>git init</code>. In particular, it performs the following git actions:</p>
-<pre><code class="language-bash">git init
-git commit -m &quot;Initial commit&quot;
-</code></pre>
-</blockquote>
-<h1><a class="header" href="#making-commits" id="making-commits">Making commits</a></h1>
-<h2><a class="header" href="#creating-a-commit" id="creating-a-commit">Creating a Commit</a></h2>
-<p>Commits are created using the <code>metro commit</code> command. This creates a new commit for the current working branch which includes the contents of any changed files automatically.</p>
-<pre><code class="language-bash">metro commit &quot;Message&quot;
-</code></pre>
-<blockquote>
-<p><strong>Git Equivalent</strong></p>
-<p><code>metro commit</code> performs a combination of adding files, as well as creating a commit.</p>
-<pre><code>git add -A 
-git commit -m &quot;Message&quot;
-</code></pre>
-</blockquote>
-<h2><a class="header" href="#patching-a-commit" id="patching-a-commit">Patching a Commit</a></h2>
-<p>Commit messages can be patched in order to update the latest commit with local changes before it has been synced. This is performed using the <code>metro patch</code> command. This rewrites the previous commit with the contents of the local branch.</p>
-<pre><code class="language-bash">metro patch
-</code></pre>
-<h2><a class="header" href="#deleting-a-commit" id="deleting-a-commit">Deleting a Commit</a></h2>
-<p>You can also delete a commit by using delete:</p>
-<pre><code class="language-bash">metro delete commit
-</code></pre>
-<p>Which is the alternative to <code>reset</code> in Git:</p>
-<pre><code class="language-bash">git reset --hard HEAD~1
-</code></pre>
-<h1><a class="header" href="#syncing-with-remote" id="syncing-with-remote">Syncing with remote</a></h1>
-<p>Coming soon!</p>
-<h1><a class="header" href="#handling-branches" id="handling-branches">Handling branches</a></h1>
-<p>Branches allow you to (some explanation of branches here...)</p>
-<h2><a class="header" href="#creating-branches" id="creating-branches">Creating branches</a></h2>
-<p>Branches are created using the <code>metro branch</code> command:</p>
-<pre><code class="language-bash">metro branch &quot;feature/documentation&quot;
-</code></pre>
-<h2><a class="header" href="#switching-branches" id="switching-branches">Switching branches</a></h2>
-<p>Branches can be switched to by using the <code>metro switch</code> command. Metro automatically saves the current state of your working branch before switching and automatically restores the saved state when you return to that branch again.</p>
-<pre><code class="language-bash">metro switch &quot;feature/documentation&quot;
-</code></pre>
-<h2><a class="header" href="#deleting-branches" id="deleting-branches">Deleting branches</a></h2>
-<p>Branches can be deleted using the <code>metro delete</code> command:</p>
-<pre><code class="language-bash">metro delete &quot;feature/documentation&quot;
-</code></pre>
-<blockquote>
-<p><strong>Warning:</strong></p>
-<p>Using this command will delete <strong>ALL</strong> data from the provided branch. This cannot be undone.</p>
-</blockquote>
-<h2><a class="header" href="#branch-information" id="branch-information">Branch information</a></h2>
-<p>Information about the current branch can be viewed by using <code>metro info</code></p>
-<h1><a class="header" href="#absorbing-code" id="absorbing-code">Absorbing code</a></h1>
-<p>The contents of a branch can be absorbed into another branch by using the <code>metro absorb</code> command. This combines the contents of a branch into another branch if possible. If a conflict arises, Metro will put the branch into &quot;merged&quot; mode, where it can be resolved using <code>metro resolve</code>.</p>
-<h3><a class="header" href="#example" id="example">Example:</a></h3>
-<p>Say we have a branch <em>feature/documentation</em> which includes some changes about documentation. We want to include the contents of this branch into our <em>master</em> branch. Firstly, we make sure we are in the <em>master</em> branch by using <code>metro switch</code>:</p>
-<pre><code class="language-bash">metro switch &quot;master&quot;
-</code></pre>
-<p>We can then absorb the contents of <em>feature/documentation</em> into the current branch:</p>
-<pre><code class="language-bash">metro absorb &quot;feature/documentation&quot;
-</code></pre>
+<ul>
+<li><a href="commands/./basic.html">Basic Commands</a></li>
+<li><a href="commands/./switch.html">Switching Branches</a></li>
+<li><a href="commands/./sync.html">Syncing with a Remote Repository</a></li>
+<li><a href="commands/./wip.html">Work In Progress Branches</a></li>
+</ul>
+<h1><a class="header" href="#basic-commands" id="basic-commands">Basic Commands</a></h1>
+<h2><a class="header" href="#metro-create-directory" id="metro-create-directory"><code>metro create [directory]</code></a></h2>
+<p>Creates a new repository with an initial commit. The repository will be created
+in a new subdirectory with the specified name, or the current directory if
+none is specified.</p>
+<h2><a class="header" href="#metro-clone-url" id="metro-clone-url"><code>metro clone &lt;url&gt;</code></a></h2>
+<p>Clones a remote repository from a specified URL. It is recommended that you use
+this instead of <code>git clone</code>, as it will initialize the sync cache so
+that <code>metro sync</code> works correctly.</p>
+<h2><a class="header" href="#metro-commit-message" id="metro-commit-message"><code>metro commit &lt;message&gt;</code></a></h2>
+<p>Commits all changes in the working directory with the specified message.
+Note that unlike Git you do not need to add changes to the index first.</p>
+<h2><a class="header" href="#metro-patch-message" id="metro-patch-message"><code>metro patch [message]</code></a></h2>
+<p>Adds the current changes to the previous commit. Will also change the commit 
+message if one is specified.</p>
+<h2><a class="header" href="#metro-delete-commit" id="metro-delete-commit"><code>metro delete commit</code></a></h2>
+<p>Deletes the previous commit, reverting the contents of the working directory
+to match the commit before the deleted commit. If <code>--soft</code> is specified the
+working directory is left unchanged.</p>
+<h2><a class="header" href="#metro-delete-branch-branch" id="metro-delete-branch-branch"><code>metro delete branch &lt;branch&gt;</code></a></h2>
+<p>Deletes the specified branch. If you delete the current branch, you will be moved
+to another branch.</p>
+<h2><a class="header" href="#metro-branch-name" id="metro-branch-name"><code>metro branch &lt;name&gt;</code></a></h2>
+<p>Creates a new branch with the specified name, pointing to the head of the current
+branch. Automatically switches to the new branch upon creation.</p>
+<h2><a class="header" href="#metro-info" id="metro-info"><code>metro info</code></a></h2>
+<p>Prints some information about the current state of the repository, including the
+current branch and uncommitted changes.</p>
+<h2><a class="header" href="#metro-absorb-branch" id="metro-absorb-branch"><code>metro absorb &lt;branch&gt;</code></a></h2>
+<p>Merges another branch into the current branch. May result in conflicts that need
+to be resolved manually before running <code>metro resolve</code>.</p>
+<h2><a class="header" href="#metro-resolve" id="metro-resolve"><code>metro resolve</code></a></h2>
+<p>Marks all merge conflicts as resolved and commits the changes.</p>
+<h2><a class="header" href="#metro-list-commitsbranches" id="metro-list-commitsbranches"><code>metro list &lt;commits/branches&gt;</code></a></h2>
+<p>Lists all commits or branches in the repository.</p>
+<h2><a class="header" href="#metro-rename-branch-1-branch-2" id="metro-rename-branch-1-branch-2"><code>metro rename &lt;branch-1&gt; [branch-2]</code></a></h2>
+<p>Renames the specified branch. <code>branch-1</code> is the current branch name, and <code>branch-2</code> is the new name. If only one name is given the current branch is renamed.</p>
+<h1><a class="header" href="#switching-branches" id="switching-branches">Switching Branches</a></h1>
+<h2><a class="header" href="#metro-switch-branch" id="metro-switch-branch"><code>metro switch &lt;branch&gt;</code></a></h2>
+<p>The <code>switch</code> command allows you to move to a different branch or commit hash.
+If you have uncommitted changes in your working directory, these will be stored
+in a temporary WIP branch until you return to that branch. Each branch can have
+its own WIP branch. You can even switch branches during a merge; the merge will
+be saved to the WIP branch and continued when you switch back.</p>
+<p>Note that uncommitted changes cannot be saved when switching away from a detached
+head (e.g. when you have a commit hash checked out rather than a branch name).
+<code>switch</code> will not normally allow you to switch away from a detached head with
+uncommitted changes; to override this behaviour and switch anyway, use <code>--force</code>.
+This will cause the uncommitted changes to be lost.</p>
+<p>There are also some other conditions under which <code>switch</code> will fail, such as
+if a WIP branch already exists. These cases should never occur during regular use,
+but if you do experience such issues <code>--force</code> can be used to switch anyway,
+with potential loss of data. For more advanced ways to resolve issues with WIP
+branches, see the <code>wip</code> command.</p>
+<h1><a class="header" href="#syncing-with-a-remote-repository" id="syncing-with-a-remote-repository">Syncing with a Remote Repository</a></h1>
+<h2><a class="header" href="#metro-sync" id="metro-sync"><code>metro sync</code></a></h2>
+<p>The <code>sync</code> command synchronizes all your local branches with the remote repository,
+by either pushing or pulling each branch so that all changes since the last sync are
+retained on both sides. If a branch has been changed both locally and remotely since
+the last sync, Metro automatically creates a new branch to store one of these
+versions, so that you can merge or discard the changes at your leisure. Newly created
+or deleted branches will also be synced too, as will uncommitted changes (including
+ongoing merges) in the working directory.</p>
+<p>Specify <code>--pull</code> to only pull branches, without pushing any local changes to the 
+remote repository. Specify <code>--push</code> to only push branches to the remote, without
+pulling any changes. <code>sync --push</code> will fail if there are branch conflicts.</p>
+<p>The <code>sync</code> command may fail if the repository has invalid WIP branches. If you
+experience issues pertaining to WIP branches, try using the <code>wip</code> command to resolve 
+them.</p>
+<h1><a class="header" href="#work-in-progress-branches" id="work-in-progress-branches">Work In Progress Branches</a></h1>
+<p>Git can only sync data stored as a commit, so Metro automatically commits uncommitted changes to a temporary WIP branch when <code>switch</code> and <code>sync</code> are used.
+There can be a WIP branch for each base branch in the repository; the name of the
+WIP branch is the name of the base branch with the suffix <code>#wip</code> appended.
+When you switch or sync a branch, Metro will automatically restore the changes in the WIP branch to your working directory.</p>
+<p>If Metro is used correctly, these WIP branches are mostly invisible to the user.
+However if regular Git commands are used on a repository, the WIP branches may be
+left in an invalid state. The <code>wip</code> command can be used to resolve such issues.</p>
+<h2><a class="header" href="#metro-wip-save" id="metro-wip-save"><code>metro wip save</code></a></h2>
+<p>Saves the contents of the working directory to the current branch's WIP branch,
+in similar manner to <code>switch</code> and <code>sync</code>. Changes should not be made to the base branch until the WIP branch is restored. Syncing will still work in this state.</p>
+<p>The command will fail if the WIP branch already exists. The existing WIP branch 
+can be deleted with the standard <code>metro delete branch</code> command.</p>
+<h2><a class="header" href="#metro-wip-restore" id="metro-wip-restore"><code>metro wip restore</code></a></h2>
+<p>Replaces the contents of the working directory with the contents of the WIP commit,
+overriding any existing uncommitted changes. This also deletes the WIP branch.</p>
+<h2><a class="header" href="#metro-wip-squash" id="metro-wip-squash"><code>metro wip squash</code></a></h2>
+<p>Commits the content of the head of the WIP branch to a single commit that is a child
+of the base branch's head. This is useful if commits have been made on top of the WIP
+branch, rendering it invalid; <code>restore</code> allows all these commits to be converted into
+uncommitted changes in a single valid WIP commit.</p>
 <h1><a class="header" href="#metro-vs-git" id="metro-vs-git">Metro vs Git</a></h1>
 <h2><a class="header" href="#whats-wrong-with-git" id="whats-wrong-with-git">What's wrong with Git?</a></h2>
 <h3><a class="header" href="#gets-used-for-file-syncing-when-it-probably-shouldnt-be" id="gets-used-for-file-syncing-when-it-probably-shouldnt-be">Gets used for file syncing when it probably shouldn't be</a></h3>
@@ -381,14 +397,13 @@ To github.com:Black-Photon/Git-Testing.git
 </code></pre>
 <p>Having to do so much is difficult to learn and not at all intuitive. Why do you need to add files? What does -m do? In what order do I pull and push? It also takes up time working out all the commands each time. Now what if that was:</p>
 <pre><code class="language-bash">&gt; metro commit &quot;Changed file&quot;
-Committed Successfully
+1 file modified
+Saved commit to branch master.
 
 &gt; metro sync
-Conflict Found:
-[0] Absorb local master line into remote master line
-[1] Move local changes to new line master-local
-&gt; 0
-Successfully Absorbed Changes
+Fetching all branches from remote...
+Branch master had remote changes that conflicted with yours; your commits have been moved to master#1.
+You've been moved to master#1.
 </code></pre>
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <p>We've tried to reduce the number of inconveniences you encounter with git as much as possible while still keeping the functionality you need:</p>
@@ -396,9 +411,7 @@ Successfully Absorbed Changes
 <li>As a Git wrapper, Metro is fully compatible with all Git tools</li>
 <li>No staging area or adding files - all files are automatically added to commits</li>
 <li>Push and pull combined into one command to sync the current line with the remote</li>
-<li>Simple method to delete or return to past commits</li>
 <li>Patching last commit with current work to fix mistakes or reduce small commits</li>
-<li>Ignores files recently added to .gitignore rather than deleting them from other machines that then sync</li>
 </ul>
 
                     </main>
